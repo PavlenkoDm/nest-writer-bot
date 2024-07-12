@@ -10,6 +10,7 @@ import { ThemeScene } from './scenes/order-scenes/theme.scenes';
 import { DisciplineScene } from './scenes/order-scenes/discipline.scenes';
 import { FinalOrderScene } from './scenes/order-scenes/final-order.scenes';
 import { FileLoadScene } from './scenes/order-scenes/file-load.scenes';
+import { CommentScene } from './scenes/order-scenes/comment.scenes';
 
 @Module({
   imports: [TelegrafModule.forRootAsync(options())],
@@ -21,6 +22,7 @@ import { FileLoadScene } from './scenes/order-scenes/file-load.scenes';
     UniquenessScene,
     TimeLimitScene,
     FileLoadScene,
+    CommentScene,
     FinalOrderScene,
     ConfigService,
   ],

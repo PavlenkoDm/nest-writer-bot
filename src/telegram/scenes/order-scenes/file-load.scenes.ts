@@ -101,12 +101,12 @@ export class FileLoadScene extends Scenes.BaseScene<
   @Action('skip')
   async goSkip(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     ctx.session.__scenes.state.fileId = '';
-    await ctx.scene.enter('FINAL_ORDER_SCENE', ctx.session.__scenes.state);
+    await ctx.scene.enter('COMMENT_SCENE', ctx.session.__scenes.state);
   }
 
   @Action('go-forward')
   async goForward(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
-    await ctx.scene.enter('FINAL_ORDER_SCENE', ctx.session.__scenes.state);
+    await ctx.scene.enter('COMMENT_SCENE', ctx.session.__scenes.state);
   }
 
   @Action('change_file')

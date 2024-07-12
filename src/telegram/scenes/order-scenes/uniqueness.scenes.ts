@@ -91,19 +91,7 @@ export class UniquenessScene extends Scenes.BaseScene<
     if (gate) {
       return;
     }
-    // if (
-    //   !ctx.scene.current.id ||
-    //   ctx.scene.current.id !== 'UNIQUENESS_SCENE' ||
-    //   ctx.text.trim().startsWith('/')
-    // ) {
-    //   if (ctx.session.__scenes.state.theme) {
-    //     await ctx.replyWithHTML(
-    //       '<b>❌ Команди не можуть бути значенням унікальності!</b>',
-    //     );
-    //     await ctx.scene.enter('UNIQUENESS_SCENE', ctx.session.__scenes.state);
-    //   }
-    //   return;
-    // }
+
     const message = ctx.text.trim();
 
     if (!this.regExpForUniq(ctx).test(message)) {
@@ -148,3 +136,18 @@ export class UniquenessScene extends Scenes.BaseScene<
     ctx.from.id;
   }
 }
+
+// ==============================================================================
+// if (
+//   !ctx.scene.current.id ||
+//   ctx.scene.current.id !== 'UNIQUENESS_SCENE' ||
+//   ctx.text.trim().startsWith('/')
+// ) {
+//   if (ctx.session.__scenes.state.theme) {
+//     await ctx.replyWithHTML(
+//       '<b>❌ Команди не можуть бути значенням унікальності!</b>',
+//     );
+//     await ctx.scene.enter('UNIQUENESS_SCENE', ctx.session.__scenes.state);
+//   }
+//   return;
+// }

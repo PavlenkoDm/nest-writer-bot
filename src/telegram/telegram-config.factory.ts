@@ -12,6 +12,7 @@ import { ThemeScene } from './scenes/order-scenes/theme.scenes';
 import { DisciplineScene } from './scenes/order-scenes/discipline.scenes';
 import { FinalOrderScene } from './scenes/order-scenes/final-order.scenes';
 import { FileLoadScene } from './scenes/order-scenes/file-load.scenes';
+import { CommentScene } from './scenes/order-scenes/comment.scenes';
 
 const localSession = new LocalSession({
   database: 'sessions.json',
@@ -25,6 +26,7 @@ const telegrafModOptions = (config: ConfigService): TelegrafModuleOptions => {
     new UniquenessScene(),
     new TimeLimitScene(),
     new FileLoadScene(),
+    new CommentScene(),
     new FinalOrderScene(config),
   ]);
   return {
