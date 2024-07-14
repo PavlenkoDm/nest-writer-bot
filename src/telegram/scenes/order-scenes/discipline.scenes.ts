@@ -25,8 +25,12 @@ enum Branch {
   law = 'Право',
   biology = 'Біологія',
   naturalSciences = 'Природничі науки',
+  mathematicsAndStatistics = 'Математика та статистика',
+  informationTechnology = 'Інформаційні технології',
+  mechanicalEngineering = 'Механічна інженерія',
+  electricalEngineering = 'Електрична інженерія',
 }
-
+// =========== Specializations ====================================
 enum EducationSpecialization {
   sciencesAboutEducation = 'Науки про освіту',
   preSchoolEducation = 'Дошкільна освіта',
@@ -100,6 +104,37 @@ enum NaturalSciences {
   appliedPhysicsAndNanomaterials = 'Прикладна фізика та наноматеріали',
 }
 
+enum MathematicsAndStatistics {
+  mathematic = 'Математика',
+  statistics = 'Статистика',
+  appliedMathematics = 'Прикладна математика',
+}
+
+enum InformationTechnology {
+  softwareEngineering = 'Інженерія програмного забезпечення',
+  computerScienceAndInformationTechnology = 'Комп’ютерні науки та інформаційні технології',
+  computerEngineering = 'Комп’ютерна інженерія',
+  systemAnalysis = 'Системний аналіз',
+  cyberSecurity = 'Кібербезпека',
+}
+
+enum MechanicalEngineering {
+  appliedMechanics = 'Прикладна механіка',
+  materialsScience = 'Матеріалознавство',
+  industrialEngineering = 'Галузеве машинобудування',
+  aviationAndRocketSpaceTechnology = 'Авіаційна та ракетно-космічна техніка',
+  shipbuilding = 'Суднобудування',
+  metallurgy = 'Металургія',
+}
+
+enum ElectricalEngineering {
+  electricPowerEngineeringAndElectromechanics = 'Електроенергетика, електротехніка та електромеханіка',
+  energyEngineering = 'Енергетичне машинобудування',
+  atomicEnergy = 'Атомна енергетика',
+  thermalPower = 'Теплоенергетика',
+  hydroPower = 'Гідроенергетика',
+}
+
 @Injectable()
 @Scene('DISCIPLINE_SCENE')
 export class DisciplineScene extends Scenes.BaseScene<
@@ -160,6 +195,30 @@ export class DisciplineScene extends Scenes.BaseScene<
         [Markup.button.callback(Branch.law, 'law')],
         [Markup.button.callback(Branch.biology, 'biology')],
         [Markup.button.callback(Branch.naturalSciences, 'natural_sciences')],
+        [
+          Markup.button.callback(
+            Branch.mathematicsAndStatistics,
+            'mathematics_and_statistics',
+          ),
+        ],
+        [
+          Markup.button.callback(
+            Branch.informationTechnology,
+            'information_technology',
+          ),
+        ],
+        [
+          Markup.button.callback(
+            Branch.mechanicalEngineering,
+            'mechanical_engineering',
+          ),
+        ],
+        [
+          Markup.button.callback(
+            Branch.electricalEngineering,
+            'electrical_engineering',
+          ),
+        ],
       ]),
     );
   }
@@ -884,6 +943,381 @@ export class DisciplineScene extends Scenes.BaseScene<
     );
   }
 
+  // ======= MATHEMATICS_AND_STATISTICS ============================================
+
+  @Action('mathematics_and_statistics')
+  async addMathematicsAndStatistics(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await ctx.answerCbQuery();
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність</b>', {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            Markup.button.callback(
+              MathematicsAndStatistics.mathematic,
+              'mathematic',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              MathematicsAndStatistics.statistics,
+              'statistics',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              MathematicsAndStatistics.appliedMathematics,
+              'appliedMathematics',
+            ),
+          ],
+          [Markup.button.callback('Повернутися', 'back_to_branch')],
+        ],
+      },
+    });
+  }
+
+  // =======
+
+  @Action('mathematic')
+  async onMathematic(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.mathematicsAndStatistics,
+      MathematicsAndStatistics.mathematic,
+      ctx,
+    );
+  }
+
+  @Action('statistics')
+  async onStatistics(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.mathematicsAndStatistics,
+      MathematicsAndStatistics.statistics,
+      ctx,
+    );
+  }
+
+  @Action('appliedMathematics')
+  async onAppliedMathematics(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.mathematicsAndStatistics,
+      MathematicsAndStatistics.appliedMathematics,
+      ctx,
+    );
+  }
+
+  // ======= INFORMATION_TECHNOLOGY ============================================
+
+  @Action('information_technology')
+  async addInformationTechnology(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await ctx.answerCbQuery();
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність</b>', {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            Markup.button.callback(
+              InformationTechnology.softwareEngineering,
+              'software_engineering',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              InformationTechnology.computerScienceAndInformationTechnology,
+              'computer_science_and_information_technology',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              InformationTechnology.computerEngineering,
+              'computer_engineering',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              InformationTechnology.systemAnalysis,
+              'system_analysis',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              InformationTechnology.cyberSecurity,
+              'cyber_security',
+            ),
+          ],
+          [Markup.button.callback('Повернутися', 'back_to_branch')],
+        ],
+      },
+    });
+  }
+
+  // =======
+
+  @Action('software_engineering')
+  async onSoftwareEngineering(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.informationTechnology,
+      InformationTechnology.softwareEngineering,
+      ctx,
+    );
+  }
+
+  @Action('computer_science_and_information_technology')
+  async onComputerScienceAndInformationTechnology(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.informationTechnology,
+      InformationTechnology.computerScienceAndInformationTechnology,
+      ctx,
+    );
+  }
+
+  @Action('computer_engineering')
+  async onComputerEngineering(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.informationTechnology,
+      InformationTechnology.computerEngineering,
+      ctx,
+    );
+  }
+
+  @Action('system_analysis')
+  async onSystemAnalysis(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.informationTechnology,
+      InformationTechnology.systemAnalysis,
+      ctx,
+    );
+  }
+
+  @Action('cyber_security')
+  async onCyberSecurity(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.informationTechnology,
+      InformationTechnology.cyberSecurity,
+      ctx,
+    );
+  }
+
+  // ======= MECHANICAL_ENGINEERING ============================================
+
+  @Action('mechanical_engineering')
+  async addMechanicalEngineering(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await ctx.answerCbQuery();
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність</b>', {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            Markup.button.callback(
+              MechanicalEngineering.appliedMechanics,
+              'applied_mechanics',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              MechanicalEngineering.materialsScience,
+              'materials_science',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              MechanicalEngineering.industrialEngineering,
+              'industrial_engineering',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              MechanicalEngineering.aviationAndRocketSpaceTechnology,
+              'aviation_and_rocket_space_technology',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              MechanicalEngineering.shipbuilding,
+              'shipbuilding',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              MechanicalEngineering.metallurgy,
+              'metallurgy',
+            ),
+          ],
+          [Markup.button.callback('Повернутися', 'back_to_branch')],
+        ],
+      },
+    });
+  }
+
+  // =======
+
+  @Action('applied_mechanics')
+  async onAppliedMechanics(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.mechanicalEngineering,
+      MechanicalEngineering.appliedMechanics,
+      ctx,
+    );
+  }
+
+  @Action('materials_science')
+  async onMaterialsScience(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.mechanicalEngineering,
+      MechanicalEngineering.materialsScience,
+      ctx,
+    );
+  }
+
+  @Action('industrial_engineering')
+  async onIndustrialEngineering(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.mechanicalEngineering,
+      MechanicalEngineering.industrialEngineering,
+      ctx,
+    );
+  }
+
+  @Action('aviation_and_rocket_space_technology')
+  async onAviationAndRocketSpaceTechnology(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.mechanicalEngineering,
+      MechanicalEngineering.aviationAndRocketSpaceTechnology,
+      ctx,
+    );
+  }
+
+  @Action('shipbuilding')
+  async onShipbuilding(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.mechanicalEngineering,
+      MechanicalEngineering.shipbuilding,
+      ctx,
+    );
+  }
+
+  @Action('metallurgy')
+  async onMetallurgy(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.mechanicalEngineering,
+      MechanicalEngineering.metallurgy,
+      ctx,
+    );
+  }
+
+  // ======= ELECTRICAL_ENGINEERING ============================================
+
+  @Action('electrical_engineering')
+  async addElectricalEngineering(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await ctx.answerCbQuery();
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність</b>', {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            Markup.button.callback(
+              ElectricalEngineering.electricPowerEngineeringAndElectromechanics,
+              'electric_power_engineering_and_electromechanics',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              ElectricalEngineering.energyEngineering,
+              'energy_engineering',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              ElectricalEngineering.atomicEnergy,
+              'atomic_energy',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              ElectricalEngineering.thermalPower,
+              'thermal_power',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              ElectricalEngineering.hydroPower,
+              'hydro_power',
+            ),
+          ],
+          [Markup.button.callback('Повернутися', 'back_to_branch')],
+        ],
+      },
+    });
+  }
+
+  // =======
+
+  @Action('electric_power_engineering_and_electromechanics')
+  async onElectricPowerEngineeringAndElectromechanics(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.electricalEngineering,
+      ElectricalEngineering.electricPowerEngineeringAndElectromechanics,
+      ctx,
+    );
+  }
+
+  @Action('energy_engineering')
+  async onEnergyEngineering(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.electricalEngineering,
+      ElectricalEngineering.energyEngineering,
+      ctx,
+    );
+  }
+
+  @Action('atomic_energy')
+  async onAtomicEnergy(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.electricalEngineering,
+      ElectricalEngineering.atomicEnergy,
+      ctx,
+    );
+  }
+
+  @Action('thermal_power')
+  async onThermalPower(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.electricalEngineering,
+      ElectricalEngineering.thermalPower,
+      ctx,
+    );
+  }
+
+  @Action('hydro_power')
+  async onHydroPower(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.electricalEngineering,
+      ElectricalEngineering.hydroPower,
+      ctx,
+    );
+  }
+
   // =========================================================================
 
   @Action('back_to_branch')
@@ -913,6 +1347,30 @@ export class DisciplineScene extends Scenes.BaseScene<
           [Markup.button.callback(Branch.law, 'law')],
           [Markup.button.callback(Branch.biology, 'biology')],
           [Markup.button.callback(Branch.naturalSciences, 'natural_sciences')],
+          [
+            Markup.button.callback(
+              Branch.mathematicsAndStatistics,
+              'mathematics_and_statistics',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              Branch.informationTechnology,
+              'information_technology',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              Branch.mechanicalEngineering,
+              'mechanical_engineering',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              Branch.electricalEngineering,
+              'electrical_engineering',
+            ),
+          ],
         ],
       },
     });
