@@ -95,7 +95,7 @@ export class TelegramService extends Telegraf<Context> {
   @Command('start_join')
   onStartJoin(@Ctx() ctx: SceneContext<IOrderSceneState>) {
     ctx.replyWithHTML(
-      `<b>Вітаю ${ctx.from.username}!</b>👋\nЦей бот допоможе відправити запит\nна приєднання до команди авторів.\nТисніть   👇 "Join"   і починаємо.`,
+      `<b>Вітаю ${ctx.from.username}!</b>👋\nЦей бот допоможе відправити запит\nна приєднання до команди виконавців.\nТисніть   👇 "Join"   і починаємо.`,
       Markup.inlineKeyboard([Markup.button.callback('▶️ Join', 'go_join')]),
     );
   }
@@ -121,7 +121,7 @@ export class TelegramService extends Telegraf<Context> {
       !ctx.session.__scenes.state.uniqueness
     ) {
       await ctx.replyWithHTML(
-        `<b>❕ Вибраний тип роботи:</b>\n"<i>${ctx.session.__scenes.state.typeOfWork}</i>"`,
+        `<b>❕ Вибраний(попередньо) тип роботи:</b>\n"<i>${ctx.session.__scenes.state.typeOfWork}</i>"`,
       );
       await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
       return;

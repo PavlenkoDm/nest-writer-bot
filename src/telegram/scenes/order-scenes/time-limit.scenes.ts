@@ -60,7 +60,7 @@ export class TimeLimitScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.replyWithHTML(
-      '<b>❔ Введіть термін виконання замовлення</b>', // \n<i>☝️ Це має бути лише ціле число, не більше трьох знаків</i>
+      '<b>❔ Введіть термін виконання замовлення:</b>', // \n<i>☝️ Це має бути лише ціле число, не більше трьох знаків</i>
       Markup.inlineKeyboard([
         [Markup.button.callback(ExecTime.urgent, 'urgent')],
         [Markup.button.callback(ExecTime.mediumTerm, 'medium-term')],

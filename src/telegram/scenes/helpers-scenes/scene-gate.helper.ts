@@ -2,7 +2,7 @@ import { Scenes } from 'telegraf';
 import { IOrderSceneState } from '../order-scenes/order.config';
 
 export enum Forbidden {
-  enterCommands = 'Заборонено вводити команди!',
+  enterCommands = 'Заборонено вводити команди до закінчення замовлення!',
 }
 
 export async function onSceneGateFromCommand(

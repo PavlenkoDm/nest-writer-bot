@@ -72,6 +72,7 @@ export class FinalOrderScene extends Scenes.BaseScene<
           ),
         ],
         [Markup.button.callback('🔄 Restart', 'restart')],
+        [Markup.button.callback('🚫 Відмінити замовлення', 'break_order')],
       ]),
     );
   }
@@ -124,6 +125,21 @@ export class FinalOrderScene extends Scenes.BaseScene<
     ctx.session.__scenes.state = {};
     ctx.session.__scenes.state.isScenario = true;
     await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
+    return;
+  }
+
+  @Action('break_order')
+  async breakOrder(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    ctx.session.__scenes.state = {};
+    await ctx.answerCbQuery();
+    await ctx.editMessageText(
+      '<b>😔 Замовлення відмінено.</b>\n\n😉 Але... Якщо натиснути <i>/start_order</i> - почнемо знову!',
+      {
+        parse_mode: 'HTML',
+      },
+    ),
+      await ctx.scene.leave();
+    return;
   }
 
   @On('text')

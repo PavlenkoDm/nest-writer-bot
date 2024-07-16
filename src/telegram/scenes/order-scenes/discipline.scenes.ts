@@ -29,6 +29,9 @@ enum Branch {
   informationTechnology = 'Інформаційні технології',
   mechanicalEngineering = 'Механічна інженерія',
   electricalEngineering = 'Електрична інженерія',
+  automationAndInstrumentation = 'Автоматизація та приладобудування',
+  chemicalAndBioengineering = 'Хімічна та біоінженерія',
+  electronicsAndTelecommunications = 'Електроніка та телекомунікації',
 }
 // =========== Specializations ====================================
 enum EducationSpecialization {
@@ -135,6 +138,24 @@ enum ElectricalEngineering {
   hydroPower = 'Гідроенергетика',
 }
 
+enum AutomationAndInstrumentation {
+  automationAndComputerIntegratedTechnologies = 'Автоматизація та комп’ютерно-інтегровані технології',
+  metrologyAndInformationMeasuringTechnology = 'Метрологія та інформаційно-вимірювальна техніка',
+  microAndNanosystemTechnology = 'Мікро- та наносистемна техніка',
+}
+
+enum ChemicalAndBioengineering {
+  chemicalTechnologiesAndEngineering = 'Хімічні технології та інженерія',
+  biotechnologyAndBioengineering = 'Біотехнології та біоінженерія',
+  biomedicalEngineering = 'Біомедична інженерія',
+}
+
+enum ElectronicsAndTelecommunications {
+  electronics = 'Електроніка',
+  telecommunicationsAndRadioEngineering = 'Телекомунікації та радіотехніка',
+  avionics = 'Авіоніка',
+}
+
 @Injectable()
 @Scene('DISCIPLINE_SCENE')
 export class DisciplineScene extends Scenes.BaseScene<
@@ -173,7 +194,7 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.replyWithHTML(
-      '<b>❔ Виберіть галузь знань</b>',
+      '<b>❔ Виберіть галузь знань:</b>',
       Markup.inlineKeyboard([
         [Markup.button.callback(Branch.education, 'education')],
         [Markup.button.callback(Branch.сultureAndArt, 'сulture_and_art')],
@@ -219,6 +240,24 @@ export class DisciplineScene extends Scenes.BaseScene<
             'electrical_engineering',
           ),
         ],
+        [
+          Markup.button.callback(
+            Branch.automationAndInstrumentation,
+            'automation_and_instrumentation',
+          ),
+        ],
+        [
+          Markup.button.callback(
+            Branch.chemicalAndBioengineering,
+            'chemical_and_bioengineering',
+          ),
+        ],
+        [
+          Markup.button.callback(
+            Branch.electronicsAndTelecommunications,
+            'electronics_and_telecommunications',
+          ),
+        ],
       ]),
     );
   }
@@ -228,7 +267,7 @@ export class DisciplineScene extends Scenes.BaseScene<
   @Action('education')
   async addEducation(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність</b>', {
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
@@ -360,7 +399,7 @@ export class DisciplineScene extends Scenes.BaseScene<
   @Action('сulture_and_art')
   async addCultureAndArt(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність</b>', {
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
@@ -500,7 +539,7 @@ export class DisciplineScene extends Scenes.BaseScene<
   @Action('humanities')
   async addHumanities(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність</b>', {
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
@@ -591,7 +630,7 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність</b>', {
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
@@ -709,7 +748,7 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність</b>', {
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
@@ -824,7 +863,7 @@ export class DisciplineScene extends Scenes.BaseScene<
   @Action('law')
   async addLaw(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність</b>', {
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
@@ -862,7 +901,7 @@ export class DisciplineScene extends Scenes.BaseScene<
   @Action('natural_sciences')
   async addNaturalSciences(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність</b>', {
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
@@ -950,7 +989,7 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність</b>', {
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
@@ -1016,7 +1055,7 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність</b>', {
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
@@ -1116,7 +1155,7 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність</b>', {
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
@@ -1229,7 +1268,7 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність</b>', {
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
@@ -1318,12 +1357,218 @@ export class DisciplineScene extends Scenes.BaseScene<
     );
   }
 
+  // ======= AUTOMATION_AND_INSTRUMENTATION ============================================
+
+  @Action('automation_and_instrumentation')
+  async addAutomationAndInstrumentation(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await ctx.answerCbQuery();
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            Markup.button.callback(
+              AutomationAndInstrumentation.automationAndComputerIntegratedTechnologies,
+              'automation_and_computer_integrated_technologies',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              AutomationAndInstrumentation.metrologyAndInformationMeasuringTechnology,
+              'metrology_and_information_measuring_technology',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              AutomationAndInstrumentation.microAndNanosystemTechnology,
+              'micro_and_nanosystem_technology',
+            ),
+          ],
+          [Markup.button.callback('Повернутися', 'back_to_branch')],
+        ],
+      },
+    });
+  }
+
+  // =======
+
+  @Action('automation_and_computer_integrated_technologies')
+  async onAutomationAndComputerIntegratedTechnologies(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.automationAndInstrumentation,
+      AutomationAndInstrumentation.automationAndComputerIntegratedTechnologies,
+      ctx,
+    );
+  }
+
+  @Action('metrology_and_information_measuring_technology')
+  async onMetrologyAndInformationMeasuringTechnology(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.automationAndInstrumentation,
+      AutomationAndInstrumentation.metrologyAndInformationMeasuringTechnology,
+      ctx,
+    );
+  }
+
+  @Action('micro_and_nanosystem_technology')
+  async onMicroAndNanosystemTechnology(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.automationAndInstrumentation,
+      AutomationAndInstrumentation.microAndNanosystemTechnology,
+      ctx,
+    );
+  }
+
+  // ======= CHEMICAL_AND_BIOENGINEERING ============================================
+
+  @Action('chemical_and_bioengineering')
+  async addChemicalAndBioengineering(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await ctx.answerCbQuery();
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            Markup.button.callback(
+              ChemicalAndBioengineering.chemicalTechnologiesAndEngineering,
+              'chemical_technologies_and_engineering',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              ChemicalAndBioengineering.biotechnologyAndBioengineering,
+              'biotechnology_and_bioengineering',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              ChemicalAndBioengineering.biomedicalEngineering,
+              'biomedical_engineering',
+            ),
+          ],
+          [Markup.button.callback('Повернутися', 'back_to_branch')],
+        ],
+      },
+    });
+  }
+
+  // =======
+
+  @Action('chemical_technologies_and_engineering')
+  async onChemicalTechnologiesAndEngineering(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.chemicalAndBioengineering,
+      ChemicalAndBioengineering.chemicalTechnologiesAndEngineering,
+      ctx,
+    );
+  }
+
+  @Action('biotechnology_and_bioengineering')
+  async onBiotechnologyAndBioengineering(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.chemicalAndBioengineering,
+      ChemicalAndBioengineering.biotechnologyAndBioengineering,
+      ctx,
+    );
+  }
+
+  @Action('biomedical_engineering')
+  async onBiomedicalEngineering(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.chemicalAndBioengineering,
+      ChemicalAndBioengineering.biomedicalEngineering,
+      ctx,
+    );
+  }
+
+  // ======= ELECTRONICS_AND_TELECOMMUNICATIONS ============================================
+
+  @Action('electronics_and_telecommunications')
+  async addElectronicsAndTelecommunications(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await ctx.answerCbQuery();
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            Markup.button.callback(
+              ElectronicsAndTelecommunications.electronics,
+              'electronics',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              ElectronicsAndTelecommunications.telecommunicationsAndRadioEngineering,
+              'telecommunications_and_radio_engineering',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              ElectronicsAndTelecommunications.avionics,
+              'avionics',
+            ),
+          ],
+          [Markup.button.callback('Повернутися', 'back_to_branch')],
+        ],
+      },
+    });
+  }
+
+  // =======
+
+  @Action('electronics')
+  async onElectronics(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.electronicsAndTelecommunications,
+      ElectronicsAndTelecommunications.electronics,
+      ctx,
+    );
+  }
+
+  @Action('telecommunications_and_radio_engineering')
+  async onTelecommunicationsAndRadioEngineering(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.electronicsAndTelecommunications,
+      ElectronicsAndTelecommunications.telecommunicationsAndRadioEngineering,
+      ctx,
+    );
+  }
+
+  @Action('avionics')
+  async onAvionics(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.electronicsAndTelecommunications,
+      ElectronicsAndTelecommunications.avionics,
+      ctx,
+    );
+  }
+
   // =========================================================================
 
   @Action('back_to_branch')
   async backToBranch(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть галузь знань</b>', {
+    await ctx.editMessageText('<b>❔ Виберіть галузь знань:</b>', {
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
@@ -1369,6 +1614,24 @@ export class DisciplineScene extends Scenes.BaseScene<
             Markup.button.callback(
               Branch.electricalEngineering,
               'electrical_engineering',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              Branch.automationAndInstrumentation,
+              'automation_and_instrumentation',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              Branch.chemicalAndBioengineering,
+              'chemical_and_bioengineering',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              Branch.electronicsAndTelecommunications,
+              'electronics_and_telecommunications',
             ),
           ],
         ],
