@@ -32,6 +32,13 @@ enum Branch {
   automationAndInstrumentation = 'Автоматизація та приладобудування',
   chemicalAndBioengineering = 'Хімічна та біоінженерія',
   electronicsAndTelecommunications = 'Електроніка та телекомунікації',
+  productionAndTechnologies = 'Виробництво та технології',
+  architectureAndConstruction = 'Архітектура та будівництво',
+  agriculturalSciencesAndFood = 'Аграрні науки та продовольство',
+  veterinary = 'Ветеринарна медицина',
+  healthCare = 'Охорона здоров’я',
+  socialWork = 'Соціальна робота',
+  serviceSector = 'Сфера обслуговування',
 }
 // =========== Specializations ====================================
 enum EducationSpecialization {
@@ -156,6 +163,57 @@ enum ElectronicsAndTelecommunications {
   avionics = 'Авіоніка',
 }
 
+enum ProductionAndTechnologies {
+  foodTechnologies = 'Харчові технології',
+  lightIndustryTechnologies = 'Технології легкої промисловості',
+  environmentalProtectionTechnologies = 'Технології захисту навколишнього середовища',
+  mining = 'Гірництво',
+  oilGasEngineeringTechnologies = 'Нафтогазова інженерія та технології',
+  publishingAndPrinting = 'Видавництво та поліграфія',
+}
+
+enum ArchitectureAndConstruction {
+  architectureAndUrbanPlanning = 'Архітектура та містобудування',
+  constructionAndCivilEngineering = 'Будівництво та цивільна інженерія',
+  geodesyAndLandManagement = 'Геодезія та землеустрій',
+}
+
+enum AgriculturalSciencesAndFood {
+  agronomy = 'Агрономія',
+  plantsProtectionAndQuarantine = 'Захист і карантин рослин',
+  gardeningAndViticulture = 'Садівництво та виноградарство',
+  animalHusbandryProductsProduction = 'Технологія виробництва і переробки продукції тваринництва',
+  forestry = 'Лісове господарство',
+  horticulture = 'Садово-паркове господарство',
+  bioresourcesAndAquaculture = 'Водні біоресурси та аквакультура',
+  agriculturalEngineering = 'Агроінженерія',
+}
+
+enum Veterinary {
+  veterinaryMedicine = 'Ветеринарна медицина',
+  veterinaryHygieneSanitationAndExpertise = 'Ветеринарна гігієна, санітарія і експертиза',
+}
+
+enum HealthCare {
+  dentistry = 'Стоматологія',
+  medicine = 'Медицина',
+  nursing = 'Медсестринство',
+  medicalTechnologiesDiagnosisAndTreatment = 'Технології медичної діагностики та лікування',
+  medicalAndPsychologicalRehabilitation = 'Медична та психологічна реабілітація',
+  pharmacy = 'Фармація',
+  physicalRehabilitation = 'Фізична реабілітація',
+}
+
+enum SocialWork {
+  socialWk = 'Соціальна робота',
+  socialWelfare = 'Соціальне забезпечення',
+}
+
+enum ServiceSector {
+  hotelRestaurantBusiness = 'Готельно-ресторанна справа',
+  tourism = 'Туризм',
+}
+
 @Injectable()
 @Scene('DISCIPLINE_SCENE')
 export class DisciplineScene extends Scenes.BaseScene<
@@ -258,6 +316,28 @@ export class DisciplineScene extends Scenes.BaseScene<
             'electronics_and_telecommunications',
           ),
         ],
+        [
+          Markup.button.callback(
+            Branch.productionAndTechnologies,
+            'production_and_technologies',
+          ),
+        ],
+        [
+          Markup.button.callback(
+            Branch.architectureAndConstruction,
+            'architecture_and_construction',
+          ),
+        ],
+        [
+          Markup.button.callback(
+            Branch.agriculturalSciencesAndFood,
+            'agricultural_sciences_and_food',
+          ),
+        ],
+        [Markup.button.callback(Branch.veterinary, 'veterinary')],
+        [Markup.button.callback(Branch.healthCare, 'health_care')],
+        [Markup.button.callback(Branch.socialWork, 'social_work')],
+        [Markup.button.callback(Branch.serviceSector, 'service_sector')],
       ]),
     );
   }
@@ -1563,6 +1643,557 @@ export class DisciplineScene extends Scenes.BaseScene<
     );
   }
 
+  // ======= PRODUCTION_AND_TECHNOLOGIES ============================================
+
+  @Action('production_and_technologies')
+  async addProductionAndTechnologies(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await ctx.answerCbQuery();
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            Markup.button.callback(
+              ProductionAndTechnologies.foodTechnologies,
+              'food_technologies',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              ProductionAndTechnologies.lightIndustryTechnologies,
+              'light_industry_technologies',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              ProductionAndTechnologies.environmentalProtectionTechnologies,
+              'environmental_protection_technologies',
+            ),
+          ],
+          [Markup.button.callback(ProductionAndTechnologies.mining, 'mining')],
+          [
+            Markup.button.callback(
+              ProductionAndTechnologies.oilGasEngineeringTechnologies,
+              'oil_gas_engineering_technologies',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              ProductionAndTechnologies.publishingAndPrinting,
+              'publishing_and_printing',
+            ),
+          ],
+          [Markup.button.callback('Повернутися', 'back_to_branch')],
+        ],
+      },
+    });
+  }
+
+  // =======
+
+  @Action('food_technologies')
+  async onFoodTechnologies(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.productionAndTechnologies,
+      ProductionAndTechnologies.foodTechnologies,
+      ctx,
+    );
+  }
+
+  @Action('light_industry_technologies')
+  async onLightIndustryTechnologies(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.productionAndTechnologies,
+      ProductionAndTechnologies.lightIndustryTechnologies,
+      ctx,
+    );
+  }
+
+  @Action('environmental_protection_technologies')
+  async onEnvironmentalProtectionTechnologies(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.productionAndTechnologies,
+      ProductionAndTechnologies.environmentalProtectionTechnologies,
+      ctx,
+    );
+  }
+
+  @Action('mining')
+  async onMining(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.productionAndTechnologies,
+      ProductionAndTechnologies.mining,
+      ctx,
+    );
+  }
+
+  @Action('oil_gas_engineering_technologies')
+  async onOilGasEngineeringTechnologies(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.productionAndTechnologies,
+      ProductionAndTechnologies.oilGasEngineeringTechnologies,
+      ctx,
+    );
+  }
+
+  @Action('publishing_and_printing')
+  async onPublishingAndPrinting(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.productionAndTechnologies,
+      ProductionAndTechnologies.publishingAndPrinting,
+      ctx,
+    );
+  }
+
+  // ======= ARCHITECTURE_AND_CONSTRUCTION ============================================
+
+  @Action('architecture_and_construction')
+  async addArchitectureAndConstruction(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await ctx.answerCbQuery();
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            Markup.button.callback(
+              ArchitectureAndConstruction.architectureAndUrbanPlanning,
+              'architecture_and_urban_planning',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              ArchitectureAndConstruction.constructionAndCivilEngineering,
+              'construction_and_civil_engineering',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              ArchitectureAndConstruction.geodesyAndLandManagement,
+              'geodesy_and_land_management',
+            ),
+          ],
+          [Markup.button.callback('Повернутися', 'back_to_branch')],
+        ],
+      },
+    });
+  }
+
+  // =======
+
+  @Action('architecture_and_urban_planning')
+  async onArchitectureAndUrbanPlanning(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.architectureAndConstruction,
+      ArchitectureAndConstruction.architectureAndUrbanPlanning,
+      ctx,
+    );
+  }
+
+  @Action('construction_and_civil_engineering')
+  async onConstructionAndCivilEngineering(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.architectureAndConstruction,
+      ArchitectureAndConstruction.constructionAndCivilEngineering,
+      ctx,
+    );
+  }
+
+  @Action('geodesy_and_land_management')
+  async onGeodesyAndLandManagement(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.architectureAndConstruction,
+      ArchitectureAndConstruction.geodesyAndLandManagement,
+      ctx,
+    );
+  }
+
+  // ======= AGRICULTURAL_SCIENCES_AND_FOOD ============================================
+
+  @Action('agricultural_sciences_and_food')
+  async addAgriculturalSciencesAndFood(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await ctx.answerCbQuery();
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            Markup.button.callback(
+              AgriculturalSciencesAndFood.agronomy,
+              'agronomy',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              AgriculturalSciencesAndFood.plantsProtectionAndQuarantine,
+              'plants_protection_and_quarantine',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              AgriculturalSciencesAndFood.gardeningAndViticulture,
+              'gardening_and_viticulture',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              AgriculturalSciencesAndFood.animalHusbandryProductsProduction,
+              'animal_husbandry_products_production',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              AgriculturalSciencesAndFood.forestry,
+              'forestry',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              AgriculturalSciencesAndFood.horticulture,
+              'horticulture',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              AgriculturalSciencesAndFood.bioresourcesAndAquaculture,
+              'bioresources_and_aquaculture',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              AgriculturalSciencesAndFood.agriculturalEngineering,
+              'agricultural_engineering',
+            ),
+          ],
+          [Markup.button.callback('Повернутися', 'back_to_branch')],
+        ],
+      },
+    });
+  }
+
+  // =======
+
+  @Action('agronomy')
+  async onAgronomy(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.agriculturalSciencesAndFood,
+      AgriculturalSciencesAndFood.agronomy,
+      ctx,
+    );
+  }
+
+  @Action('plants_protection_and_quarantine')
+  async onPlantsProtectionAndQuarantine(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.agriculturalSciencesAndFood,
+      AgriculturalSciencesAndFood.plantsProtectionAndQuarantine,
+      ctx,
+    );
+  }
+
+  @Action('gardening_and_viticulture')
+  async onGardeningAndViticulture(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.agriculturalSciencesAndFood,
+      AgriculturalSciencesAndFood.gardeningAndViticulture,
+      ctx,
+    );
+  }
+
+  @Action('animal_husbandry_products_production')
+  async onAnimalHusbandryProductsProduction(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.agriculturalSciencesAndFood,
+      AgriculturalSciencesAndFood.animalHusbandryProductsProduction,
+      ctx,
+    );
+  }
+
+  @Action('forestry')
+  async onForestry(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.agriculturalSciencesAndFood,
+      AgriculturalSciencesAndFood.forestry,
+      ctx,
+    );
+  }
+
+  @Action('horticulture')
+  async onHorticulture(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.agriculturalSciencesAndFood,
+      AgriculturalSciencesAndFood.horticulture,
+      ctx,
+    );
+  }
+
+  @Action('bioresources_and_aquaculture')
+  async onBioresourcesAndAquaculture(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.agriculturalSciencesAndFood,
+      AgriculturalSciencesAndFood.bioresourcesAndAquaculture,
+      ctx,
+    );
+  }
+
+  @Action('agricultural_engineering')
+  async onAgriculturalEngineering(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.agriculturalSciencesAndFood,
+      AgriculturalSciencesAndFood.agriculturalEngineering,
+      ctx,
+    );
+  }
+
+  // ======= VETERINARY ============================================
+
+  @Action('veterinary')
+  async addVeterinary(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await ctx.answerCbQuery();
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            Markup.button.callback(
+              Veterinary.veterinaryMedicine,
+              'veterinary_medicine',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              Veterinary.veterinaryHygieneSanitationAndExpertise,
+              'veterinary_hygiene_sanitation_and_expertise',
+            ),
+          ],
+          [Markup.button.callback('Повернутися', 'back_to_branch')],
+        ],
+      },
+    });
+  }
+
+  // =======
+
+  @Action('veterinary_medicine')
+  async onVeterinaryMedicine(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.veterinary,
+      Veterinary.veterinaryMedicine,
+      ctx,
+    );
+  }
+
+  @Action('veterinary_hygiene_sanitation_and_expertise')
+  async onVeterinaryHygieneSanitationAndExpertise(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.veterinary,
+      Veterinary.veterinaryHygieneSanitationAndExpertise,
+      ctx,
+    );
+  }
+
+  // ======= HEALTH_CARE ============================================
+
+  @Action('health_care')
+  async addHealthCare(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await ctx.answerCbQuery();
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [Markup.button.callback(HealthCare.dentistry, 'dentistry')],
+          [Markup.button.callback(HealthCare.medicine, 'medicine')],
+          [Markup.button.callback(HealthCare.nursing, 'nursing')],
+          [
+            Markup.button.callback(
+              HealthCare.medicalTechnologiesDiagnosisAndTreatment,
+              'medical_technologies_diagnosis_and_treatment',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              HealthCare.medicalAndPsychologicalRehabilitation,
+              'medical_and_psychological_rehabilitation',
+            ),
+          ],
+          [Markup.button.callback(HealthCare.pharmacy, 'pharmacy')],
+          [
+            Markup.button.callback(
+              HealthCare.physicalRehabilitation,
+              'physical_rehabilitation',
+            ),
+          ],
+          [Markup.button.callback('Повернутися', 'back_to_branch')],
+        ],
+      },
+    });
+  }
+
+  // =======
+
+  @Action('dentistry')
+  async onDentistry(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(Branch.healthCare, HealthCare.dentistry, ctx);
+  }
+
+  @Action('medicine')
+  async onMedicine(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(Branch.healthCare, HealthCare.medicine, ctx);
+  }
+
+  @Action('nursing')
+  async onNursing(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(Branch.healthCare, HealthCare.nursing, ctx);
+  }
+
+  @Action('medical_technologies_diagnosis_and_treatment')
+  async onMedicalTechnologiesDiagnosisAndTreatment(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.healthCare,
+      HealthCare.medicalTechnologiesDiagnosisAndTreatment,
+      ctx,
+    );
+  }
+
+  @Action('medical_and_psychological_rehabilitation')
+  async onMedicalAndPsychologicalRehabilitation(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.healthCare,
+      HealthCare.medicalAndPsychologicalRehabilitation,
+      ctx,
+    );
+  }
+
+  @Action('pharmacy')
+  async onPharmacy(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(Branch.healthCare, HealthCare.pharmacy, ctx);
+  }
+
+  @Action('physical_rehabilitation')
+  async onPhysicalRehabilitation(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.healthCare,
+      HealthCare.physicalRehabilitation,
+      ctx,
+    );
+  }
+
+  // ======= SOCIAL_WORK ============================================
+
+  @Action('social_work')
+  async addSocialWork(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await ctx.answerCbQuery();
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [Markup.button.callback(SocialWork.socialWk, 'social_wk')],
+          [Markup.button.callback(SocialWork.socialWelfare, 'social_welfare')],
+          [Markup.button.callback('Повернутися', 'back_to_branch')],
+        ],
+      },
+    });
+  }
+
+  // =======
+
+  @Action('social_wk')
+  async onSocialWk(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(Branch.socialWork, SocialWork.socialWk, ctx);
+  }
+
+  @Action('social_welfare')
+  async onSocialWelfare(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.socialWork,
+      SocialWork.socialWelfare,
+      ctx,
+    );
+  }
+
+  // ======= SERVICE_SECTOR ============================================
+
+  @Action('service_sector')
+  async addServiceSector(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await ctx.answerCbQuery();
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            Markup.button.callback(
+              ServiceSector.hotelRestaurantBusiness,
+              'hotel_restaurant_business',
+            ),
+          ],
+          [Markup.button.callback(ServiceSector.tourism, 'tourism')],
+          [Markup.button.callback('Повернутися', 'back_to_branch')],
+        ],
+      },
+    });
+  }
+
+  // =======
+
+  @Action('hotel_restaurant_business')
+  async onHotelRestaurantBusiness(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.serviceSector,
+      ServiceSector.hotelRestaurantBusiness,
+      ctx,
+    );
+  }
+
+  @Action('tourism')
+  async onTourism(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.serviceSector,
+      ServiceSector.tourism,
+      ctx,
+    );
+  }
+
   // =========================================================================
 
   @Action('back_to_branch')
@@ -1634,6 +2265,28 @@ export class DisciplineScene extends Scenes.BaseScene<
               'electronics_and_telecommunications',
             ),
           ],
+          [
+            Markup.button.callback(
+              Branch.productionAndTechnologies,
+              'production_and_technologies',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              Branch.architectureAndConstruction,
+              'architecture_and_construction',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              Branch.agriculturalSciencesAndFood,
+              'agricultural_sciences_and_food',
+            ),
+          ],
+          [Markup.button.callback(Branch.veterinary, 'veterinary')],
+          [Markup.button.callback(Branch.healthCare, 'health_care')],
+          [Markup.button.callback(Branch.socialWork, 'social_work')],
+          [Markup.button.callback(Branch.serviceSector, 'service_sector')],
         ],
       },
     });
