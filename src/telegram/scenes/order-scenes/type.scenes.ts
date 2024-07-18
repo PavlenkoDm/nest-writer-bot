@@ -13,6 +13,7 @@ import {
   Forbidden,
   onSceneGateFromCommand,
 } from '../helpers-scenes/scene-gate.helper';
+import { Emoji } from 'src/telegram/emoji/emoji';
 
 export enum TypeOfWork {
   coursework = 'Курсові роботи та проєкти',
@@ -41,12 +42,13 @@ export class TypeScene extends Scenes.BaseScene<
   ) {
     ctx.session.__scenes.state.typeOfWork = workType;
     ctx.replyWithHTML(
-      `<b>❕ Вибраний тип роботи:</b>\n"<i>${ctx.session.__scenes.state.typeOfWork}</i>"`,
+      `<b>${Emoji.answer} Вибраний тип роботи:</b>
+      \n"<i>${ctx.session.__scenes.state.typeOfWork}</i>"`,
       Markup.inlineKeyboard([
-        [Markup.button.callback('✅ Далі', 'go-forward')],
+        [Markup.button.callback(`${Emoji.forward} Далі`, 'go-forward')],
         [
           Markup.button.callback(
-            '🚫 Змінити тип роботи',
+            `${Emoji.change} Змінити тип роботи`,
             'change_type_of_work',
           ),
         ],
@@ -57,7 +59,7 @@ export class TypeScene extends Scenes.BaseScene<
   @SceneEnter()
   async onEnterTypeScene(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.replyWithHTML(
-      '<b>❔ Виберіть тип роботи, та натисніть</b>\n  "<b>Далі</b>"',
+      `<b>${Emoji.question} Виберіть тип роботи, та натисніть</b>\n  "<b>Далі</b>"`,
       Markup.inlineKeyboard([
         [Markup.button.callback(TypeOfWork.coursework, 'coursework')],
         [Markup.button.callback(TypeOfWork.bachelor, 'bachelor')],

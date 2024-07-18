@@ -8,6 +8,7 @@ import {
   onFillTypeOfWork,
   WorkType,
 } from './helpers-telegram/work-type.helper';
+import { Emoji } from './emoji/emoji';
 
 type Scenario = 'order' | 'join';
 
@@ -87,16 +88,25 @@ export class TelegramService extends Telegraf<Context> {
   @Command('start_order')
   onStartOrder(@Ctx() ctx: SceneContext<IOrderSceneState>) {
     ctx.replyWithHTML(
-      `<b>Вітаю ${ctx.from.username}!</b>👋\nЦей бот допоможе\nв замовленні роботи.\nТисніть   👇 "Go"   і починаємо.`,
-      Markup.inlineKeyboard([Markup.button.callback('▶️ Go', 'go_order')]),
+      `<b>Вітаю ${ctx.from.username}!</b>${Emoji.greeting}
+      \nЦей бот допоможе в замовленні роботи.
+      \nТисніть   ${Emoji.pushGo} "Go"   і починаємо.`,
+      Markup.inlineKeyboard([
+        Markup.button.callback(`${Emoji.go} Go`, 'go_order'),
+      ]),
     );
   }
 
   @Command('start_join')
   onStartJoin(@Ctx() ctx: SceneContext<IOrderSceneState>) {
     ctx.replyWithHTML(
-      `<b>Вітаю ${ctx.from.username}!</b>👋\nЦей бот допоможе відправити запит\nна приєднання до команди виконавців.\nТисніть   👇 "Join"   і починаємо.`,
-      Markup.inlineKeyboard([Markup.button.callback('▶️ Join', 'go_join')]),
+      `<b>Вітаю ${ctx.from.username}!</b>${Emoji.greeting}
+      \nЦей бот допоможе відправити запит
+      \nна приєднання до команди виконавців.
+      \nТисніть   ${Emoji.pushGo} "Join"   і починаємо.`,
+      Markup.inlineKeyboard([
+        Markup.button.callback(`${Emoji.go} Join`, 'go_join'),
+      ]),
     );
   }
 
@@ -121,7 +131,8 @@ export class TelegramService extends Telegraf<Context> {
       !ctx.session.__scenes.state.uniqueness
     ) {
       await ctx.replyWithHTML(
-        `<b>❕ Вибраний(попередньо) тип роботи:</b>\n"<i>${ctx.session.__scenes.state.typeOfWork}</i>"`,
+        `<b>${Emoji.answer} Вибраний(попередньо) тип роботи:</b>
+        \n"<i>${ctx.session.__scenes.state.typeOfWork}</i>"`,
       );
       await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
       return;

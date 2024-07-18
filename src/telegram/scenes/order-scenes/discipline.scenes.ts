@@ -39,6 +39,9 @@ enum Branch {
   healthCare = 'Охорона здоров’я',
   socialWork = 'Соціальна робота',
   serviceSector = 'Сфера обслуговування',
+  military = 'Воєнні науки, національна безпека, безпека державного кордону',
+  civilSecurity = 'Цивільна безпека',
+  transport = 'Транспорт',
 }
 // =========== Specializations ====================================
 enum EducationSpecialization {
@@ -214,6 +217,28 @@ enum ServiceSector {
   tourism = 'Туризм',
 }
 
+enum Military {
+  stateSecurity = 'Державна безпека',
+  stateBorderSecurity = 'Безпека державного кордону',
+  militaryAdministration = 'Військове управління (за видами збройних сил)',
+  troopSupply = 'Забезпечення військ (сил)',
+  militaryEquipment = 'Озброєння та військова техніка',
+}
+
+enum CivilSecurity {
+  fireSecurity = 'Пожежна безпека',
+  lawEnforcementActivity = 'Правоохоронна діяльність',
+  civilSecur = 'Цивільна безпека',
+}
+
+enum Transport {
+  riverAndSeaTransport = 'Річковий та морський транспорт',
+  aviaTransport = 'Авіаційний транспорт',
+  reilwayTransport = 'Залізничний транспорт',
+  autoTransport = 'Автомобільний транспорт',
+  transportTechnologies = 'Транспортні технології (за видами)',
+}
+
 @Injectable()
 @Scene('DISCIPLINE_SCENE')
 export class DisciplineScene extends Scenes.BaseScene<
@@ -338,6 +363,9 @@ export class DisciplineScene extends Scenes.BaseScene<
         [Markup.button.callback(Branch.healthCare, 'health_care')],
         [Markup.button.callback(Branch.socialWork, 'social_work')],
         [Markup.button.callback(Branch.serviceSector, 'service_sector')],
+        [Markup.button.callback(Branch.military, 'military')],
+        [Markup.button.callback(Branch.civilSecurity, 'civil_security')],
+        [Markup.button.callback(Branch.transport, 'transport')],
       ]),
     );
   }
@@ -2194,6 +2222,216 @@ export class DisciplineScene extends Scenes.BaseScene<
     );
   }
 
+  // ======= MILITARY ============================================
+
+  @Action('military')
+  async addMilitary(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await ctx.answerCbQuery();
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [Markup.button.callback(Military.stateSecurity, 'state_security')],
+          [
+            Markup.button.callback(
+              Military.stateBorderSecurity,
+              'state_border_security',
+            ),
+          ],
+          [
+            Markup.button.callback(
+              Military.militaryAdministration,
+              'military_administration',
+            ),
+          ],
+          [Markup.button.callback(Military.troopSupply, 'troop_supply')],
+          [
+            Markup.button.callback(
+              Military.militaryEquipment,
+              'military_equipment',
+            ),
+          ],
+          [Markup.button.callback('Повернутися', 'back_to_branch')],
+        ],
+      },
+    });
+  }
+
+  // =======
+
+  @Action('state_security')
+  async onStateSecurity(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(Branch.military, Military.stateSecurity, ctx);
+  }
+
+  @Action('state_border_security')
+  async onStateBorderSecurity(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.military,
+      Military.stateBorderSecurity,
+      ctx,
+    );
+  }
+
+  @Action('military_administration')
+  async onMilitaryAdministration(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.military,
+      Military.militaryAdministration,
+      ctx,
+    );
+  }
+
+  @Action('troop_supply')
+  async onTroopSupply(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(Branch.military, Military.troopSupply, ctx);
+  }
+
+  @Action('military_equipment')
+  async onMilitaryEquipment(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.military,
+      Military.militaryEquipment,
+      ctx,
+    );
+  }
+
+  // ======= CIVIL_SECURITY ============================================
+
+  @Action('civil_security')
+  async addCivilSecurity(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await ctx.answerCbQuery();
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [Markup.button.callback(CivilSecurity.fireSecurity, 'fire_security')],
+          [
+            Markup.button.callback(
+              CivilSecurity.lawEnforcementActivity,
+              'law_enforcement_activity',
+            ),
+          ],
+          [Markup.button.callback(CivilSecurity.civilSecur, 'civil_secur')],
+          [Markup.button.callback('Повернутися', 'back_to_branch')],
+        ],
+      },
+    });
+  }
+
+  // =======
+
+  @Action('fire_security')
+  async onFireSecurity(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.civilSecurity,
+      CivilSecurity.fireSecurity,
+      ctx,
+    );
+  }
+
+  @Action('law_enforcement_activity')
+  async onLawEnforcementActivity(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.civilSecurity,
+      CivilSecurity.lawEnforcementActivity,
+      ctx,
+    );
+  }
+
+  @Action('civil_secur')
+  async onCivilSecur(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.civilSecurity,
+      CivilSecurity.civilSecur,
+      ctx,
+    );
+  }
+
+  // ======= TRANSPORT ============================================
+
+  @Action('transport')
+  async addTransport(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await ctx.answerCbQuery();
+    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            Markup.button.callback(
+              Transport.riverAndSeaTransport,
+              'river_and_sea_transport',
+            ),
+          ],
+          [Markup.button.callback(Transport.aviaTransport, 'avia_transport')],
+          [
+            Markup.button.callback(
+              Transport.reilwayTransport,
+              'reilway_transport',
+            ),
+          ],
+          [Markup.button.callback(Transport.autoTransport, 'auto_transport')],
+          [
+            Markup.button.callback(
+              Transport.transportTechnologies,
+              'transport_technologies',
+            ),
+          ],
+          [Markup.button.callback('Повернутися', 'back_to_branch')],
+        ],
+      },
+    });
+  }
+
+  // =======
+
+  @Action('river_and_sea_transport')
+  async onRiverAndSeaTransport(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.transport,
+      Transport.riverAndSeaTransport,
+      ctx,
+    );
+  }
+
+  @Action('avia_transport')
+  async onAviaTransport(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(Branch.transport, Transport.aviaTransport, ctx);
+  }
+
+  @Action('reilway_transport')
+  async onReilwayTransport(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(
+      Branch.transport,
+      Transport.reilwayTransport,
+      ctx,
+    );
+  }
+
+  @Action('auto_transport')
+  async onAutoTransport(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.chooseDiscipline(Branch.transport, Transport.autoTransport, ctx);
+  }
+
+  @Action('transport_technologies')
+  async onTransportTechnologies(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.chooseDiscipline(
+      Branch.transport,
+      Transport.transportTechnologies,
+      ctx,
+    );
+  }
+
   // =========================================================================
 
   @Action('back_to_branch')
@@ -2287,6 +2525,9 @@ export class DisciplineScene extends Scenes.BaseScene<
           [Markup.button.callback(Branch.healthCare, 'health_care')],
           [Markup.button.callback(Branch.socialWork, 'social_work')],
           [Markup.button.callback(Branch.serviceSector, 'service_sector')],
+          [Markup.button.callback(Branch.military, 'military')],
+          [Markup.button.callback(Branch.civilSecurity, 'civil_security')],
+          [Markup.button.callback(Branch.transport, 'transport')],
         ],
       },
     });
