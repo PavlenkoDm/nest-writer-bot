@@ -14,6 +14,7 @@ import {
   Forbidden,
   onSceneGateFromCommand,
 } from '../helpers-scenes/scene-gate.helper';
+import { Emoji } from 'src/telegram/emoji/emoji';
 
 @Injectable()
 @Scene('FINAL_ORDER_SCENE')
@@ -54,25 +55,30 @@ export class FinalOrderScene extends Scenes.BaseScene<
     const isSavedFile = linkToFile ? '[зберегти файл]' : 'відсутні';
 
     ctx.replyWithHTML(
-      `<b>❕ Ваше замовлення:</b>\n\n
-      <b>📌 Тип роботи:</b>  <i>"${typeOfWork}"</i>\n\n
-      <b>📌 Галузь знань:</b>  <i>"${branch}"</i>\n\n
-      <b>📌 Спеціалізація:</b>  <i>"${specialization}"</i>\n\n
-      <b>📌 Тема:</b>  <i>"${isTheme}"</i>\n\n
-      <b>📌 Відсоток унікальності (%):</b>  <i>${isUniqueness}</i>\n\n
-      <b>⏳ Термін виконання:</b>  <i>"${timeLimit}"</i>\n\n
-      <b>📔 Додаткові матеріали:</b>  <i><a href="${isLinkToFile}">${isSavedFile}</a></i>\n\n
-      <b>📝 Коментар:</b>  <i>${isComment}</i>
+      `<b>${Emoji.alert} Ваше замовлення:</b>\n\n
+      <b>${Emoji.pin} Тип роботи:</b>  <i>"${typeOfWork}"</i>\n\n
+      <b>${Emoji.pin} Галузь знань:</b>  <i>"${branch}"</i>\n\n
+      <b>${Emoji.pin} Спеціалізація:</b>  <i>"${specialization}"</i>\n\n
+      <b>${Emoji.pin} Тема:</b>  <i>"${isTheme}"</i>\n\n
+      <b>${Emoji.pin} Відсоток унікальності (%):</b>  <i>${isUniqueness}</i>\n\n
+      <b>${Emoji.time} Термін виконання:</b>  <i>"${timeLimit}"</i>\n\n
+      <b>${Emoji.book} Додаткові матеріали:</b>  <i><a href="${isLinkToFile}">${isSavedFile}</a></i>\n\n
+      <b>${Emoji.note} Коментар:</b>  <i>${isComment}</i>
       `,
       Markup.inlineKeyboard([
         [
           Markup.button.callback(
-            '📤 Відправити замовлення менеджеру',
+            `${Emoji.send} Відправити замовлення менеджеру`,
             'send_order',
           ),
         ],
-        [Markup.button.callback('🔄 Restart', 'restart')],
-        [Markup.button.callback('🚫 Відмінити замовлення', 'break_order')],
+        [Markup.button.callback(`${Emoji.restart} Restart`, 'restart')],
+        [
+          Markup.button.callback(
+            `${Emoji.change} Відмінити замовлення`,
+            'break_order',
+          ),
+        ],
       ]),
     );
   }
@@ -102,20 +108,20 @@ export class FinalOrderScene extends Scenes.BaseScene<
 
     const message = `
     <b>Замовлення від:</b>  <i>@${ctx.from.username}</i>\n\n
-    <b>📌 Тип роботи:</b>  <i>"${typeOfWork}"</i>\n\n
-    <b>📌 Галузь знань:</b>  <i>"${branch}"</i>\n\n
-    <b>📌 Спеціалізація:</b>  <i>"${specialization}"</i>\n\n
-    <b>📌 Тема:</b>  <i>"${isTheme}"</i>\n\n
-    <b>📌 Відсоток унікальності (%):</b>  <i>${isUniqueness}</i>\n\n
-    <b>⏳ Термін виконання:</b>  <i>"${timeLimit}"</i>\n\n
-    <b>📔 Додаткові матеріали:</b>  <i><a href="${isLinkToFile}">${isSavedFile}</a></i>\n\n
-    <b>📝 Коментар:</b>  <i>${isComment}</i>
+    <b>${Emoji.pin} Тип роботи:</b>  <i>"${typeOfWork}"</i>\n\n
+    <b>${Emoji.pin} Галузь знань:</b>  <i>"${branch}"</i>\n\n
+    <b>${Emoji.pin} Спеціалізація:</b>  <i>"${specialization}"</i>\n\n
+    <b>${Emoji.pin} Тема:</b>  <i>"${isTheme}"</i>\n\n
+    <b>${Emoji.pin} Відсоток унікальності (%):</b>  <i>${isUniqueness}</i>\n\n
+    <b>${Emoji.time} Термін виконання:</b>  <i>"${timeLimit}"</i>\n\n
+    <b>${Emoji.book} Додаткові матеріали:</b>  <i><a href="${isLinkToFile}">${isSavedFile}</a></i>\n\n
+    <b>${Emoji.note} Коментар:</b>  <i>${isComment}</i>
     `;
     await ctx.telegram.sendMessage(this.chatId, message, {
       parse_mode: 'HTML',
     });
     await ctx.replyWithHTML(
-      '<b>👍 Замовлення відправлено!</b> Чекайте на зв’язок з менеджером.',
+      `<b>${Emoji.answer} Замовлення відправлено!</b> Чекайте на зв’язок з менеджером.`,
     );
     await ctx.scene.leave();
   }
@@ -133,7 +139,7 @@ export class FinalOrderScene extends Scenes.BaseScene<
     ctx.session.__scenes.state = {};
     await ctx.answerCbQuery();
     await ctx.editMessageText(
-      '<b>😔 Замовлення відмінено.</b>\n\n😉 Але... Якщо натиснути <i>/start_order</i> - почнемо знову!',
+      `<b>${Emoji.sad} Замовлення відмінено.</b>\n\n${Emoji.wink} Але... Якщо натиснути <i>/start_order</i> - почнемо знову!`,
       {
         parse_mode: 'HTML',
       },

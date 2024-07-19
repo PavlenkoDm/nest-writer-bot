@@ -9,6 +9,7 @@ import {
   WorkType,
 } from './helpers-telegram/work-type.helper';
 import { Emoji } from './emoji/emoji';
+import { IJoinSceneState } from './scenes/join-scenes/join.config';
 
 type Scenario = 'order' | 'join';
 
@@ -17,6 +18,8 @@ interface IncomingData {
   workType?: WorkType;
   expertiseArea?: string;
 }
+
+export type MyOrderJoinContext = IOrderSceneState & IJoinSceneState;
 
 @Injectable()
 @Update()
@@ -40,7 +43,7 @@ export class TelegramService extends Telegraf<Context> {
   }
 
   @Start()
-  async onStart(@Ctx() ctx: SceneContext<IOrderSceneState>) {
+  async onStart(@Ctx() ctx: SceneContext<MyOrderJoinContext>) {
     const startPayload = ctx.text.trim().split(' ')[1];
     if (!startPayload) {
       return;
@@ -98,11 +101,10 @@ export class TelegramService extends Telegraf<Context> {
   }
 
   @Command('start_join')
-  onStartJoin(@Ctx() ctx: SceneContext<IOrderSceneState>) {
+  onStartJoin(@Ctx() ctx: SceneContext<IJoinSceneState>) {
     ctx.replyWithHTML(
       `<b>Вітаю ${ctx.from.username}!</b>${Emoji.greeting}
-      \nЦей бот допоможе відправити запит
-      \nна приєднання до команди виконавців.
+      \nДякуємо, що вирішили приєднатися до нашої команди виконавців. Будь ласка, дайте відповіді на наступні запитання, щоб ми могли додати Вас до нашої бази виконавців.
       \nТисніть   ${Emoji.pushGo} "Join"   і починаємо.`,
       Markup.inlineKeyboard([
         Markup.button.callback(`${Emoji.go} Join`, 'go_join'),
@@ -138,5 +140,17 @@ export class TelegramService extends Telegraf<Context> {
       return;
     }
     ctx.scene.enter('TYPE_SCENE');
+  }
+
+  @Action('go_join')
+  async onGoJoin(@Ctx() ctx: SceneContext<IJoinSceneState>) {
+    if (!ctx.session.__scenes.state) {
+      ctx.session.__scenes.state = {};
+      ctx.session.__scenes.state.isJoinScenario = true;
+      ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
+      return;
+    } else {
+      ctx.scene.enter('FULL_NAME_SCENE');
+    }
   }
 }

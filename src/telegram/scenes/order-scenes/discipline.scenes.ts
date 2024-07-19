@@ -13,6 +13,7 @@ import {
   Forbidden,
   onSceneGateFromCommand,
 } from '../helpers-scenes/scene-gate.helper';
+import { Emoji } from 'src/telegram/emoji/emoji';
 
 enum Branch {
   education = 'Освіта',
@@ -259,12 +260,15 @@ export class DisciplineScene extends Scenes.BaseScene<
     ctx.session.__scenes.state.discipline.branch = branch;
     ctx.session.__scenes.state.discipline.specialization = specialization;
     await ctx.replyWithHTML(
-      `<b>❕ Вибрана галузь знань:</b>\n"<i>${ctx.session.__scenes.state.discipline.branch}</i>"\n\n<b>❕ Вибрана спеціальність:</b>\n"<i>${ctx.session.__scenes.state.discipline.specialization}</i>"`,
+      `<b>${Emoji.answer} Вибрана галузь знань:</b>
+      \n"<i>${ctx.session.__scenes.state.discipline.branch}</i>"
+      \n\n<b>${Emoji.answer} Вибрана спеціальність:</b>
+      \n"<i>${ctx.session.__scenes.state.discipline.specialization}</i>"`,
       Markup.inlineKeyboard([
-        [Markup.button.callback('✅ Далі', 'go-forward')],
+        [Markup.button.callback(`${Emoji.forward} Далі`, 'go-forward')],
         [
           Markup.button.callback(
-            '🚫 Змінити галузь та спеціалізацію',
+            `${Emoji.change} Змінити галузь та спеціалізацію`,
             'change_discipline',
           ),
         ],
@@ -277,7 +281,7 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.replyWithHTML(
-      '<b>❔ Виберіть галузь знань:</b>',
+      `<b>${Emoji.question} Виберіть галузь знань:</b>`,
       Markup.inlineKeyboard([
         [Markup.button.callback(Branch.education, 'education')],
         [Markup.button.callback(Branch.сultureAndArt, 'сulture_and_art')],
@@ -375,56 +379,64 @@ export class DisciplineScene extends Scenes.BaseScene<
   @Action('education')
   async addEducation(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            Markup.button.callback(
-              EducationSpecialization.sciencesAboutEducation,
-              'sciences_about_education',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                EducationSpecialization.sciencesAboutEducation,
+                'sciences_about_education',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                EducationSpecialization.preSchoolEducation,
+                'pre_school_education',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                EducationSpecialization.primaryEducation,
+                'primary_education',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                EducationSpecialization.secondaryEducation,
+                'secondary_education',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                EducationSpecialization.professionalEducation,
+                'professional_education',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                EducationSpecialization.specialEducation,
+                'special_education',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                EducationSpecialization.physicalCultureAndSports,
+                'physical_culture_and_sports',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [
-            Markup.button.callback(
-              EducationSpecialization.preSchoolEducation,
-              'pre_school_education',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              EducationSpecialization.primaryEducation,
-              'primary_education',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              EducationSpecialization.secondaryEducation,
-              'secondary_education',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              EducationSpecialization.professionalEducation,
-              'professional_education',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              EducationSpecialization.specialEducation,
-              'special_education',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              EducationSpecialization.physicalCultureAndSports,
-              'physical_culture_and_sports',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -507,48 +519,61 @@ export class DisciplineScene extends Scenes.BaseScene<
   @Action('сulture_and_art')
   async addCultureAndArt(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            Markup.button.callback(
-              CultureAndArt.audiovisualArtAndProduction,
-              'audiovisual_art_and_production',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                CultureAndArt.audiovisualArtAndProduction,
+                'audiovisual_art_and_production',
+              ),
+            ],
+            [Markup.button.callback(CultureAndArt.design, 'design')],
+            [
+              Markup.button.callback(
+                CultureAndArt.fineArtDecorativeRestoration,
+                'fine_art_decorative_restoration',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                CultureAndArt.choreography,
+                'choreography',
+              ),
+            ],
+            [Markup.button.callback(CultureAndArt.musicalArt, 'musical_art')],
+            [Markup.button.callback(CultureAndArt.stageArt, 'stage_art')],
+            [
+              Markup.button.callback(
+                CultureAndArt.museumMonument,
+                'museum_monument',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                CultureAndArt.socioCulturalActivities,
+                'socio_cultural_activities',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                CultureAndArt.libraryAndArchivalAffairs,
+                'library_and_archival_affairs',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [Markup.button.callback(CultureAndArt.design, 'design')],
-          [
-            Markup.button.callback(
-              CultureAndArt.fineArtDecorativeRestoration,
-              'fine_art_decorative_restoration',
-            ),
-          ],
-          [Markup.button.callback(CultureAndArt.choreography, 'choreography')],
-          [Markup.button.callback(CultureAndArt.musicalArt, 'musical_art')],
-          [Markup.button.callback(CultureAndArt.stageArt, 'stage_art')],
-          [
-            Markup.button.callback(
-              CultureAndArt.museumMonument,
-              'museum_monument',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              CultureAndArt.socioCulturalActivities,
-              'socio_cultural_activities',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              CultureAndArt.libraryAndArchivalAffairs,
-              'library_and_archival_affairs',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -647,29 +672,37 @@ export class DisciplineScene extends Scenes.BaseScene<
   @Action('humanities')
   async addHumanities(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            Markup.button.callback(
-              Humanities.religiousStudies,
-              'religious_studies',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                Humanities.religiousStudies,
+                'religious_studies',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                Humanities.historyAndArchaeology,
+                'history_and_archaeology',
+              ),
+            ],
+            [Markup.button.callback(Humanities.philosophy, 'philosophy')],
+            [Markup.button.callback(Humanities.culturology, 'culturology')],
+            [Markup.button.callback(Humanities.philology, 'philology')],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [
-            Markup.button.callback(
-              Humanities.historyAndArchaeology,
-              'history_and_archaeology',
-            ),
-          ],
-          [Markup.button.callback(Humanities.philosophy, 'philosophy')],
-          [Markup.button.callback(Humanities.culturology, 'culturology')],
-          [Markup.button.callback(Humanities.philology, 'philology')],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -738,50 +771,58 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            Markup.button.callback(
-              SocialAndBehavioralSciences.economy,
-              'economy',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                SocialAndBehavioralSciences.economy,
+                'economy',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                SocialAndBehavioralSciences.politology,
+                'politology',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                SocialAndBehavioralSciences.psychology,
+                'psychology',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                SocialAndBehavioralSciences.sociology,
+                'sociology',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                SocialAndBehavioralSciences.irpsAndRs,
+                'irpsAndRs',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                SocialAndBehavioralSciences.interEconomRel,
+                'interEconomRel',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [
-            Markup.button.callback(
-              SocialAndBehavioralSciences.politology,
-              'politology',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              SocialAndBehavioralSciences.psychology,
-              'psychology',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              SocialAndBehavioralSciences.sociology,
-              'sociology',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              SocialAndBehavioralSciences.irpsAndRs,
-              'irpsAndRs',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              SocialAndBehavioralSciences.interEconomRel,
-              'interEconomRel',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -856,50 +897,58 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            Markup.button.callback(
-              ManagementAndAdministration.accountingAndTaxation,
-              'accounting_and_taxation',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                ManagementAndAdministration.accountingAndTaxation,
+                'accounting_and_taxation',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ManagementAndAdministration.financeBankingAndInsurance,
+                'finance_banking_and_insurance',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ManagementAndAdministration.management,
+                'management',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ManagementAndAdministration.publicManagementAndAdministration,
+                'public_management_and_administration',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ManagementAndAdministration.marketing,
+                'marketing',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ManagementAndAdministration.entrepreneurshipTradeAndExchangeActivity,
+                'entrepreneurship_trade_and_exchange_activity',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [
-            Markup.button.callback(
-              ManagementAndAdministration.financeBankingAndInsurance,
-              'finance_banking_and_insurance',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              ManagementAndAdministration.management,
-              'management',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              ManagementAndAdministration.publicManagementAndAdministration,
-              'public_management_and_administration',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              ManagementAndAdministration.marketing,
-              'marketing',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              ManagementAndAdministration.entrepreneurshipTradeAndExchangeActivity,
-              'entrepreneurship_trade_and_exchange_activity',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -971,16 +1020,24 @@ export class DisciplineScene extends Scenes.BaseScene<
   @Action('law')
   async addLaw(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [Markup.button.callback(Law.law, 'local_law')],
-          [Markup.button.callback(Law.internationalLaw, 'internationalLaw')],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [Markup.button.callback(Law.law, 'local_law')],
+            [Markup.button.callback(Law.internationalLaw, 'internationalLaw')],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
+          ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -1009,34 +1066,42 @@ export class DisciplineScene extends Scenes.BaseScene<
   @Action('natural_sciences')
   async addNaturalSciences(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [Markup.button.callback(NaturalSciences.ecology, 'ecology')],
-          [Markup.button.callback(NaturalSciences.chemistry, 'chemistry')],
-          [
-            Markup.button.callback(
-              NaturalSciences.earthSciences,
-              'earth_sciences',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [Markup.button.callback(NaturalSciences.ecology, 'ecology')],
+            [Markup.button.callback(NaturalSciences.chemistry, 'chemistry')],
+            [
+              Markup.button.callback(
+                NaturalSciences.earthSciences,
+                'earth_sciences',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                NaturalSciences.physicsAndAstronomy,
+                'physics_and_astronomy',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                NaturalSciences.appliedPhysicsAndNanomaterials,
+                'applied_physics_and_nanomaterials',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [
-            Markup.button.callback(
-              NaturalSciences.physicsAndAstronomy,
-              'physics_and_astronomy',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              NaturalSciences.appliedPhysicsAndNanomaterials,
-              'applied_physics_and_nanomaterials',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -1097,32 +1162,40 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            Markup.button.callback(
-              MathematicsAndStatistics.mathematic,
-              'mathematic',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                MathematicsAndStatistics.mathematic,
+                'mathematic',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                MathematicsAndStatistics.statistics,
+                'statistics',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                MathematicsAndStatistics.appliedMathematics,
+                'appliedMathematics',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [
-            Markup.button.callback(
-              MathematicsAndStatistics.statistics,
-              'statistics',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              MathematicsAndStatistics.appliedMathematics,
-              'appliedMathematics',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -1163,44 +1236,52 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            Markup.button.callback(
-              InformationTechnology.softwareEngineering,
-              'software_engineering',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                InformationTechnology.softwareEngineering,
+                'software_engineering',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                InformationTechnology.computerScienceAndInformationTechnology,
+                'computer_science_and_information_technology',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                InformationTechnology.computerEngineering,
+                'computer_engineering',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                InformationTechnology.systemAnalysis,
+                'system_analysis',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                InformationTechnology.cyberSecurity,
+                'cyber_security',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [
-            Markup.button.callback(
-              InformationTechnology.computerScienceAndInformationTechnology,
-              'computer_science_and_information_technology',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              InformationTechnology.computerEngineering,
-              'computer_engineering',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              InformationTechnology.systemAnalysis,
-              'system_analysis',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              InformationTechnology.cyberSecurity,
-              'cyber_security',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -1263,50 +1344,58 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            Markup.button.callback(
-              MechanicalEngineering.appliedMechanics,
-              'applied_mechanics',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                MechanicalEngineering.appliedMechanics,
+                'applied_mechanics',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                MechanicalEngineering.materialsScience,
+                'materials_science',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                MechanicalEngineering.industrialEngineering,
+                'industrial_engineering',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                MechanicalEngineering.aviationAndRocketSpaceTechnology,
+                'aviation_and_rocket_space_technology',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                MechanicalEngineering.shipbuilding,
+                'shipbuilding',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                MechanicalEngineering.metallurgy,
+                'metallurgy',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [
-            Markup.button.callback(
-              MechanicalEngineering.materialsScience,
-              'materials_science',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              MechanicalEngineering.industrialEngineering,
-              'industrial_engineering',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              MechanicalEngineering.aviationAndRocketSpaceTechnology,
-              'aviation_and_rocket_space_technology',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              MechanicalEngineering.shipbuilding,
-              'shipbuilding',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              MechanicalEngineering.metallurgy,
-              'metallurgy',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -1376,44 +1465,52 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            Markup.button.callback(
-              ElectricalEngineering.electricPowerEngineeringAndElectromechanics,
-              'electric_power_engineering_and_electromechanics',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                ElectricalEngineering.electricPowerEngineeringAndElectromechanics,
+                'electric_power_engineering_and_electromechanics',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ElectricalEngineering.energyEngineering,
+                'energy_engineering',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ElectricalEngineering.atomicEnergy,
+                'atomic_energy',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ElectricalEngineering.thermalPower,
+                'thermal_power',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ElectricalEngineering.hydroPower,
+                'hydro_power',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [
-            Markup.button.callback(
-              ElectricalEngineering.energyEngineering,
-              'energy_engineering',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              ElectricalEngineering.atomicEnergy,
-              'atomic_energy',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              ElectricalEngineering.thermalPower,
-              'thermal_power',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              ElectricalEngineering.hydroPower,
-              'hydro_power',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -1472,32 +1569,40 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            Markup.button.callback(
-              AutomationAndInstrumentation.automationAndComputerIntegratedTechnologies,
-              'automation_and_computer_integrated_technologies',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                AutomationAndInstrumentation.automationAndComputerIntegratedTechnologies,
+                'automation_and_computer_integrated_technologies',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                AutomationAndInstrumentation.metrologyAndInformationMeasuringTechnology,
+                'metrology_and_information_measuring_technology',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                AutomationAndInstrumentation.microAndNanosystemTechnology,
+                'micro_and_nanosystem_technology',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [
-            Markup.button.callback(
-              AutomationAndInstrumentation.metrologyAndInformationMeasuringTechnology,
-              'metrology_and_information_measuring_technology',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              AutomationAndInstrumentation.microAndNanosystemTechnology,
-              'micro_and_nanosystem_technology',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -1542,32 +1647,40 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            Markup.button.callback(
-              ChemicalAndBioengineering.chemicalTechnologiesAndEngineering,
-              'chemical_technologies_and_engineering',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                ChemicalAndBioengineering.chemicalTechnologiesAndEngineering,
+                'chemical_technologies_and_engineering',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ChemicalAndBioengineering.biotechnologyAndBioengineering,
+                'biotechnology_and_bioengineering',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ChemicalAndBioengineering.biomedicalEngineering,
+                'biomedical_engineering',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [
-            Markup.button.callback(
-              ChemicalAndBioengineering.biotechnologyAndBioengineering,
-              'biotechnology_and_bioengineering',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              ChemicalAndBioengineering.biomedicalEngineering,
-              'biomedical_engineering',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -1612,32 +1725,40 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            Markup.button.callback(
-              ElectronicsAndTelecommunications.electronics,
-              'electronics',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                ElectronicsAndTelecommunications.electronics,
+                'electronics',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ElectronicsAndTelecommunications.telecommunicationsAndRadioEngineering,
+                'telecommunications_and_radio_engineering',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ElectronicsAndTelecommunications.avionics,
+                'avionics',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [
-            Markup.button.callback(
-              ElectronicsAndTelecommunications.telecommunicationsAndRadioEngineering,
-              'telecommunications_and_radio_engineering',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              ElectronicsAndTelecommunications.avionics,
-              'avionics',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -1678,45 +1799,58 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            Markup.button.callback(
-              ProductionAndTechnologies.foodTechnologies,
-              'food_technologies',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                ProductionAndTechnologies.foodTechnologies,
+                'food_technologies',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ProductionAndTechnologies.lightIndustryTechnologies,
+                'light_industry_technologies',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ProductionAndTechnologies.environmentalProtectionTechnologies,
+                'environmental_protection_technologies',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ProductionAndTechnologies.mining,
+                'mining',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ProductionAndTechnologies.oilGasEngineeringTechnologies,
+                'oil_gas_engineering_technologies',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ProductionAndTechnologies.publishingAndPrinting,
+                'publishing_and_printing',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [
-            Markup.button.callback(
-              ProductionAndTechnologies.lightIndustryTechnologies,
-              'light_industry_technologies',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              ProductionAndTechnologies.environmentalProtectionTechnologies,
-              'environmental_protection_technologies',
-            ),
-          ],
-          [Markup.button.callback(ProductionAndTechnologies.mining, 'mining')],
-          [
-            Markup.button.callback(
-              ProductionAndTechnologies.oilGasEngineeringTechnologies,
-              'oil_gas_engineering_technologies',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              ProductionAndTechnologies.publishingAndPrinting,
-              'publishing_and_printing',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -1790,32 +1924,40 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            Markup.button.callback(
-              ArchitectureAndConstruction.architectureAndUrbanPlanning,
-              'architecture_and_urban_planning',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                ArchitectureAndConstruction.architectureAndUrbanPlanning,
+                'architecture_and_urban_planning',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ArchitectureAndConstruction.constructionAndCivilEngineering,
+                'construction_and_civil_engineering',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                ArchitectureAndConstruction.geodesyAndLandManagement,
+                'geodesy_and_land_management',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [
-            Markup.button.callback(
-              ArchitectureAndConstruction.constructionAndCivilEngineering,
-              'construction_and_civil_engineering',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              ArchitectureAndConstruction.geodesyAndLandManagement,
-              'geodesy_and_land_management',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -1860,62 +2002,70 @@ export class DisciplineScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            Markup.button.callback(
-              AgriculturalSciencesAndFood.agronomy,
-              'agronomy',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                AgriculturalSciencesAndFood.agronomy,
+                'agronomy',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                AgriculturalSciencesAndFood.plantsProtectionAndQuarantine,
+                'plants_protection_and_quarantine',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                AgriculturalSciencesAndFood.gardeningAndViticulture,
+                'gardening_and_viticulture',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                AgriculturalSciencesAndFood.animalHusbandryProductsProduction,
+                'animal_husbandry_products_production',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                AgriculturalSciencesAndFood.forestry,
+                'forestry',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                AgriculturalSciencesAndFood.horticulture,
+                'horticulture',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                AgriculturalSciencesAndFood.bioresourcesAndAquaculture,
+                'bioresources_and_aquaculture',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                AgriculturalSciencesAndFood.agriculturalEngineering,
+                'agricultural_engineering',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [
-            Markup.button.callback(
-              AgriculturalSciencesAndFood.plantsProtectionAndQuarantine,
-              'plants_protection_and_quarantine',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              AgriculturalSciencesAndFood.gardeningAndViticulture,
-              'gardening_and_viticulture',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              AgriculturalSciencesAndFood.animalHusbandryProductsProduction,
-              'animal_husbandry_products_production',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              AgriculturalSciencesAndFood.forestry,
-              'forestry',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              AgriculturalSciencesAndFood.horticulture,
-              'horticulture',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              AgriculturalSciencesAndFood.bioresourcesAndAquaculture,
-              'bioresources_and_aquaculture',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              AgriculturalSciencesAndFood.agriculturalEngineering,
-              'agricultural_engineering',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -2007,26 +2157,34 @@ export class DisciplineScene extends Scenes.BaseScene<
   @Action('veterinary')
   async addVeterinary(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            Markup.button.callback(
-              Veterinary.veterinaryMedicine,
-              'veterinary_medicine',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                Veterinary.veterinaryMedicine,
+                'veterinary_medicine',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                Veterinary.veterinaryHygieneSanitationAndExpertise,
+                'veterinary_hygiene_sanitation_and_expertise',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [
-            Markup.button.callback(
-              Veterinary.veterinaryHygieneSanitationAndExpertise,
-              'veterinary_hygiene_sanitation_and_expertise',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -2058,36 +2216,44 @@ export class DisciplineScene extends Scenes.BaseScene<
   @Action('health_care')
   async addHealthCare(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [Markup.button.callback(HealthCare.dentistry, 'dentistry')],
-          [Markup.button.callback(HealthCare.medicine, 'medicine')],
-          [Markup.button.callback(HealthCare.nursing, 'nursing')],
-          [
-            Markup.button.callback(
-              HealthCare.medicalTechnologiesDiagnosisAndTreatment,
-              'medical_technologies_diagnosis_and_treatment',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [Markup.button.callback(HealthCare.dentistry, 'dentistry')],
+            [Markup.button.callback(HealthCare.medicine, 'medicine')],
+            [Markup.button.callback(HealthCare.nursing, 'nursing')],
+            [
+              Markup.button.callback(
+                HealthCare.medicalTechnologiesDiagnosisAndTreatment,
+                'medical_technologies_diagnosis_and_treatment',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                HealthCare.medicalAndPsychologicalRehabilitation,
+                'medical_and_psychological_rehabilitation',
+              ),
+            ],
+            [Markup.button.callback(HealthCare.pharmacy, 'pharmacy')],
+            [
+              Markup.button.callback(
+                HealthCare.physicalRehabilitation,
+                'physical_rehabilitation',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [
-            Markup.button.callback(
-              HealthCare.medicalAndPsychologicalRehabilitation,
-              'medical_and_psychological_rehabilitation',
-            ),
-          ],
-          [Markup.button.callback(HealthCare.pharmacy, 'pharmacy')],
-          [
-            Markup.button.callback(
-              HealthCare.physicalRehabilitation,
-              'physical_rehabilitation',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -2150,16 +2316,29 @@ export class DisciplineScene extends Scenes.BaseScene<
   @Action('social_work')
   async addSocialWork(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [Markup.button.callback(SocialWork.socialWk, 'social_wk')],
-          [Markup.button.callback(SocialWork.socialWelfare, 'social_welfare')],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [Markup.button.callback(SocialWork.socialWk, 'social_wk')],
+            [
+              Markup.button.callback(
+                SocialWork.socialWelfare,
+                'social_welfare',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
+          ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -2183,21 +2362,29 @@ export class DisciplineScene extends Scenes.BaseScene<
   @Action('service_sector')
   async addServiceSector(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            Markup.button.callback(
-              ServiceSector.hotelRestaurantBusiness,
-              'hotel_restaurant_business',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                ServiceSector.hotelRestaurantBusiness,
+                'hotel_restaurant_business',
+              ),
+            ],
+            [Markup.button.callback(ServiceSector.tourism, 'tourism')],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [Markup.button.callback(ServiceSector.tourism, 'tourism')],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -2227,34 +2414,42 @@ export class DisciplineScene extends Scenes.BaseScene<
   @Action('military')
   async addMilitary(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [Markup.button.callback(Military.stateSecurity, 'state_security')],
-          [
-            Markup.button.callback(
-              Military.stateBorderSecurity,
-              'state_border_security',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [Markup.button.callback(Military.stateSecurity, 'state_security')],
+            [
+              Markup.button.callback(
+                Military.stateBorderSecurity,
+                'state_border_security',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                Military.militaryAdministration,
+                'military_administration',
+              ),
+            ],
+            [Markup.button.callback(Military.troopSupply, 'troop_supply')],
+            [
+              Markup.button.callback(
+                Military.militaryEquipment,
+                'military_equipment',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [
-            Markup.button.callback(
-              Military.militaryAdministration,
-              'military_administration',
-            ),
-          ],
-          [Markup.button.callback(Military.troopSupply, 'troop_supply')],
-          [
-            Markup.button.callback(
-              Military.militaryEquipment,
-              'military_equipment',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -2305,22 +2500,35 @@ export class DisciplineScene extends Scenes.BaseScene<
   @Action('civil_security')
   async addCivilSecurity(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [Markup.button.callback(CivilSecurity.fireSecurity, 'fire_security')],
-          [
-            Markup.button.callback(
-              CivilSecurity.lawEnforcementActivity,
-              'law_enforcement_activity',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                CivilSecurity.fireSecurity,
+                'fire_security',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                CivilSecurity.lawEnforcementActivity,
+                'law_enforcement_activity',
+              ),
+            ],
+            [Markup.button.callback(CivilSecurity.civilSecur, 'civil_secur')],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [Markup.button.callback(CivilSecurity.civilSecur, 'civil_secur')],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -2359,34 +2567,42 @@ export class DisciplineScene extends Scenes.BaseScene<
   @Action('transport')
   async addTransport(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть спеціальність:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            Markup.button.callback(
-              Transport.riverAndSeaTransport,
-              'river_and_sea_transport',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть спеціальність:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              Markup.button.callback(
+                Transport.riverAndSeaTransport,
+                'river_and_sea_transport',
+              ),
+            ],
+            [Markup.button.callback(Transport.aviaTransport, 'avia_transport')],
+            [
+              Markup.button.callback(
+                Transport.reilwayTransport,
+                'reilway_transport',
+              ),
+            ],
+            [Markup.button.callback(Transport.autoTransport, 'auto_transport')],
+            [
+              Markup.button.callback(
+                Transport.transportTechnologies,
+                'transport_technologies',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                `${Emoji.back} Повернутися`,
+                'back_to_branch',
+              ),
+            ],
           ],
-          [Markup.button.callback(Transport.aviaTransport, 'avia_transport')],
-          [
-            Markup.button.callback(
-              Transport.reilwayTransport,
-              'reilway_transport',
-            ),
-          ],
-          [Markup.button.callback(Transport.autoTransport, 'auto_transport')],
-          [
-            Markup.button.callback(
-              Transport.transportTechnologies,
-              'transport_technologies',
-            ),
-          ],
-          [Markup.button.callback('Повернутися', 'back_to_branch')],
-        ],
+        },
       },
-    });
+    );
   }
 
   // =======
@@ -2437,100 +2653,108 @@ export class DisciplineScene extends Scenes.BaseScene<
   @Action('back_to_branch')
   async backToBranch(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('<b>❔ Виберіть галузь знань:</b>', {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [Markup.button.callback(Branch.education, 'education')],
-          [Markup.button.callback(Branch.сultureAndArt, 'сulture_and_art')],
-          [Markup.button.callback(Branch.humanities, 'humanities')],
-          [Markup.button.callback(Branch.theology, 'theology')],
-          [
-            Markup.button.callback(
-              Branch.socialAndBehavioralSciences,
-              'social_and_behavioral_sciences',
-            ),
+    await ctx.editMessageText(
+      `<b>${Emoji.question} Виберіть галузь знань:</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [Markup.button.callback(Branch.education, 'education')],
+            [Markup.button.callback(Branch.сultureAndArt, 'сulture_and_art')],
+            [Markup.button.callback(Branch.humanities, 'humanities')],
+            [Markup.button.callback(Branch.theology, 'theology')],
+            [
+              Markup.button.callback(
+                Branch.socialAndBehavioralSciences,
+                'social_and_behavioral_sciences',
+              ),
+            ],
+            [Markup.button.callback(Branch.journalism, 'journalism')],
+            [
+              Markup.button.callback(
+                Branch.managementAndAdministration,
+                'management_and_administration',
+              ),
+            ],
+            [Markup.button.callback(Branch.law, 'law')],
+            [Markup.button.callback(Branch.biology, 'biology')],
+            [
+              Markup.button.callback(
+                Branch.naturalSciences,
+                'natural_sciences',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                Branch.mathematicsAndStatistics,
+                'mathematics_and_statistics',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                Branch.informationTechnology,
+                'information_technology',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                Branch.mechanicalEngineering,
+                'mechanical_engineering',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                Branch.electricalEngineering,
+                'electrical_engineering',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                Branch.automationAndInstrumentation,
+                'automation_and_instrumentation',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                Branch.chemicalAndBioengineering,
+                'chemical_and_bioengineering',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                Branch.electronicsAndTelecommunications,
+                'electronics_and_telecommunications',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                Branch.productionAndTechnologies,
+                'production_and_technologies',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                Branch.architectureAndConstruction,
+                'architecture_and_construction',
+              ),
+            ],
+            [
+              Markup.button.callback(
+                Branch.agriculturalSciencesAndFood,
+                'agricultural_sciences_and_food',
+              ),
+            ],
+            [Markup.button.callback(Branch.veterinary, 'veterinary')],
+            [Markup.button.callback(Branch.healthCare, 'health_care')],
+            [Markup.button.callback(Branch.socialWork, 'social_work')],
+            [Markup.button.callback(Branch.serviceSector, 'service_sector')],
+            [Markup.button.callback(Branch.military, 'military')],
+            [Markup.button.callback(Branch.civilSecurity, 'civil_security')],
+            [Markup.button.callback(Branch.transport, 'transport')],
           ],
-          [Markup.button.callback(Branch.journalism, 'journalism')],
-          [
-            Markup.button.callback(
-              Branch.managementAndAdministration,
-              'management_and_administration',
-            ),
-          ],
-          [Markup.button.callback(Branch.law, 'law')],
-          [Markup.button.callback(Branch.biology, 'biology')],
-          [Markup.button.callback(Branch.naturalSciences, 'natural_sciences')],
-          [
-            Markup.button.callback(
-              Branch.mathematicsAndStatistics,
-              'mathematics_and_statistics',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              Branch.informationTechnology,
-              'information_technology',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              Branch.mechanicalEngineering,
-              'mechanical_engineering',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              Branch.electricalEngineering,
-              'electrical_engineering',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              Branch.automationAndInstrumentation,
-              'automation_and_instrumentation',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              Branch.chemicalAndBioengineering,
-              'chemical_and_bioengineering',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              Branch.electronicsAndTelecommunications,
-              'electronics_and_telecommunications',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              Branch.productionAndTechnologies,
-              'production_and_technologies',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              Branch.architectureAndConstruction,
-              'architecture_and_construction',
-            ),
-          ],
-          [
-            Markup.button.callback(
-              Branch.agriculturalSciencesAndFood,
-              'agricultural_sciences_and_food',
-            ),
-          ],
-          [Markup.button.callback(Branch.veterinary, 'veterinary')],
-          [Markup.button.callback(Branch.healthCare, 'health_care')],
-          [Markup.button.callback(Branch.socialWork, 'social_work')],
-          [Markup.button.callback(Branch.serviceSector, 'service_sector')],
-          [Markup.button.callback(Branch.military, 'military')],
-          [Markup.button.callback(Branch.civilSecurity, 'civil_security')],
-          [Markup.button.callback(Branch.transport, 'transport')],
-        ],
+        },
       },
-    });
+    );
   }
 
   @Action('go-forward')

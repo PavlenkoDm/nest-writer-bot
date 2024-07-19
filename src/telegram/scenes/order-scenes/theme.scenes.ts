@@ -14,6 +14,7 @@ import {
   Forbidden,
   onSceneGateFromCommand,
 } from '../helpers-scenes/scene-gate.helper';
+import { Emoji } from 'src/telegram/emoji/emoji';
 
 const needUniqueness = [
   TypeOfWork.coursework,
@@ -34,7 +35,7 @@ export class ThemeScene extends Scenes.BaseScene<
 
   @SceneEnter()
   async onEnterThemeScene(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
-    await ctx.replyWithHTML('<b>❔ Введіть тему роботи</b>');
+    await ctx.replyWithHTML(`<b>${Emoji.question} Введіть тему роботи</b>`);
   }
 
   @On('text')
@@ -68,10 +69,15 @@ export class ThemeScene extends Scenes.BaseScene<
     }
 
     ctx.replyWithHTML(
-      `<b>❕ Вибрана тема роботи:</b>  <i>"${ctx.session.__scenes.state.theme}"</i>`,
+      `<b>${Emoji.answer} Вибрана тема роботи:</b>  <i>"${ctx.session.__scenes.state.theme}"</i>`,
       Markup.inlineKeyboard([
-        [Markup.button.callback('✅ Далі', 'go-forward')],
-        [Markup.button.callback('🚫 Змінити тему', 'change_theme')],
+        [Markup.button.callback(`${Emoji.forward} Далі`, 'go-forward')],
+        [
+          Markup.button.callback(
+            `${Emoji.change} Змінити тему`,
+            'change_theme',
+          ),
+        ],
       ]),
     );
   }

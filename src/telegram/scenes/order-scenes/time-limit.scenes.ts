@@ -13,6 +13,7 @@ import {
   Forbidden,
   onSceneGateFromCommand,
 } from '../helpers-scenes/scene-gate.helper';
+import { Emoji } from 'src/telegram/emoji/emoji';
 
 enum ExecTime {
   longTerm = 'Довготривалий: від 14 днів і довше',
@@ -42,12 +43,13 @@ export class TimeLimitScene extends Scenes.BaseScene<
     ctx.session.__scenes.state.timeLimit = timePeriod;
 
     await ctx.replyWithHTML(
-      `<b>❕ Вибраний термін виконання:</b>\n"<i>${ctx.session.__scenes.state.timeLimit}</i>"`,
+      `<b>${Emoji.answer} Вибраний термін виконання:</b>
+      \n"<i>${ctx.session.__scenes.state.timeLimit}</i>"`,
       Markup.inlineKeyboard([
-        [Markup.button.callback('✅ Далі', 'go-forward')],
+        [Markup.button.callback(`${Emoji.forward} Далі`, 'go-forward')],
         [
           Markup.button.callback(
-            '🚫 Змінити термін виконання',
+            `${Emoji.change} Змінити термін виконання`,
             'change_days_amount',
           ),
         ],
@@ -60,7 +62,7 @@ export class TimeLimitScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.replyWithHTML(
-      '<b>❔ Введіть термін виконання замовлення:</b>', // \n<i>☝️ Це має бути лише ціле число, не більше трьох знаків</i>
+      `<b>${Emoji.question} Введіть термін виконання замовлення:</b>`, // \n<i>☝️ Це має бути лише ціле число, не більше трьох знаків</i>
       Markup.inlineKeyboard([
         [Markup.button.callback(ExecTime.urgent, 'urgent')],
         [Markup.button.callback(ExecTime.mediumTerm, 'medium-term')],

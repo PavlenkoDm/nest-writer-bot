@@ -11,6 +11,8 @@ import { DisciplineScene } from './scenes/order-scenes/discipline.scenes';
 import { FinalOrderScene } from './scenes/order-scenes/final-order.scenes';
 import { FileLoadScene } from './scenes/order-scenes/file-load.scenes';
 import { CommentScene } from './scenes/order-scenes/comment.scenes';
+import { FullNameScene } from './scenes/join-scenes/full-name.scenes';
+import { SpecialityScene } from './scenes/join-scenes/speciality.scenes';
 
 @Module({
   imports: [TelegrafModule.forRootAsync(options())],
@@ -24,6 +26,8 @@ import { CommentScene } from './scenes/order-scenes/comment.scenes';
     FileLoadScene,
     CommentScene,
     FinalOrderScene,
+    FullNameScene,
+    SpecialityScene,
     ConfigService,
   ],
 })

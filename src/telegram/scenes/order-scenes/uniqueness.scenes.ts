@@ -14,6 +14,7 @@ import {
   Forbidden,
   onSceneGateFromCommand,
 } from '../helpers-scenes/scene-gate.helper';
+import { Emoji } from 'src/telegram/emoji/emoji';
 
 @Injectable()
 @Scene('UNIQUENESS_SCENE')
@@ -77,7 +78,8 @@ export class UniquenessScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.replyWithHTML(
-      `<b>❔ Введіть бажаний відсоток унікальності роботи</b>\n<i>☝️ Це має бути число від ${this.showUniquenessPersent(ctx)} до 100</i>`,
+      `<b>${Emoji.question} Введіть бажаний відсоток унікальності роботи</b>
+      \n<i>${Emoji.attention} Це має бути число від ${this.showUniquenessPersent(ctx)} до 100</i>`,
     );
   }
 
@@ -95,7 +97,9 @@ export class UniquenessScene extends Scenes.BaseScene<
     const message = ctx.text.trim();
 
     if (!this.regExpForUniq(ctx).test(message)) {
-      await ctx.replyWithHTML('<b>❌ Ви ввели некоректне значення</b>');
+      await ctx.replyWithHTML(
+        `<b>${Emoji.reject} Ви ввели некоректне значення</b>`,
+      );
       await ctx.scene.enter('UNIQUENESS_SCENE', ctx.session.__scenes.state);
       return;
     }
@@ -108,12 +112,12 @@ export class UniquenessScene extends Scenes.BaseScene<
     }
 
     ctx.replyWithHTML(
-      `<b>❕ Вибраний відсоток унікальності:</b>  <i>${ctx.session.__scenes.state.uniqueness}%</i>`,
+      `<b>${Emoji.answer} Вибраний відсоток унікальності:</b>  <i>${ctx.session.__scenes.state.uniqueness}%</i>`,
       Markup.inlineKeyboard([
-        [Markup.button.callback('✅ Далі', 'go-forward')],
+        [Markup.button.callback(`${Emoji.forward} Далі`, 'go-forward')],
         [
           Markup.button.callback(
-            '🚫 Змінити відсоток унікальності',
+            `${Emoji.change} Змінити відсоток унікальності`,
             'change_persent_amount',
           ),
         ],

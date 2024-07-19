@@ -13,6 +13,7 @@ import {
   Forbidden,
   onSceneGateFromCommand,
 } from '../helpers-scenes/scene-gate.helper';
+import { Emoji } from 'src/telegram/emoji/emoji';
 
 @Injectable()
 @Scene('COMMENT_SCENE')
@@ -26,7 +27,7 @@ export class CommentScene extends Scenes.BaseScene<
   @SceneEnter()
   async onEnterCOMMENTScene(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await ctx.replyWithHTML(
-      '<b>❔ Додайте коментар до замовлення</b><i> (Опціональна дія)</i>',
+      `<b>${Emoji.question} Додайте коментар до замовлення</b><i> (Опціональна дія)</i>`,
       Markup.inlineKeyboard([[Markup.button.callback('Пропустити', 'skip')]]),
     );
   }
@@ -51,10 +52,15 @@ export class CommentScene extends Scenes.BaseScene<
     }
 
     ctx.replyWithHTML(
-      `<b>❕ Доданий коментар:</b>  <i>"${ctx.session.__scenes.state.comment}"</i>`,
+      `<b>${Emoji.answer} Доданий коментар:</b>  <i>"${ctx.session.__scenes.state.comment}"</i>`,
       Markup.inlineKeyboard([
-        [Markup.button.callback('✅ Далі', 'go-forward')],
-        [Markup.button.callback('🚫 Змінити коментар', 'change_comment')],
+        [Markup.button.callback(`${Emoji.forward} Далі`, 'go-forward')],
+        [
+          Markup.button.callback(
+            `${Emoji.change} Змінити коментар`,
+            'change_comment',
+          ),
+        ],
       ]),
     );
   }

@@ -8,7 +8,7 @@ export enum Emoji {
   change = '🚫',
   reject = '❌',
   attention = '☝️',
-  alert = '❗️',
+  alert = '‼️',
   pin = '📌',
   time = '⏳',
   book = '📔',
@@ -17,4 +17,5 @@ export enum Emoji {
   restart = '🔄',
   sad = '😔',
   wink = '😉',
+  back = '⬅️',
 }

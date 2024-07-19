@@ -14,6 +14,7 @@ import {
   onSceneGateFromCommand,
 } from '../helpers-scenes/scene-gate.helper';
 import { Message } from 'telegraf/typings/core/types/typegram';
+import { Emoji } from 'src/telegram/emoji/emoji';
 
 const allowedMimeTypes = [
   'application/msword',
@@ -37,7 +38,8 @@ export class FileLoadScene extends Scenes.BaseScene<
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await ctx.replyWithHTML(
-      '<b>❔ Завантажте методичні матеріали по темі</b><i> (Опціональна дія)</i>\n☝️ Файли для завантаження мають бути формата\n    - .doc,\n    - .docx,\n    - .xls,\n    - .xlsx,\n    - .pdf',
+      `<b>${Emoji.question} Завантажте методичні матеріали по темі</b> <i> (Опціональна дія)</i>
+      \n${Emoji.attention} Файли для завантаження мають бути формата:\n    - .doc,\n    - .docx,\n    - .xls,\n    - .xlsx,\n    - .pdf`,
       Markup.inlineKeyboard([[Markup.button.callback('Пропустити', 'skip')]]),
     );
   }
@@ -72,13 +74,13 @@ export class FileLoadScene extends Scenes.BaseScene<
     } = message.document;
 
     if (!fileId) {
-      await ctx.replyWithHTML('<b>❌ Файл не завантажено!</b>');
+      await ctx.replyWithHTML(`<b>${Emoji.reject} Файл не завантажено!</b>`);
       await ctx.scene.enter('FILE_LOAD_SCENE', ctx.session.__scenes.state);
       return;
     }
 
     if (!allowedMimeTypes.includes(mimeType)) {
-      await ctx.replyWithHTML('<b>❌ Невірний формат файла!</b>');
+      await ctx.replyWithHTML(`<b>${Emoji.reject} Невірний формат файла!</b>`);
       await ctx.scene.enter('FILE_LOAD_SCENE', ctx.session.__scenes.state);
       return;
     }
@@ -90,10 +92,15 @@ export class FileLoadScene extends Scenes.BaseScene<
     }
 
     await ctx.replyWithHTML(
-      `<b>❕ Завантажений файл:</b>  <i>"${fileName}"</i>`,
+      `<b>${Emoji.answer} Завантажений файл:</b>  "<i>${fileName}</i>"`,
       Markup.inlineKeyboard([
-        [Markup.button.callback('✅ Далі', 'go-forward')],
-        [Markup.button.callback('🚫 Завантажити інший файл', 'change_file')],
+        [Markup.button.callback(`${Emoji.forward} Далі`, 'go-forward')],
+        [
+          Markup.button.callback(
+            `${Emoji.change} Завантажити інший файл`,
+            'change_file',
+          ),
+        ],
       ]),
     );
   }
