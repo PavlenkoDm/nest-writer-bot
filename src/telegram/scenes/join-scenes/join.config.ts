@@ -1,14 +1,12 @@
 import { Scenes } from 'telegraf';
 
-// interface IBranchSpeciAlization {
-//   branch?: string;
-//   specialization?: string;
-// }
-
 interface IJoin {
   isJoinScenario?: boolean;
   fullName?: string;
   speciality?: string;
+  documentFotoId?: string;
+  documentFileId?: string;
+  workType?: string[];
 }
 
 export interface IJoinSceneState extends Scenes.SceneSessionData {

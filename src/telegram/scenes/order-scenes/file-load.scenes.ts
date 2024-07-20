@@ -22,6 +22,7 @@ const allowedMimeTypes = [
   'application/vnd.ms-excel',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'application/pdf',
+  'text/plain',
 ];
 
 @Injectable()
@@ -39,7 +40,7 @@ export class FileLoadScene extends Scenes.BaseScene<
   ) {
     await ctx.replyWithHTML(
       `<b>${Emoji.question} Завантажте методичні матеріали по темі</b> <i> (Опціональна дія)</i>
-      \n${Emoji.attention} Файли для завантаження мають бути формата:\n    - .doc,\n    - .docx,\n    - .xls,\n    - .xlsx,\n    - .pdf`,
+      \n${Emoji.attention} Файли для завантаження мають бути формата:\n    - .doc,\n    - .docx,\n    - .xls,\n    - .xlsx,\n    - .pdf,\n   - .txt`,
       Markup.inlineKeyboard([[Markup.button.callback('Пропустити', 'skip')]]),
     );
   }

@@ -13,6 +13,7 @@ import { FileLoadScene } from './scenes/order-scenes/file-load.scenes';
 import { CommentScene } from './scenes/order-scenes/comment.scenes';
 import { FullNameScene } from './scenes/join-scenes/full-name.scenes';
 import { SpecialityScene } from './scenes/join-scenes/speciality.scenes';
+import { WorkTypeScene } from './scenes/join-scenes/work-type.scenes';
 
 @Module({
   imports: [TelegrafModule.forRootAsync(options())],
@@ -28,6 +29,7 @@ import { SpecialityScene } from './scenes/join-scenes/speciality.scenes';
     FinalOrderScene,
     FullNameScene,
     SpecialityScene,
+    WorkTypeScene,
     ConfigService,
   ],
 })

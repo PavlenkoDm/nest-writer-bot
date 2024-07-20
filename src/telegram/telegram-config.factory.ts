@@ -15,6 +15,7 @@ import { FileLoadScene } from './scenes/order-scenes/file-load.scenes';
 import { CommentScene } from './scenes/order-scenes/comment.scenes';
 import { FullNameScene } from './scenes/join-scenes/full-name.scenes';
 import { SpecialityScene } from './scenes/join-scenes/speciality.scenes';
+import { WorkTypeScene } from './scenes/join-scenes/work-type.scenes';
 
 const localSession = new LocalSession({
   database: 'sessions.json',
@@ -34,7 +35,7 @@ const telegrafModOptions = (config: ConfigService): TelegrafModuleOptions => {
   const stageJoin = new Scenes.Stage<Scenes.SceneContext>([
     new FullNameScene(),
     new SpecialityScene(),
-    // new ThemeScene(),
+    new WorkTypeScene(),
     // new UniquenessScene(),
     // new TimeLimitScene(),
     // new FileLoadScene(),

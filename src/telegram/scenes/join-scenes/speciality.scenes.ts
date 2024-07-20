@@ -75,7 +75,7 @@ export class SpecialityScene extends Scenes.BaseScene<
 
   @Action('go-forward')
   async goForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
+    await ctx.scene.enter('WORK_TYPE_SCENE', ctx.session.__scenes.state);
   }
 
   @Action('change_speciality')
