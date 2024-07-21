@@ -59,10 +59,15 @@ export class SpecialityScene extends Scenes.BaseScene<
     }
 
     ctx.replyWithHTML(
-      `<b>${Emoji.answer} Додана така інформація:</b>
+      `<b>${Emoji.answer} Додана така інформація про освіту:</b>
       \n"<i>${ctx.session.__scenes.state.speciality}</i>"`,
       Markup.inlineKeyboard([
-        [Markup.button.callback(`${Emoji.forward} Далі`, 'go-forward')],
+        [
+          Markup.button.callback(
+            `${Emoji.forward} Далі`,
+            'go-forward_to_photo_load',
+          ),
+        ],
         [
           Markup.button.callback(
             `${Emoji.change} Змінити додану інформацію`,
@@ -73,8 +78,11 @@ export class SpecialityScene extends Scenes.BaseScene<
     );
   }
 
-  @Action('go-forward')
+  @Action('go-forward_to_photo_load')
   async goForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+    if (ctx.scene.current.id !== 'SPECIALITY_SCENE') {
+      return;
+    }
     await ctx.scene.enter('WORK_TYPE_SCENE', ctx.session.__scenes.state);
   }
 

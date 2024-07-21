@@ -7,6 +7,8 @@ interface IJoin {
   documentFotoId?: string;
   documentFileId?: string;
   workType?: string[];
+  techSkills?: string;
+  timePeriod?: string[];
 }
 
 export interface IJoinSceneState extends Scenes.SceneSessionData {

@@ -19,4 +19,5 @@ export enum Emoji {
   wink = '😉',
   back = '⬅️',
   chosen = '🏅',
+  skip = '⬇️',
 }

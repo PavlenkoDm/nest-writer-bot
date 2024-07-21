@@ -56,7 +56,12 @@ export class FullNameScene extends Scenes.BaseScene<
       `<b>${Emoji.answer} Додані повне імʼя та вік:</b>
       \n"<i>${ctx.session.__scenes.state.fullName}</i>"`,
       Markup.inlineKeyboard([
-        [Markup.button.callback(`${Emoji.forward} Далі`, 'go-forward')],
+        [
+          Markup.button.callback(
+            `${Emoji.forward} Далі`,
+            'go-forward_to_speciality',
+          ),
+        ],
         [
           Markup.button.callback(
             `${Emoji.change} Змінити повне імʼя та вік`,
@@ -67,8 +72,11 @@ export class FullNameScene extends Scenes.BaseScene<
     );
   }
 
-  @Action('go-forward')
+  @Action('go-forward_to_speciality')
   async goForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+    if (ctx.scene.current.id !== 'FULL_NAME_SCENE') {
+      return;
+    }
     await ctx.scene.enter('SPECIALITY_SCENE', ctx.session.__scenes.state);
   }
 

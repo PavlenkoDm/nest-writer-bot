@@ -45,7 +45,12 @@ export class TypeScene extends Scenes.BaseScene<
       `<b>${Emoji.answer} Вибраний тип роботи:</b>
       \n"<i>${ctx.session.__scenes.state.typeOfWork}</i>"`,
       Markup.inlineKeyboard([
-        [Markup.button.callback(`${Emoji.forward} Далі`, 'go-forward')],
+        [
+          Markup.button.callback(
+            `${Emoji.forward} Далі`,
+            'go-forward_to_discipline',
+          ),
+        ],
         [
           Markup.button.callback(
             `${Emoji.change} Змінити тип роботи`,
@@ -119,8 +124,11 @@ export class TypeScene extends Scenes.BaseScene<
     this.chooseTypeOfWork(TypeOfWork.practice_report, ctx);
   }
 
-  @Action('go-forward')
+  @Action('go-forward_to_discipline')
   async goForward(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    if (ctx.scene.current.id !== 'TYPE_SCENE') {
+      return;
+    }
     await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
   }
 

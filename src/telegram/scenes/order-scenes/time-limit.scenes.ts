@@ -15,7 +15,7 @@ import {
 } from '../helpers-scenes/scene-gate.helper';
 import { Emoji } from 'src/telegram/emoji/emoji';
 
-enum ExecTime {
+export enum ExecTime {
   longTerm = 'Довготривалий: від 14 днів і довше',
   mediumTerm = 'Середньотривалий: 4-14 днів',
   urgent = 'Терміновий: 1-3 дні',
@@ -65,8 +65,8 @@ export class TimeLimitScene extends Scenes.BaseScene<
       `<b>${Emoji.question} Введіть термін виконання замовлення:</b>`, // \n<i>☝️ Це має бути лише ціле число, не більше трьох знаків</i>
       Markup.inlineKeyboard([
         [Markup.button.callback(ExecTime.urgent, 'urgent')],
-        [Markup.button.callback(ExecTime.mediumTerm, 'medium-term')],
-        [Markup.button.callback(ExecTime.longTerm, 'long-term')],
+        [Markup.button.callback(ExecTime.mediumTerm, 'medium_term')],
+        [Markup.button.callback(ExecTime.longTerm, 'long_term')],
       ]),
     );
   }
@@ -104,12 +104,12 @@ export class TimeLimitScene extends Scenes.BaseScene<
     await this.chooseTimeLimit(ExecTime.urgent, ctx);
   }
 
-  @Action('medium-term')
+  @Action('medium_term')
   async onMediumTerm(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await this.chooseTimeLimit(ExecTime.mediumTerm, ctx);
   }
 
-  @Action('long-term')
+  @Action('long_term')
   async onLongTerm(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await this.chooseTimeLimit(ExecTime.longTerm, ctx);
   }

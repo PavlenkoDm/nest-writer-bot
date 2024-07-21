@@ -1,3 +1,20 @@
 {
-  "sessions": []
+  "sessions": [
+    {
+      "id": "5775947067:5775947067",
+      "data": {
+        "__scenes": {
+          "current": "DISCIPLINE_SCENE",
+          "state": {
+            "isScenario": true,
+            "typeOfWork": "Курсові роботи та проєкти",
+            "discipline": {
+              "branch": "Електрична інженерія",
+              "specialization": "Атомна енергетика"
+            }
+          }
+        }
+      }
+    }
+  ]
 }

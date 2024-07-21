@@ -122,7 +122,12 @@ export class WorkTypeScene extends Scenes.BaseScene<
                 'selworktype-practice_report',
               ),
             ],
-            [Markup.button.callback(`${Emoji.forward} Далі`, 'go-forward')],
+            [
+              Markup.button.callback(
+                `${Emoji.forward} Далі`,
+                'go-forward_to_tech_skills',
+              ),
+            ],
           ],
         },
       },
@@ -211,24 +216,34 @@ export class WorkTypeScene extends Scenes.BaseScene<
                 'selworktype-practice_report',
               ),
             ],
-            [Markup.button.callback(`${Emoji.forward} Далі`, 'go-forward')],
+            [
+              Markup.button.callback(
+                `${Emoji.forward} Далі`,
+                'go-forward_to_tech_skills',
+              ),
+            ],
           ],
         },
       },
     );
   }
 
-  @Action('go-forward')
+  @Action('go-forward_to_tech_skills')
   async goForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+    if (ctx.scene.current.id !== 'WORK_TYPE_SCENE') {
+      return;
+    }
     if (
       !ctx.session.__scenes.state.workType ||
       ctx.session.__scenes.state.workType.length === 0
     ) {
-      await ctx.replyWithHTML(`${Emoji.reject} Ви не ввели жодного значення!`);
+      await ctx.replyWithHTML(
+        `${Emoji.reject} Ви не вибрали жодного значення!`,
+      );
       await ctx.scene.enter('WORK_TYPE_SCENE', ctx.session.__scenes.state);
       return;
     }
-    await ctx.scene.enter('TYPE_SCENE');
+    await ctx.scene.enter('TECH_SKILLS_SCENE', ctx.session.__scenes.state);
     return;
   }
 
