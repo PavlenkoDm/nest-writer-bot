@@ -9,6 +9,7 @@ interface IJoin {
   workType?: string[];
   techSkills?: string;
   timePeriod?: string[];
+  email?: string;
 }
 
 export interface IJoinSceneState extends Scenes.SceneSessionData {

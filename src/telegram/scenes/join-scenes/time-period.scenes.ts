@@ -87,7 +87,12 @@ export class TimePeriodScene extends Scenes.BaseScene<
                 'settimeperiod-longTerm',
               ),
             ],
-            [Markup.button.callback(`${Emoji.forward} Далі`, 'go-forward')],
+            [
+              Markup.button.callback(
+                `${Emoji.forward} Далі`,
+                'go-forward_to_add_email',
+              ),
+            ],
           ],
         },
       },
@@ -112,9 +117,7 @@ export class TimePeriodScene extends Scenes.BaseScene<
   ) {
     const { data } = ctx.callbackQuery as CallbackQuery.DataQuery;
     const buttonId = data.split('-')[1];
-    console.log('bID', buttonId);
     const enumEntries = Object.entries(ExecTime);
-    console.log('enums', enumEntries);
     const executionPeriod = enumEntries.find((item) => {
       return item[0] === buttonId;
     })[1];
@@ -146,15 +149,23 @@ export class TimePeriodScene extends Scenes.BaseScene<
                 'settimeperiod-longTerm',
               ),
             ],
-            [Markup.button.callback(`${Emoji.forward} Далі`, 'go-forward')],
+            [
+              Markup.button.callback(
+                `${Emoji.forward} Далі`,
+                'go-forward_to_add_email',
+              ),
+            ],
           ],
         },
       },
     );
   }
 
-  @Action('go-forward')
+  @Action('go-forward_to_add_email')
   async goForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+    if (ctx.scene.current.id !== 'TIME_PERIOD_SCENE') {
+      return;
+    }
     if (
       !ctx.session.__scenes.state.timePeriod ||
       ctx.session.__scenes.state.timePeriod.length === 0
@@ -163,7 +174,7 @@ export class TimePeriodScene extends Scenes.BaseScene<
       await ctx.scene.enter('TIME_PERIOD_SCENE', ctx.session.__scenes.state);
       return;
     }
-    await ctx.scene.enter('TECH_SKILLS_SCENE', ctx.session.__scenes.state);
+    await ctx.scene.enter('ADD_EMAIL_SCENE', ctx.session.__scenes.state);
     return;
   }
 

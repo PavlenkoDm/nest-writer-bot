@@ -16,6 +16,7 @@ import { SpecialityScene } from './scenes/join-scenes/speciality.scenes';
 import { WorkTypeScene } from './scenes/join-scenes/work-type.scenes';
 import { TechSkillsScene } from './scenes/join-scenes/tech-skills.scenes';
 import { TimePeriodScene } from './scenes/join-scenes/time-period.scenes';
+import { AddEmailScene } from './scenes/join-scenes/add-email.scenes';
 
 @Module({
   imports: [TelegrafModule.forRootAsync(options())],
@@ -34,6 +35,7 @@ import { TimePeriodScene } from './scenes/join-scenes/time-period.scenes';
     WorkTypeScene,
     TechSkillsScene,
     TimePeriodScene,
+    AddEmailScene,
     ConfigService,
   ],
 })
