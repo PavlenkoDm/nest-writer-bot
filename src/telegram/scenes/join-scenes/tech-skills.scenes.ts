@@ -88,6 +88,9 @@ export class TechSkillsScene extends Scenes.BaseScene<
 
   @Action('change_tech_skills')
   async changeTheme(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+    if (ctx.scene.current.id !== 'TECH_SKILLS_SCENE') {
+      return;
+    }
     await ctx.scene.enter('TECH_SKILLS_SCENE', ctx.session.__scenes.state);
   }
 

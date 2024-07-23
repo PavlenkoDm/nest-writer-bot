@@ -82,6 +82,9 @@ export class FullNameScene extends Scenes.BaseScene<
 
   @Action('change_full_name')
   async changeTheme(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+    if (ctx.scene.current.id !== 'FULL_NAME_SCENE') {
+      return;
+    }
     await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
   }
 

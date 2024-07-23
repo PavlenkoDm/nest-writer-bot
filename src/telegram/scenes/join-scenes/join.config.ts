@@ -4,7 +4,7 @@ interface IJoin {
   isJoinScenario?: boolean;
   fullName?: string;
   speciality?: string;
-  documentFotoId?: string;
+  documentPhotoId?: string;
   documentFileId?: string;
   workType?: string[];
   techSkills?: string;

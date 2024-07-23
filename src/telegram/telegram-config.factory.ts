@@ -19,6 +19,7 @@ import { WorkTypeScene } from './scenes/join-scenes/work-type.scenes';
 import { TechSkillsScene } from './scenes/join-scenes/tech-skills.scenes';
 import { TimePeriodScene } from './scenes/join-scenes/time-period.scenes';
 import { AddEmailScene } from './scenes/join-scenes/add-email.scenes';
+import { PhotoFileLoadScene } from './scenes/join-scenes/photofile-load.scenes';
 
 const localSession = new LocalSession({
   database: 'sessions.json',
@@ -38,11 +39,11 @@ const telegrafModOptions = (config: ConfigService): TelegrafModuleOptions => {
   const stageJoin = new Scenes.Stage<Scenes.SceneContext>([
     new FullNameScene(),
     new SpecialityScene(),
+    new PhotoFileLoadScene(),
     new WorkTypeScene(),
     new TechSkillsScene(),
     new TimePeriodScene(),
     new AddEmailScene(),
-    // new CommentScene(),
     // new FinalOrderScene(config),
   ]);
   return {

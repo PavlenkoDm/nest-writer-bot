@@ -1,5 +1,6 @@
 import { Scenes } from 'telegraf';
 import { MyOrderJoinContext } from 'src/telegram/telegram.service';
+import { Emoji } from 'src/telegram/emoji/emoji';
 
 export enum Forbidden {
   enterCommands = 'Заборонено вводити команди до закінчення замовлення!',
@@ -20,7 +21,7 @@ export async function onSceneGateFromCommand(
       ctx.session.__scenes.state.isScenario ||
       ctx.session.__scenes.state.isJoinScenario
     ) {
-      await ctx.replyWithHTML(`<b>❌ ${msg}</b>`);
+      await ctx.replyWithHTML(`<b>${Emoji.reject} ${msg}</b>`);
       await ctx.scene.enter(`${sceneName}`, ctx.session.__scenes.state);
     }
     return true;

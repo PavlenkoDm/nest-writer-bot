@@ -83,11 +83,14 @@ export class SpecialityScene extends Scenes.BaseScene<
     if (ctx.scene.current.id !== 'SPECIALITY_SCENE') {
       return;
     }
-    await ctx.scene.enter('WORK_TYPE_SCENE', ctx.session.__scenes.state);
+    await ctx.scene.enter('PHOTOFILE_LOAD_SCENE', ctx.session.__scenes.state);
   }
 
   @Action('change_speciality')
   async changeTheme(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+    if (ctx.scene.current.id !== 'SPECIALITY_SCENE') {
+      return;
+    }
     await ctx.scene.enter('SPECIALITY_SCENE', ctx.session.__scenes.state);
   }
 
