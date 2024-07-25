@@ -23,10 +23,10 @@ export class SpecialityScene extends Scenes.BaseScene<
   constructor() {
     super('SPECIALITY_SCENE');
   }
-  private startSpecialityMessageId: number;
-  private choiceMessageId: number;
+  private specialityStartMessageId: number;
+  private specialityChoiceMessageId: number;
 
-  private async startSpecialityMarkup(
+  private async specialityStartMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
     const startMessage = await ctx.replyWithHTML(
@@ -38,17 +38,19 @@ export class SpecialityScene extends Scenes.BaseScene<
       \n<i> ( Наприклад:  Інженерія програмного забезпечення,  Київський національний університет імені Тараса Шевченка,  2020,  магістр )</i>`,
     );
 
-    this.startSpecialityMessageId = startMessage.message_id;
+    this.specialityStartMessageId = startMessage.message_id;
 
     return startMessage;
   }
-
-  private async choiseMarkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
-    this.choiceMessageId && (await ctx.deleteMessage(this.choiceMessageId));
+  private async specialityChoiseMarkup(
+    ctx: Scenes.SceneContext<IJoinSceneState>,
+  ) {
+    this.specialityChoiceMessageId &&
+      (await ctx.deleteMessage(this.specialityChoiceMessageId));
     const message = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Додана така інформація про освіту:</b>
       \n"<i>${ctx.session.__scenes.state.speciality}</i>"
-      \n ( Для зміни інформації про освіту, введіть нові дані )`,
+      \n${Emoji.attention} ( Для зміни інформації про освіту, введіть нові дані )`,
       Markup.inlineKeyboard([
         [
           Markup.button.callback(
@@ -59,7 +61,7 @@ export class SpecialityScene extends Scenes.BaseScene<
       ]),
     );
 
-    this.choiceMessageId = message.message_id;
+    this.specialityChoiceMessageId = message.message_id;
 
     return message;
   }
@@ -68,17 +70,9 @@ export class SpecialityScene extends Scenes.BaseScene<
   async onEnterSpecialityScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    this.startSpecialityMessageId &&
-      (await ctx.deleteMessage(this.startSpecialityMessageId));
-    await this.startSpecialityMarkup(ctx);
-    // await ctx.replyWithHTML(
-    //   `<b>${Emoji.question} Надайте інформацію про вашу освіту:</b>
-    //   \n - спеціальність,
-    //   \n - навчальний заклад,
-    //   \n - рік випуску,
-    //   \n - науковий ступінь (за наявності),
-    //   \n<i> ( Наприклад:  Інженерія програмного забезпечення,  Київський національний університет імені Тараса Шевченка,  2020,  магістр )</i>`,
-    // );
+    this.specialityStartMessageId &&
+      (await ctx.deleteMessage(this.specialityStartMessageId));
+    await this.specialityStartMarkup(ctx);
   }
 
   @On('text')
@@ -89,16 +83,16 @@ export class SpecialityScene extends Scenes.BaseScene<
       Forbidden.untilJoin,
     );
     if (gate) {
-      if (!ctx.session.__scenes.state.speciality) {
+      if (ctx.session.__scenes.state.speciality) {
+        await this.specialityChoiseMarkup(ctx);
+        return;
+      } else {
         await await ctx.scene.enter(
           'SPECIALITY_SCENE',
           ctx.session.__scenes.state,
         );
         return;
-      } else {
-        await this.choiseMarkup(ctx);
       }
-      return;
     }
 
     const message = ctx.text.trim();
@@ -110,26 +104,7 @@ export class SpecialityScene extends Scenes.BaseScene<
       ctx.session.__scenes.state.speciality = message;
     }
 
-    await this.choiseMarkup(ctx);
-
-    // await ctx.replyWithHTML(
-    //   `<b>${Emoji.answer} Додана така інформація про освіту:</b>
-    //   \n"<i>${ctx.session.__scenes.state.speciality}</i>"`,
-    //   Markup.inlineKeyboard([
-    //     [
-    //       Markup.button.callback(
-    //         `${Emoji.forward} Далі`,
-    //         'go-forward_to_photo_load',
-    //       ),
-    //     ],
-    //     [
-    //       Markup.button.callback(
-    //         `${Emoji.change} Змінити додану інформацію`,
-    //         'change_speciality',
-    //       ),
-    //     ],
-    //   ]),
-    // );
+    await this.specialityChoiseMarkup(ctx);
   }
 
   @Action('go-forward_to_photo_load')
@@ -139,14 +114,6 @@ export class SpecialityScene extends Scenes.BaseScene<
     }
     await ctx.scene.enter('PHOTOFILE_LOAD_SCENE', ctx.session.__scenes.state);
   }
-
-  // @Action('change_speciality')
-  // async changeTheme(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-  //   if (ctx.scene.current.id !== 'SPECIALITY_SCENE') {
-  //     return;
-  //   }
-  //   await ctx.scene.enter('SPECIALITY_SCENE', ctx.session.__scenes.state);
-  // }
 
   @SceneLeave()
   onSceneLeave(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {

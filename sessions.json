@@ -1,3 +1,17 @@
 {
-  "sessions": []
+  "sessions": [
+    {
+      "id": "5775947067:5775947067",
+      "data": {
+        "__scenes": {
+          "current": "PHOTOFILE_LOAD_SCENE",
+          "state": {
+            "isJoinScenario": true,
+            "fullName": "sdfsd",
+            "speciality": "asfd"
+          }
+        }
+      }
+    }
+  ]
 }
