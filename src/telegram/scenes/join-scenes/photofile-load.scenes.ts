@@ -39,6 +39,12 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
       \n${Emoji.attention} Файли для завантаження мають бути формата:
       \n    - .pdf,
       \n    - .jpg`,
+      Markup.inlineKeyboard([
+        Markup.button.callback(
+          `${Emoji.skip} Пропустити`,
+          'skip_photofile_load',
+        ),
+      ]),
     );
 
     this.photofileLoadStartMessageId = startMessage.message_id;
@@ -215,6 +221,16 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
     if (ctx.scene.current.id !== 'PHOTOFILE_LOAD_SCENE') {
       return;
     }
+    await ctx.scene.enter('WORK_TYPE_SCENE', ctx.session.__scenes.state);
+  }
+
+  @Action('skip_photofile_load')
+  async onSkip(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+    if (ctx.scene.current.id !== 'PHOTOFILE_LOAD_SCENE') {
+      return;
+    }
+    ctx.session.__scenes.state.documentPhotoId = '';
+    ctx.session.__scenes.state.documentFileId = '';
     await ctx.scene.enter('WORK_TYPE_SCENE', ctx.session.__scenes.state);
   }
 

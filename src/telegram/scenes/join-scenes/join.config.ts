@@ -10,6 +10,7 @@ interface IJoin {
   techSkills?: string;
   timePeriod?: string[];
   email?: string;
+  phoneNumber?: string;
 }
 
 export interface IJoinSceneState extends Scenes.SceneSessionData {
