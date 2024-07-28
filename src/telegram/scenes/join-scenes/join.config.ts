@@ -11,6 +11,7 @@ interface IJoin {
   timePeriod?: string[];
   email?: string;
   phoneNumber?: string;
+  personalInfo?: boolean;
 }
 
 export interface IJoinSceneState extends Scenes.SceneSessionData {

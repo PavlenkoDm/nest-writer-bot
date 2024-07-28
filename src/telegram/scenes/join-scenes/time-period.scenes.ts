@@ -28,7 +28,7 @@ export class TimePeriodScene extends Scenes.BaseScene<
     super('TIME_PERIOD_SCENE');
   }
 
-  private botMessage: number;
+  private timePeriodMessageId: number;
 
   private async onTimePeriodSet(
     period: string,
@@ -62,9 +62,9 @@ export class TimePeriodScene extends Scenes.BaseScene<
   }
 
   private async createStartMurkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
-    const sentMessage = await ctx.reply(
+    const startMessage = await ctx.reply(
       `<b>${Emoji.question} Oберіть терміни, в які Ви готові виконувати роботи:</b>
-      \n  <i>( можна  обрати  не  1  варіант,  а  декілька )</i>`,
+      \n  <i>( Можна  обрати  не  1  варіант,  а  декілька )</i>`,
       {
         parse_mode: 'HTML',
         reply_markup: {
@@ -97,17 +97,16 @@ export class TimePeriodScene extends Scenes.BaseScene<
         },
       },
     );
-    this.botMessage = sentMessage.message_id;
-    return sentMessage;
+    this.timePeriodMessageId = startMessage.message_id;
+    return startMessage;
   }
 
   @SceneEnter()
   async onEnterTimePeriodScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    if (this.botMessage) {
-      await ctx.deleteMessage(this.botMessage);
-    }
+    this.timePeriodMessageId &&
+      (await ctx.deleteMessage(this.timePeriodMessageId));
     await this.createStartMurkup(ctx);
   }
 
@@ -126,7 +125,7 @@ export class TimePeriodScene extends Scenes.BaseScene<
     await ctx.answerCbQuery();
     await ctx.editMessageText(
       `<b>${Emoji.question} Oберіть терміни, в які Ви готові виконувати роботи:</b>
-      \n  <i>( можна  обрати  не  1  варіант,  а  декілька )</i>`,
+      \n  <i>( Можна  обрати  не  1  варіант,  а  декілька )</i>`,
       {
         parse_mode: 'HTML',
         reply_markup: {
@@ -163,6 +162,7 @@ export class TimePeriodScene extends Scenes.BaseScene<
 
   @Action('go-forward_to_add_email')
   async goForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+    await ctx.answerCbQuery();
     if (ctx.scene.current.id !== 'TIME_PERIOD_SCENE') {
       return;
     }

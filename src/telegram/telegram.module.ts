@@ -19,6 +19,7 @@ import { TimePeriodScene } from './scenes/join-scenes/time-period.scenes';
 import { AddEmailScene } from './scenes/join-scenes/add-email.scenes';
 import { PhotoFileLoadScene } from './scenes/join-scenes/photofile-load.scenes';
 import { AddPhoneScene } from './scenes/join-scenes/add-phone.scenes';
+import { PersonalInfoScene } from './scenes/join-scenes/personal-info.scenes';
 
 @Module({
   imports: [TelegrafModule.forRootAsync(options())],
@@ -40,6 +41,7 @@ import { AddPhoneScene } from './scenes/join-scenes/add-phone.scenes';
     TimePeriodScene,
     AddEmailScene,
     AddPhoneScene,
+    PersonalInfoScene,
     ConfigService,
   ],
 })

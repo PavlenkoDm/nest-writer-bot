@@ -44,7 +44,7 @@ export class FullNameScene extends Scenes.BaseScene<
     const choiceMessage = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Додані повне імʼя та вік:</b>
       \n"<i>${ctx.session.__scenes.state.fullName}</i>"
-      \n${Emoji.attention} ( Для зміни доданої інформації, введіть нові дані )`,
+      \n${Emoji.attention} - Для зміни доданої інформації, введіть нові дані`,
       Markup.inlineKeyboard([
         [
           Markup.button.callback(
@@ -96,10 +96,13 @@ export class FullNameScene extends Scenes.BaseScene<
   }
 
   @Action('go-forward_to_speciality')
-  async goForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+  async goToSpecialityForward(
+    @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
+  ) {
     if (ctx.scene.current.id !== 'FULL_NAME_SCENE') {
       return;
     }
+    await ctx.answerCbQuery();
     await ctx.scene.enter('SPECIALITY_SCENE', ctx.session.__scenes.state);
   }
 

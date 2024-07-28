@@ -66,7 +66,7 @@ export class TelegramService extends Telegraf<Context> {
 
     const { command, workType, expertiseArea } = orderData;
     if (command && command === 'order') {
-      if (!workType) this.onStartOrder(ctx);
+      if (!workType) await this.onStartOrder(ctx);
       if (workType && !expertiseArea) {
         if (!ctx.session.__scenes.state) {
           ctx.session.__scenes.state = {};
@@ -79,18 +79,18 @@ export class TelegramService extends Telegraf<Context> {
         } else {
           ctx.session.__scenes.state.typeOfWork = onFillTypeOfWork(workType);
         }
-        this.onStartOrder(ctx);
+        await this.onStartOrder(ctx);
       }
     }
 
     if (command && command === 'join') {
-      this.onStartJoin(ctx);
+      await this.onStartJoin(ctx);
     }
   }
 
   @Command('start_order')
-  onStartOrder(@Ctx() ctx: SceneContext<IOrderSceneState>) {
-    ctx.replyWithHTML(
+  async onStartOrder(@Ctx() ctx: SceneContext<IOrderSceneState>) {
+    await ctx.replyWithHTML(
       `<b>Вітаю ${ctx.from.username}!</b>${Emoji.greeting}
       \nЦей бот допоможе в замовленні роботи.
       \nТисніть   ${Emoji.pushGo} "Go"   і починаємо.`,
@@ -101,8 +101,8 @@ export class TelegramService extends Telegraf<Context> {
   }
 
   @Command('start_join')
-  onStartJoin(@Ctx() ctx: SceneContext<IJoinSceneState>) {
-    ctx.replyWithHTML(
+  async onStartJoin(@Ctx() ctx: SceneContext<IJoinSceneState>) {
+    await ctx.replyWithHTML(
       `<b>Вітаю ${ctx.from.username}!</b>${Emoji.greeting}
       \nДякуємо, що вирішили приєднатися до нашої команди виконавців. Будь ласка, дайте відповіді на наступні запитання, щоб ми могли додати Вас до нашої бази виконавців.
       \nТисніть   ${Emoji.pushGo} "Join"   і починаємо.`,
@@ -122,10 +122,11 @@ export class TelegramService extends Telegraf<Context> {
 
   @Action('go_order')
   async onGoOrder(@Ctx() ctx: SceneContext<IOrderSceneState>) {
+    await ctx.answerCbQuery();
     if (!ctx.session.__scenes.state) {
       ctx.session.__scenes.state = {};
       ctx.session.__scenes.state.isScenario = true;
-      ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
+      await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
       return;
     }
     if (
@@ -139,18 +140,20 @@ export class TelegramService extends Telegraf<Context> {
       await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
       return;
     }
-    ctx.scene.enter('TYPE_SCENE');
+    await ctx.scene.enter('TYPE_SCENE');
+    return;
   }
 
   @Action('go_join')
   async onGoJoin(@Ctx() ctx: SceneContext<IJoinSceneState>) {
+    await ctx.answerCbQuery();
     if (!ctx.session.__scenes.state) {
       ctx.session.__scenes.state = {};
       ctx.session.__scenes.state.isJoinScenario = true;
-      ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
+      await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
       return;
     } else {
-      ctx.scene.enter('FULL_NAME_SCENE');
+      await ctx.scene.enter('FULL_NAME_SCENE');
     }
   }
 }

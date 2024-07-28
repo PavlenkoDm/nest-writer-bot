@@ -32,7 +32,7 @@ export class AddPhoneScene extends Scenes.BaseScene<
   private async addPhoneStartMarkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
     const startMessage = await ctx.replyWithHTML(
       `<b>${Emoji.question} Вкажіть ваш номер телефону</b>
-      \n<i> ( Формат запису (як приклад): +38(999)999-99-99 )</i>`,
+      \n${Emoji.attention} - Увага! Формат запису: +38(999)999-99-99`,
     );
 
     this.addPhoneStartMessageId = startMessage.message_id;
@@ -47,12 +47,12 @@ export class AddPhoneScene extends Scenes.BaseScene<
     const message = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Ви вказали такий номер телефону:</b>
       \n<i>${ctx.session.__scenes.state.phoneNumber}</i>
-      \n${Emoji.attention} ( Для зміни номера - введіть новий )`,
+      \n${Emoji.attention} - Для зміни номера - введіть новий`,
       Markup.inlineKeyboard([
         [
           Markup.button.callback(
             `${Emoji.forward} Далі`,
-            'go-forward_to_personal_information_agreed',
+            'go-forward_to_personal_info',
           ),
         ],
       ]),
@@ -112,11 +112,14 @@ export class AddPhoneScene extends Scenes.BaseScene<
     await this.addPhoneChoiseMarkup(ctx);
   }
 
-  @Action('go-forward_to_personal_information_agreed')
-  async goForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+  @Action('go-forward_to_personal_info')
+  async goToPersonalInfoForward(
+    @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
+  ) {
     if (ctx.scene.current.id !== 'ADD_PHONE_SCENE') {
       return;
     }
+    await ctx.answerCbQuery();
     await ctx.scene.enter('PERSONAL_INFO_SCENE', ctx.session.__scenes.state);
   }
 

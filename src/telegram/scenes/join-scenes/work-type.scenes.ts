@@ -28,7 +28,7 @@ export class WorkTypeScene extends Scenes.BaseScene<
     super('WORK_TYPE_SCENE');
   }
 
-  private botMessage: number;
+  private workTypeStartMessageId: number;
 
   private async onWorkTypeSet(
     workType: string,
@@ -61,9 +61,9 @@ export class WorkTypeScene extends Scenes.BaseScene<
   }
 
   private async createStartMurkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
-    const sentMessage = await ctx.reply(
+    const startMessage = await ctx.reply(
       `<b>${Emoji.question} Oберіть з переліку, які види робіт ви можете виконувати:</b>
-      \n  <i>( можна  обрати  не  1  варіант,  а  декілька )</i>`,
+      \n  <i>( Можна  обрати  не  1  варіант,  а  декілька )</i>`,
       {
         parse_mode: 'HTML',
         reply_markup: {
@@ -132,15 +132,14 @@ export class WorkTypeScene extends Scenes.BaseScene<
         },
       },
     );
-    this.botMessage = sentMessage.message_id;
-    return sentMessage;
+    this.workTypeStartMessageId = startMessage.message_id;
+    return startMessage;
   }
 
   @SceneEnter()
   async onEnterWorkTypeScene(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    if (this.botMessage) {
-      await ctx.deleteMessage(this.botMessage);
-    }
+    this.workTypeStartMessageId &&
+      (await ctx.deleteMessage(this.workTypeStartMessageId));
     await this.createStartMurkup(ctx);
   }
 
@@ -157,7 +156,7 @@ export class WorkTypeScene extends Scenes.BaseScene<
     await ctx.answerCbQuery();
     await ctx.editMessageText(
       `<b>${Emoji.question} Oберіть з переліку, які види робіт ви можете виконувати:</b>
-      \n  <i>( можна  обрати  не  1  варіант,  а  декілька )</i>`,
+      \n  <i>( Можна  обрати  не  1  варіант,  а  декілька )</i>`,
       {
         parse_mode: 'HTML',
         reply_markup: {
@@ -230,6 +229,7 @@ export class WorkTypeScene extends Scenes.BaseScene<
 
   @Action('go-forward_to_tech_skills')
   async goForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+    await ctx.answerCbQuery();
     if (ctx.scene.current.id !== 'WORK_TYPE_SCENE') {
       return;
     }

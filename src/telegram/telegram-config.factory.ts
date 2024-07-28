@@ -21,6 +21,7 @@ import { TimePeriodScene } from './scenes/join-scenes/time-period.scenes';
 import { AddEmailScene } from './scenes/join-scenes/add-email.scenes';
 import { PhotoFileLoadScene } from './scenes/join-scenes/photofile-load.scenes';
 import { AddPhoneScene } from './scenes/join-scenes/add-phone.scenes';
+import { PersonalInfoScene } from './scenes/join-scenes/personal-info.scenes';
 
 const localSession = new LocalSession({
   database: 'sessions.json',
@@ -46,6 +47,7 @@ const telegrafModOptions = (config: ConfigService): TelegrafModuleOptions => {
     new TimePeriodScene(),
     new AddEmailScene(),
     new AddPhoneScene(),
+    new PersonalInfoScene(),
     // new FinalOrderScene(config),
   ]);
   return {

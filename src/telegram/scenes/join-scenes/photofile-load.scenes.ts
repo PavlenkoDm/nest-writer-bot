@@ -36,7 +36,7 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
   ) {
     const startMessage = await ctx.replyWithHTML(
       `<b>${Emoji.question} Прикріпіть фото або скан-копію документа, що засвідчує вашу освіту</b>
-      \n${Emoji.attention} Файли для завантаження мають бути формата:
+      \n${Emoji.attention} Увага! Файли для завантаження мають бути формата:
       \n    - .pdf,
       \n    - .jpg`,
       Markup.inlineKeyboard([
@@ -61,7 +61,8 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
 
     if (fileName) {
       const fileChoiceMessage = await ctx.replyWithHTML(
-        `<b>${Emoji.answer} Завантажений файл:</b>  "<i>${fileName}</i>"`,
+        `<b>${Emoji.answer} Завантажений файл:</b>  "<i>${fileName}</i>"
+        \n${Emoji.attention} - Для зміни - прикріпіть новий файл`,
         Markup.inlineKeyboard([
           [
             Markup.button.callback(
@@ -77,7 +78,8 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
     }
     if (photoId) {
       const photoChoiceMessage = await ctx.replyWithPhoto(photoId, {
-        caption: `${Emoji.answer} Завантажене фото`,
+        caption: `${Emoji.answer} Завантажене фото
+        \n${Emoji.attention} - Для зміни - прикріпіть нове фото`,
         reply_markup: {
           inline_keyboard: [
             [
@@ -221,6 +223,7 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
     if (ctx.scene.current.id !== 'PHOTOFILE_LOAD_SCENE') {
       return;
     }
+    await ctx.answerCbQuery();
     await ctx.scene.enter('WORK_TYPE_SCENE', ctx.session.__scenes.state);
   }
 
@@ -231,6 +234,7 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
     }
     ctx.session.__scenes.state.documentPhotoId = '';
     ctx.session.__scenes.state.documentFileId = '';
+    await ctx.answerCbQuery();
     await ctx.scene.enter('WORK_TYPE_SCENE', ctx.session.__scenes.state);
   }
 

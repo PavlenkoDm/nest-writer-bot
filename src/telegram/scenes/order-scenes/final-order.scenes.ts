@@ -54,7 +54,7 @@ export class FinalOrderScene extends Scenes.BaseScene<
     const isComment = comment ? comment : 'відсутній';
     const isSavedFile = linkToFile ? '[зберегти файл]' : 'відсутні';
 
-    ctx.replyWithHTML(
+    await ctx.replyWithHTML(
       `<b>${Emoji.alert} Ваше замовлення:</b>\n\n
       <b>${Emoji.pin} Тип роботи:</b>  <i>"${typeOfWork}"</i>\n\n
       <b>${Emoji.pin} Галузь знань:</b>  <i>"${branch}"</i>\n\n

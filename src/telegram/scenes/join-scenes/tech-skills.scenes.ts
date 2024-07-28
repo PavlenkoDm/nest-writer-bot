@@ -33,7 +33,7 @@ export class TechSkillsScene extends Scenes.BaseScene<
     const startMessage = await ctx.replyWithHTML(
       `<b>${Emoji.question} Вкажіть програми (мови програмування, фреймворки) з якими ви працюєте і які стосуються вашої технічної спеціальності:</b>
       \n<i> ( Наприклад:  AutoCAD,  MATLAB,  SolidWorks,  JavaScript,  React )</i>
-      \n${Emoji.attention} Пропускайте даний пункт якщо у вас не технічна спеціальність.`,
+      \n${Emoji.attention} - Пропускайте даний пункт якщо у вас не технічна спеціальність`,
       Markup.inlineKeyboard([
         Markup.button.callback(`${Emoji.skip} Пропустити`, 'skip_tech_skills'),
       ]),
@@ -51,7 +51,7 @@ export class TechSkillsScene extends Scenes.BaseScene<
     const message = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Ви працюєте з такими програмами (мовами програмування, фреймворками):</b>
       \n"<i>${ctx.session.__scenes.state.techSkills}</i>"
-      \n${Emoji.attention} ( Для зміни доданої інформації, введіть нові дані )`,
+      \n${Emoji.attention} - Для зміни доданої інформації, введіть нові дані`,
       Markup.inlineKeyboard([
         [
           Markup.button.callback(
@@ -110,6 +110,7 @@ export class TechSkillsScene extends Scenes.BaseScene<
     if (ctx.scene.current.id !== 'TECH_SKILLS_SCENE') {
       return;
     }
+    await ctx.answerCbQuery();
     await ctx.scene.enter('TIME_PERIOD_SCENE', ctx.session.__scenes.state);
   }
 
@@ -119,6 +120,7 @@ export class TechSkillsScene extends Scenes.BaseScene<
       return;
     }
     ctx.session.__scenes.state.techSkills = '';
+    await ctx.answerCbQuery();
     await ctx.scene.enter('TIME_PERIOD_SCENE', ctx.session.__scenes.state);
   }
 
