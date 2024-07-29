@@ -10,6 +10,7 @@ import {
 } from './helpers-telegram/work-type.helper';
 import { Emoji } from './emoji/emoji';
 import { IJoinSceneState } from './scenes/join-scenes/join.config';
+import { nanoid } from 'nanoid';
 
 type Scenario = 'order' | 'join';
 
@@ -146,14 +147,19 @@ export class TelegramService extends Telegraf<Context> {
 
   @Action('go_join')
   async onGoJoin(@Ctx() ctx: SceneContext<IJoinSceneState>) {
+    const idForState = nanoid();
     await ctx.answerCbQuery();
     if (!ctx.session.__scenes.state) {
       ctx.session.__scenes.state = {};
       ctx.session.__scenes.state.isJoinScenario = true;
+      ctx.session.__scenes.state.stateId = idForState;
       await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
       return;
     } else {
+      ctx.session.__scenes.state.isJoinScenario = true;
+      ctx.session.__scenes.state.stateId = idForState;
       await ctx.scene.enter('FULL_NAME_SCENE');
+      return;
     }
   }
 }

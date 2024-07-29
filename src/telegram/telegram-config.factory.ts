@@ -22,6 +22,7 @@ import { AddEmailScene } from './scenes/join-scenes/add-email.scenes';
 import { PhotoFileLoadScene } from './scenes/join-scenes/photofile-load.scenes';
 import { AddPhoneScene } from './scenes/join-scenes/add-phone.scenes';
 import { PersonalInfoScene } from './scenes/join-scenes/personal-info.scenes';
+import { FinalJoinScene } from './scenes/join-scenes/final-join.scenes';
 
 const localSession = new LocalSession({
   database: 'sessions.json',
@@ -48,7 +49,7 @@ const telegrafModOptions = (config: ConfigService): TelegrafModuleOptions => {
     new AddEmailScene(),
     new AddPhoneScene(),
     new PersonalInfoScene(),
-    // new FinalOrderScene(config),
+    new FinalJoinScene(config),
   ]);
   return {
     token: config.get<string>('BOT_TOKEN')!,

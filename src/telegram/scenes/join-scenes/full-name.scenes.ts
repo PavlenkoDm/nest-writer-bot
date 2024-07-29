@@ -20,14 +20,16 @@ import { Emoji } from 'src/telegram/emoji/emoji';
 export class FullNameScene extends Scenes.BaseScene<
   Scenes.SceneContext<IJoinSceneState>
 > {
-  constructor() {
+  constructor(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
     super('FULL_NAME_SCENE');
+    this.uniqueStateId = ctx.session.__scenes.state.stateId;
   }
 
   private fullNameStartMessageId: number;
   private fullNameChoiceMessageId: number;
+  private readonly uniqueStateId: string;
 
-  async fullNameStartMarkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
+  private async fullNameStartMarkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
     const startMessage = await ctx.replyWithHTML(
       `<b>${Emoji.question} Введіть ваше повне імʼя та вік.</b>
       \n<i> ( Наприклад:  Іванов  Іван  Іванович,  25 )</i>`,
@@ -38,9 +40,12 @@ export class FullNameScene extends Scenes.BaseScene<
     return startMessage;
   }
 
-  async fullNameChoiceMarkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
+  private async fullNameChoiceMarkup(
+    ctx: Scenes.SceneContext<IJoinSceneState>,
+  ) {
     this.fullNameChoiceMessageId &&
       (await ctx.deleteMessage(this.fullNameChoiceMessageId));
+
     const choiceMessage = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Додані повне імʼя та вік:</b>
       \n"<i>${ctx.session.__scenes.state.fullName}</i>"
@@ -49,7 +54,7 @@ export class FullNameScene extends Scenes.BaseScene<
         [
           Markup.button.callback(
             `${Emoji.forward} Далі`,
-            'go-forward_to_speciality',
+            `go-forward_to_speciality`,
           ),
         ],
       ]),
@@ -57,6 +62,10 @@ export class FullNameScene extends Scenes.BaseScene<
 
     this.fullNameChoiceMessageId = choiceMessage.message_id;
     return choiceMessage;
+  }
+
+  private onStateId(ctx: Scenes.SceneContext<IJoinSceneState>) {
+    return ctx.session.__scenes.state.stateId;
   }
 
   @SceneEnter()
@@ -95,11 +104,14 @@ export class FullNameScene extends Scenes.BaseScene<
     await this.fullNameChoiceMarkup(ctx);
   }
 
-  @Action('go-forward_to_speciality')
+  @Action(`go-forward_to_speciality`)
   async goToSpecialityForward(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    if (ctx.scene.current.id !== 'FULL_NAME_SCENE') {
+    if (
+      ctx.scene.current.id !== 'FULL_NAME_SCENE' ||
+      this.uniqueStateId !== ctx.session.__scenes.state.stateId
+    ) {
       return;
     }
     await ctx.answerCbQuery();

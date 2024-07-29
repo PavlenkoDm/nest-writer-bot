@@ -148,8 +148,6 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
       file_id: fileId,
       mime_type: mimeType,
       file_name: fileName,
-      // file_unique_id: fileUniqueId,
-      // file_size: fileSize,
     } = message.document;
 
     if (!fileId) {
@@ -194,8 +192,6 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
     const { file_id: largePhotoId } = lagestPhoto;
     const smallestPhoto = photos[0];
     const { file_id: smallestPhotoId } = smallestPhoto;
-
-    console.log(photos);
 
     if (!largePhotoId) {
       await ctx.replyWithHTML(`<b>${Emoji.reject} Фото не завантажено!</b>`);

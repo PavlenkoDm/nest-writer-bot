@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   Action,
   Ctx,
@@ -11,22 +11,26 @@ import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
 import {
   Forbidden,
-  onSceneGateWithoutEnterScene,
+  onSceneGateFromCommand,
 } from '../helpers-scenes/scene-gate.helper';
 import { Emoji } from 'src/telegram/emoji/emoji';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 @Scene('FINAL_JOIN_SCENE')
-export class finalJoinScene extends Scenes.BaseScene<
+export class FinalJoinScene extends Scenes.BaseScene<
   Scenes.SceneContext<IJoinSceneState>
 > {
-  constructor() {
+  constructor(
+    @Inject(ConfigService) private readonly configService: ConfigService,
+  ) {
     super('FINAL_JOIN_SCENE');
+    this.chatId = configService.get('MANAGER_ID');
   }
+  private readonly chatId: number;
   private finalJoinStartMessageId: number;
-  private finalJoinChoiceMessageId: number;
 
-  private async finalJoinStartMarkup(
+  private async commonFinalJoinMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
     let linkToFile: string;
@@ -59,9 +63,7 @@ export class finalJoinScene extends Scenes.BaseScene<
     const deadlines = timePeriod.join(', ');
     const privacyPolicy = personalInfo ? 'Так' : 'Ні';
 
-    const startMessage = await ctx.replyWithHTML(
-      `<b>${Emoji.alert} Ваша анкета:</b>\n\n
-      <b>${Emoji.pin} Повне імʼя та вік:</b>  <i>"${fullName}"</i>\n\n
+    const startMessage = `<b>${Emoji.pin} Повне імʼя та вік:</b>  <i>"${fullName}"</i>\n\n
       <b>${Emoji.pin} Інформація про освіту:</b>  <i>"${speciality}"</i>\n\n
       <b>${Emoji.pin} Фото або скан-копія документа про освіту:</b>  <i><a href="${isLinkToFile}">${isSavedFile}</a></i>\n\n
       <b>${Emoji.pin} Види робіт які я можу виконувати:</b>  <i>"${workTypeCollection}"</i>\n\n
@@ -70,8 +72,19 @@ export class finalJoinScene extends Scenes.BaseScene<
       <b>${Emoji.book} Електронна адреса:</b>  <i>${email}</i>\n\n
       <b>${Emoji.note} Номер телефону:</b>  <i>${phoneNumber}</i>\n\n
       <b>${Emoji.note} Ознайомлений з політикою конфіденційності:</b>  <i>${privacyPolicy}</i>\n\n
-      <b>${Emoji.note} Погоджуюсь на обробку персональних даних:</b>  <i>${privacyPolicy}</i>\n\n
-      `,
+      <b>${Emoji.note} Погоджуюсь на обробку персональних даних:</b>  <i>${privacyPolicy}</i>
+      `;
+
+    return startMessage;
+  }
+
+  private async initialFinalJoinStartMarkup(
+    ctx: Scenes.SceneContext<IJoinSceneState>,
+  ) {
+    const commonMarkup = await this.commonFinalJoinMarkup(ctx);
+    const initialFinalJoinMessage = await ctx.replyWithHTML(
+      `<b>${Emoji.alert} Ваша анткета:</b>\n\n
+      ${commonMarkup}`,
       Markup.inlineKeyboard([
         [
           Markup.button.callback(
@@ -84,31 +97,15 @@ export class finalJoinScene extends Scenes.BaseScene<
       ]),
     );
 
-    this.finalJoinStartMessageId = startMessage.message_id;
-
-    return startMessage;
+    this.finalJoinStartMessageId = initialFinalJoinMessage.message_id;
   }
 
-  private async specialityChoiseMarkup(
-    ctx: Scenes.SceneContext<IJoinSceneState>,
-  ) {
-    this.specialityChoiceMessageId &&
-      (await ctx.deleteMessage(this.specialityChoiceMessageId));
-    const message = await ctx.replyWithHTML(
-      `<b>${Emoji.answer} Додана така інформація про освіту:</b>
-      \n"<i>${ctx.session.__scenes.state.speciality}</i>"
-      \n${Emoji.attention} - Для зміни інформації про освіту, введіть нові дані`,
-      Markup.inlineKeyboard([
-        [
-          Markup.button.callback(
-            `${Emoji.forward} Далі`,
-            'go-forward_to_photo_load',
-          ),
-        ],
-      ]),
-    );
-
-    this.specialityChoiceMessageId = message.message_id;
+  private async messageToSend(ctx: Scenes.SceneContext<IJoinSceneState>) {
+    const commonMarkup = await this.commonFinalJoinMarkup(ctx);
+    const message = `
+    <b>Замовлення від:</b>  <i>@${ctx.from.username}</i>\n\n
+    ${commonMarkup}
+    `;
 
     return message;
   }
@@ -119,48 +116,61 @@ export class finalJoinScene extends Scenes.BaseScene<
   ) {
     this.finalJoinStartMessageId &&
       (await ctx.deleteMessage(this.finalJoinStartMessageId));
-    await this.finalJoinStartMarkup(ctx);
+
+    await this.initialFinalJoinStartMarkup(ctx);
   }
 
-  @On('text') // !!!!!!!!!! stop here
-  async onSpeciality(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    const gate = await onSceneGateWithoutEnterScene(
+  @On('text')
+  async onFinalJoin(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+    const gate = await onSceneGateFromCommand(
       ctx,
-      'SPECIALITY_SCENE',
+      'FINAL_JOIN_SCENE',
       Forbidden.untilJoin,
     );
     if (gate) {
-      if (ctx.session.__scenes.state.speciality) {
-        await this.specialityChoiseMarkup(ctx);
-        return;
-      } else {
-        await await ctx.scene.enter(
-          'SPECIALITY_SCENE',
-          ctx.session.__scenes.state,
-        );
-        return;
-      }
-    }
-
-    const message = ctx.text.trim();
-
-    if (!ctx.session.__scenes.state) {
-      ctx.session.__scenes.state = {};
-      ctx.session.__scenes.state.speciality = message;
-    } else {
-      ctx.session.__scenes.state.speciality = message;
-    }
-
-    await this.specialityChoiseMarkup(ctx);
-  }
-
-  @Action('go-forward_to_photo_load')
-  async goForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    if (ctx.scene.current.id !== 'SPECIALITY_SCENE') {
       return;
     }
+  }
+
+  @Action('send_join_info')
+  async goForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+    if (ctx.scene.current.id !== 'FINAL_JOIN_SCENE') {
+      return;
+    }
+    const message = await this.messageToSend(ctx);
     await ctx.answerCbQuery();
-    await ctx.scene.enter('PHOTOFILE_LOAD_SCENE', ctx.session.__scenes.state);
+    await ctx.telegram.sendMessage(this.chatId, message, {
+      parse_mode: 'HTML',
+    });
+    await ctx.replyWithHTML(
+      `<b>${Emoji.answer} Дякуємо за надану інформацію!</b>
+      \n${Emoji.time} Чекайте на зв’язок з менеджером`,
+    );
+    await ctx.scene.leave();
+  }
+
+  @Action('restart')
+  async onRestart(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+    if (ctx.scene.current.id !== 'FINAL_JOIN_SCENE') {
+      return;
+    }
+    ctx.session.__scenes.state = {};
+    ctx.session.__scenes.state.isJoinScenario = true;
+    await ctx.answerCbQuery();
+    await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
+  }
+
+  @Action('break_join')
+  async onBreakJoin(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+    if (ctx.scene.current.id !== 'FINAL_JOIN_SCENE') {
+      return;
+    }
+    ctx.session.__scenes.state = {};
+    await ctx.answerCbQuery();
+    await ctx.editMessageText(
+      `<b>${Emoji.sad} На жаль, процедура приєднання до команди виконавців була відмінена</b>
+      \n${Emoji.wink} Але... Якщо захочете пройти опитування знову - тисніть /start_join`,
+    );
   }
 
   @SceneLeave()
