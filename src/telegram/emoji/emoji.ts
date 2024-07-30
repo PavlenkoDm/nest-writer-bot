@@ -20,4 +20,5 @@ export enum Emoji {
   back = '⬅️',
   chosen = '🏅',
   skip = '⬇️',
+  arrowTop = '⬆️',
 }

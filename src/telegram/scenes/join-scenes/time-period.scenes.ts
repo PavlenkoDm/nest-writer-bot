@@ -72,25 +72,25 @@ export class TimePeriodScene extends Scenes.BaseScene<
             [
               Markup.button.callback(
                 `${this.onTimePeriodGet(ExecTime.urgent, ctx)}${ExecTime.urgent}`,
-                'settimeperiod-urgent',
+                `settimeperiod-urgent`,
               ),
             ],
             [
               Markup.button.callback(
                 `${this.onTimePeriodGet(ExecTime.mediumTerm, ctx)}${ExecTime.mediumTerm}`,
-                'settimeperiod-mediumTerm',
+                `settimeperiod-mediumTerm`,
               ),
             ],
             [
               Markup.button.callback(
                 `${this.onTimePeriodGet(ExecTime.longTerm, ctx)}${ExecTime.longTerm}`,
-                'settimeperiod-longTerm',
+                `settimeperiod-longTerm`,
               ),
             ],
             [
               Markup.button.callback(
                 `${Emoji.forward} Далі`,
-                'go-forward_to_add_email',
+                `go-forward_to_add_email`,
               ),
             ],
           ],
@@ -133,25 +133,25 @@ export class TimePeriodScene extends Scenes.BaseScene<
             [
               Markup.button.callback(
                 `${this.onTimePeriodGet(ExecTime.urgent, ctx)}${ExecTime.urgent}`,
-                'settimeperiod-urgent',
+                `settimeperiod-urgent`,
               ),
             ],
             [
               Markup.button.callback(
                 `${this.onTimePeriodGet(ExecTime.mediumTerm, ctx)}${ExecTime.mediumTerm}`,
-                'settimeperiod-mediumTerm',
+                `settimeperiod-mediumTerm`,
               ),
             ],
             [
               Markup.button.callback(
                 `${this.onTimePeriodGet(ExecTime.longTerm, ctx)}${ExecTime.longTerm}`,
-                'settimeperiod-longTerm',
+                `settimeperiod-longTerm`,
               ),
             ],
             [
               Markup.button.callback(
                 `${Emoji.forward} Далі`,
-                'go-forward_to_add_email',
+                `go-forward_to_add_email`,
               ),
             ],
           ],
@@ -160,7 +160,7 @@ export class TimePeriodScene extends Scenes.BaseScene<
     );
   }
 
-  @Action('go-forward_to_add_email')
+  @Action(`go-forward_to_add_email`)
   async goForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
     await ctx.answerCbQuery();
     if (ctx.scene.current.id !== 'TIME_PERIOD_SCENE') {

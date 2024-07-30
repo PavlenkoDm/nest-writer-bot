@@ -89,15 +89,17 @@ export class FinalJoinScene extends Scenes.BaseScene<
         [
           Markup.button.callback(
             `${Emoji.send} Відправити анкету менеджеру`,
-            'send_join_info',
+            `send_join_info`,
           ),
         ],
-        [Markup.button.callback(`${Emoji.restart} Restart`, 'restart')],
-        [Markup.button.callback(`${Emoji.change} Відмінити`, 'break_join')],
+        [Markup.button.callback(`${Emoji.restart} Restart`, `restart`)],
+        [Markup.button.callback(`${Emoji.change} Відмінити`, `break_join`)],
       ]),
     );
 
     this.finalJoinStartMessageId = initialFinalJoinMessage.message_id;
+
+    return initialFinalJoinMessage;
   }
 
   private async messageToSend(ctx: Scenes.SceneContext<IJoinSceneState>) {
@@ -132,7 +134,7 @@ export class FinalJoinScene extends Scenes.BaseScene<
     }
   }
 
-  @Action('send_join_info')
+  @Action(`send_join_info`)
   async goForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
     if (ctx.scene.current.id !== 'FINAL_JOIN_SCENE') {
       return;
@@ -149,7 +151,7 @@ export class FinalJoinScene extends Scenes.BaseScene<
     await ctx.scene.leave();
   }
 
-  @Action('restart')
+  @Action(`restart`)
   async onRestart(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
     if (ctx.scene.current.id !== 'FINAL_JOIN_SCENE') {
       return;
@@ -160,7 +162,7 @@ export class FinalJoinScene extends Scenes.BaseScene<
     await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
   }
 
-  @Action('break_join')
+  @Action(`break_join`)
   async onBreakJoin(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
     if (ctx.scene.current.id !== 'FINAL_JOIN_SCENE') {
       return;

@@ -35,7 +35,7 @@ export class TechSkillsScene extends Scenes.BaseScene<
       \n<i> ( Наприклад:  AutoCAD,  MATLAB,  SolidWorks,  JavaScript,  React )</i>
       \n${Emoji.attention} - Пропускайте даний пункт якщо у вас не технічна спеціальність`,
       Markup.inlineKeyboard([
-        Markup.button.callback(`${Emoji.skip} Пропустити`, 'skip_tech_skills'),
+        Markup.button.callback(`${Emoji.skip} Пропустити`, `skip_tech_skills`),
       ]),
     );
 
@@ -43,6 +43,7 @@ export class TechSkillsScene extends Scenes.BaseScene<
 
     return startMessage;
   }
+
   private async techSkillsChoiseMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
@@ -56,7 +57,7 @@ export class TechSkillsScene extends Scenes.BaseScene<
         [
           Markup.button.callback(
             `${Emoji.forward} Далі`,
-            'go-forward_to_time_period',
+            `go-forward_to_time_period`,
           ),
         ],
       ]),
@@ -105,16 +106,19 @@ export class TechSkillsScene extends Scenes.BaseScene<
     await this.techSkillsChoiseMarkup(ctx);
   }
 
-  @Action('go-forward_to_time_period')
+  @Action(`go-forward_to_time_period`)
   async goForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    if (ctx.scene.current.id !== 'TECH_SKILLS_SCENE') {
+    if (
+      ctx.scene.current.id !== 'TECH_SKILLS_SCENE' ||
+      !ctx.session.__scenes.state.techSkills
+    ) {
       return;
     }
     await ctx.answerCbQuery();
     await ctx.scene.enter('TIME_PERIOD_SCENE', ctx.session.__scenes.state);
   }
 
-  @Action('skip_tech_skills')
+  @Action(`skip_tech_skills`)
   async onSkip(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
     if (ctx.scene.current.id !== 'TECH_SKILLS_SCENE') {
       return;

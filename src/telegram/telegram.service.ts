@@ -10,7 +10,6 @@ import {
 } from './helpers-telegram/work-type.helper';
 import { Emoji } from './emoji/emoji';
 import { IJoinSceneState } from './scenes/join-scenes/join.config';
-import { nanoid } from 'nanoid';
 
 type Scenario = 'order' | 'join';
 
@@ -19,7 +18,6 @@ interface IncomingData {
   workType?: WorkType;
   expertiseArea?: string;
 }
-
 export type MyOrderJoinContext = IOrderSceneState & IJoinSceneState;
 
 @Injectable()
@@ -96,7 +94,7 @@ export class TelegramService extends Telegraf<Context> {
       \nЦей бот допоможе в замовленні роботи.
       \nТисніть   ${Emoji.pushGo} "Go"   і починаємо.`,
       Markup.inlineKeyboard([
-        Markup.button.callback(`${Emoji.go} Go`, 'go_order'),
+        Markup.button.callback(`${Emoji.go} Go`, `go_order`),
       ]),
     );
   }
@@ -108,7 +106,7 @@ export class TelegramService extends Telegraf<Context> {
       \nДякуємо, що вирішили приєднатися до нашої команди виконавців. Будь ласка, дайте відповіді на наступні запитання, щоб ми могли додати Вас до нашої бази виконавців.
       \nТисніть   ${Emoji.pushGo} "Join"   і починаємо.`,
       Markup.inlineKeyboard([
-        Markup.button.callback(`${Emoji.go} Join`, 'go_join'),
+        Markup.button.callback(`${Emoji.go} Join`, `go_join`),
       ]),
     );
   }
@@ -121,7 +119,7 @@ export class TelegramService extends Telegraf<Context> {
     }
   }
 
-  @Action('go_order')
+  @Action(`go_order`)
   async onGoOrder(@Ctx() ctx: SceneContext<IOrderSceneState>) {
     await ctx.answerCbQuery();
     if (!ctx.session.__scenes.state) {
@@ -145,19 +143,16 @@ export class TelegramService extends Telegraf<Context> {
     return;
   }
 
-  @Action('go_join')
+  @Action(`go_join`)
   async onGoJoin(@Ctx() ctx: SceneContext<IJoinSceneState>) {
-    const idForState = nanoid();
     await ctx.answerCbQuery();
     if (!ctx.session.__scenes.state) {
       ctx.session.__scenes.state = {};
       ctx.session.__scenes.state.isJoinScenario = true;
-      ctx.session.__scenes.state.stateId = idForState;
       await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
       return;
     } else {
       ctx.session.__scenes.state.isJoinScenario = true;
-      ctx.session.__scenes.state.stateId = idForState;
       await ctx.scene.enter('FULL_NAME_SCENE');
       return;
     }

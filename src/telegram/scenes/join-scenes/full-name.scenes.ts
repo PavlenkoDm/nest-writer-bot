@@ -20,14 +20,12 @@ import { Emoji } from 'src/telegram/emoji/emoji';
 export class FullNameScene extends Scenes.BaseScene<
   Scenes.SceneContext<IJoinSceneState>
 > {
-  constructor(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+  constructor() {
     super('FULL_NAME_SCENE');
-    this.uniqueStateId = ctx.session.__scenes.state.stateId;
   }
 
   private fullNameStartMessageId: number;
   private fullNameChoiceMessageId: number;
-  private readonly uniqueStateId: string;
 
   private async fullNameStartMarkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
     const startMessage = await ctx.replyWithHTML(
@@ -62,10 +60,6 @@ export class FullNameScene extends Scenes.BaseScene<
 
     this.fullNameChoiceMessageId = choiceMessage.message_id;
     return choiceMessage;
-  }
-
-  private onStateId(ctx: Scenes.SceneContext<IJoinSceneState>) {
-    return ctx.session.__scenes.state.stateId;
   }
 
   @SceneEnter()
@@ -110,7 +104,7 @@ export class FullNameScene extends Scenes.BaseScene<
   ) {
     if (
       ctx.scene.current.id !== 'FULL_NAME_SCENE' ||
-      this.uniqueStateId !== ctx.session.__scenes.state.stateId
+      !ctx.session.__scenes.state.fullName
     ) {
       return;
     }

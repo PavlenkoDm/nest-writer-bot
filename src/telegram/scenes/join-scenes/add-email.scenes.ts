@@ -32,13 +32,15 @@ export class AddEmailScene extends Scenes.BaseScene<
   private async addEmailStartMarkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
     const startMessage = await ctx.replyWithHTML(
       `<b>${Emoji.question} Вкажіть Вашу електронну адресу</b>
-      \n${Emoji.attention} - Увага! Формат запису: mymail@example.com`,
+      \n${Emoji.attention} - Увага! Формат запису: 
+      \nmymail@example.com`,
     );
 
     this.addEmailStartMessageId = startMessage.message_id;
 
     return startMessage;
   }
+
   private async addEmailChoiseMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
@@ -52,7 +54,7 @@ export class AddEmailScene extends Scenes.BaseScene<
         [
           Markup.button.callback(
             `${Emoji.forward} Далі`,
-            'go-forward_to_phone_number',
+            `go-forward_to_phone_number`,
           ),
         ],
       ]),
@@ -113,9 +115,12 @@ export class AddEmailScene extends Scenes.BaseScene<
     await this.addEmailChoiseMarkup(ctx);
   }
 
-  @Action('go-forward_to_phone_number')
+  @Action(`go-forward_to_phone_number`)
   async goToPhoneForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    if (ctx.scene.current.id !== 'ADD_EMAIL_SCENE') {
+    if (
+      ctx.scene.current.id !== 'ADD_EMAIL_SCENE' ||
+      !ctx.session.__scenes.state.email
+    ) {
       return;
     }
     await ctx.answerCbQuery();

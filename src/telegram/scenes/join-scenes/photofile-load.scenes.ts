@@ -67,7 +67,7 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
           [
             Markup.button.callback(
               `${Emoji.forward} Далі`,
-              'go-forward_to_work_type',
+              `go-forward_to_work_type`,
             ),
           ],
         ]),
@@ -78,14 +78,14 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
     }
     if (photoId) {
       const photoChoiceMessage = await ctx.replyWithPhoto(photoId, {
-        caption: `${Emoji.answer} Завантажене фото
+        caption: `${Emoji.answer} Ви завантажили таке фото... ${Emoji.arrowTop}
         \n${Emoji.attention} - Для зміни - прикріпіть нове фото`,
         reply_markup: {
           inline_keyboard: [
             [
               {
                 text: `${Emoji.forward} Далі`,
-                callback_data: 'go-forward_to_work_type',
+                callback_data: `go-forward_to_work_type`,
               },
             ],
           ],
@@ -214,9 +214,16 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
     await this.photofileLoadChoiseMarkup(ctx, '', smallestPhotoId);
   }
 
-  @Action('go-forward_to_work_type')
+  @Action(`go-forward_to_work_type`)
   async goForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    if (ctx.scene.current.id !== 'PHOTOFILE_LOAD_SCENE') {
+    let isFilePhotoId: boolean;
+    if (
+      !ctx.session.__scenes.state.documentFileId &&
+      !ctx.session.__scenes.state.documentPhotoId
+    ) {
+      isFilePhotoId = false;
+    }
+    if (ctx.scene.current.id !== 'PHOTOFILE_LOAD_SCENE' || !isFilePhotoId) {
       return;
     }
     await ctx.answerCbQuery();

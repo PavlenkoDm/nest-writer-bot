@@ -2,7 +2,6 @@ import { Scenes } from 'telegraf';
 
 interface IJoin {
   isJoinScenario?: boolean;
-  stateId?: string;
   fullName?: string;
   speciality?: string;
   documentPhotoId?: string;

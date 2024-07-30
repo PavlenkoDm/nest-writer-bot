@@ -31,10 +31,10 @@ export class PersonalInfoScene extends Scenes.BaseScene<
   ) {
     const startMessage = await ctx.replyWithHTML(
       `<b>${Emoji.question} Ви підтверджуєте що ознайомлені з політикою конфіденційності, та надаєте згоду на обробку персональних даних?</b>
-      \n${Emoji.attention} - Увага! Натискаючи "Ні" ви завершуєте опитування`,
+      \n${Emoji.attention} - Увага! Натискаючи "Ні" ви завершуєте анкетування`,
       Markup.inlineKeyboard([
-        Markup.button.callback(`${Emoji.forward} Так`, 'yes_i_agree'),
-        Markup.button.callback(`${Emoji.reject} Ні`, 'no_i_do_not_agree'),
+        Markup.button.callback(`${Emoji.forward} Так`, `yes_i_agree`),
+        Markup.button.callback(`${Emoji.reject} Ні`, `no_i_do_not_agree`),
       ]),
     );
 
@@ -66,7 +66,7 @@ export class PersonalInfoScene extends Scenes.BaseScene<
     }
   }
 
-  @Action('yes_i_agree')
+  @Action(`yes_i_agree`)
   async goAgreeForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
     if (ctx.scene.current.id !== 'PERSONAL_INFO_SCENE') {
       return;
@@ -80,7 +80,7 @@ export class PersonalInfoScene extends Scenes.BaseScene<
     await ctx.scene.enter('FINAL_JOIN_SCENE', ctx.session.__scenes.state);
   }
 
-  @Action('no_i_do_not_agree')
+  @Action(`no_i_do_not_agree`)
   async onSkip(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
     if (ctx.scene.current.id !== 'PERSONAL_INFO_SCENE') {
       return;
@@ -88,7 +88,7 @@ export class PersonalInfoScene extends Scenes.BaseScene<
     ctx.session.__scenes.state = {};
     await ctx.answerCbQuery();
     await ctx.replyWithHTML(
-      `<b>${Emoji.sad} На жаль ми вимушені достроково завершити опитування</b>
+      `<b>${Emoji.sad} На жаль ми вимушені достроково завершити анкетування</b>
       \n${Emoji.wink} Але... Якщо захочете пройти його знову - тисніть /start_join`,
     );
     await ctx.scene.leave();

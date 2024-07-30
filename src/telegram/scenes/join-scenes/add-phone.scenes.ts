@@ -32,13 +32,15 @@ export class AddPhoneScene extends Scenes.BaseScene<
   private async addPhoneStartMarkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
     const startMessage = await ctx.replyWithHTML(
       `<b>${Emoji.question} Вкажіть ваш номер телефону</b>
-      \n${Emoji.attention} - Увага! Формат запису: +38(999)999-99-99`,
+      \n${Emoji.attention} - Увага! Формат запису: 
+      \n+38 (097) 111-22-33`,
     );
 
     this.addPhoneStartMessageId = startMessage.message_id;
 
     return startMessage;
   }
+
   private async addPhoneChoiseMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
@@ -52,7 +54,7 @@ export class AddPhoneScene extends Scenes.BaseScene<
         [
           Markup.button.callback(
             `${Emoji.forward} Далі`,
-            'go-forward_to_personal_info',
+            `go-forward_to_personal_info`,
           ),
         ],
       ]),
@@ -112,11 +114,14 @@ export class AddPhoneScene extends Scenes.BaseScene<
     await this.addPhoneChoiseMarkup(ctx);
   }
 
-  @Action('go-forward_to_personal_info')
+  @Action(`go-forward_to_personal_info`)
   async goToPersonalInfoForward(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    if (ctx.scene.current.id !== 'ADD_PHONE_SCENE') {
+    if (
+      ctx.scene.current.id !== 'ADD_PHONE_SCENE' ||
+      !ctx.session.__scenes.state.phoneNumber
+    ) {
       return;
     }
     await ctx.answerCbQuery();

@@ -55,7 +55,7 @@ export class SpecialityScene extends Scenes.BaseScene<
         [
           Markup.button.callback(
             `${Emoji.forward} Далі`,
-            'go-forward_to_photo_load',
+            `go-forward_to_photo_load`,
           ),
         ],
       ]),
@@ -107,9 +107,12 @@ export class SpecialityScene extends Scenes.BaseScene<
     await this.specialityChoiseMarkup(ctx);
   }
 
-  @Action('go-forward_to_photo_load')
+  @Action(`go-forward_to_photo_load`)
   async goForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    if (ctx.scene.current.id !== 'SPECIALITY_SCENE') {
+    if (
+      ctx.scene.current.id !== 'SPECIALITY_SCENE' ||
+      !ctx.session.__scenes.state.speciality
+    ) {
       return;
     }
     await ctx.answerCbQuery();
