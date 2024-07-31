@@ -14,6 +14,8 @@ import {
   onSceneGateWithoutEnterScene,
 } from '../helpers-scenes/scene-gate.helper';
 import { Emoji } from 'src/telegram/emoji/emoji';
+import { dangerRegexp } from '../helpers-scenes/regexps.helper';
+import { onCreateAlertMessage } from '../helpers-scenes/alert-message.helper';
 
 @Injectable()
 @Scene('FULL_NAME_SCENE')
@@ -26,6 +28,7 @@ export class FullNameScene extends Scenes.BaseScene<
 
   private fullNameStartMessageId: number;
   private fullNameChoiceMessageId: number;
+  private alertMessageId: number;
 
   private async fullNameStartMarkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
     const startMessage = await ctx.replyWithHTML(
@@ -67,6 +70,7 @@ export class FullNameScene extends Scenes.BaseScene<
     this.fullNameStartMessageId &&
       (await ctx.deleteMessage(this.fullNameStartMessageId));
     await this.fullNameStartMarkup(ctx);
+    return;
   }
 
   @On('text')
@@ -88,6 +92,23 @@ export class FullNameScene extends Scenes.BaseScene<
 
     const message = ctx.text.trim();
 
+    if (dangerRegexp.test(message)) {
+      console.log('!!!!!!!!!');
+      this.alertMessageId && (await ctx.deleteMessage(this.alertMessageId));
+      await onCreateAlertMessage(ctx, this.alertMessageId);
+      // await ctx.replyWithHTML(
+      //   `<b>${Emoji.reject} Ви ввели некоректне значення</b>`,
+      // );
+
+      if (!ctx.session.__scenes.state.fullName) {
+        await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
+        return;
+      } else {
+        await this.fullNameChoiceMarkup(ctx);
+        return;
+      }
+    }
+
     if (!ctx.session.__scenes.state) {
       ctx.session.__scenes.state = {};
       ctx.session.__scenes.state.fullName = message;
@@ -96,6 +117,7 @@ export class FullNameScene extends Scenes.BaseScene<
     }
 
     await this.fullNameChoiceMarkup(ctx);
+    return;
   }
 
   @Action(`go-forward_to_speciality`)
@@ -110,10 +132,16 @@ export class FullNameScene extends Scenes.BaseScene<
     }
     await ctx.answerCbQuery();
     await ctx.scene.enter('SPECIALITY_SCENE', ctx.session.__scenes.state);
+    this.fullNameStartMessageId &&
+      (await ctx.deleteMessage(this.fullNameStartMessageId));
+    this.fullNameChoiceMessageId &&
+      (await ctx.deleteMessage(this.fullNameChoiceMessageId));
+    return;
   }
 
   @SceneLeave()
-  onSceneLeave(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+  async onSceneLeave(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
     ctx.from.id;
+    return;
   }
 }

@@ -21,4 +21,6 @@ export enum Emoji {
   chosen = '🏅',
   skip = '⬇️',
   arrowTop = '⬆️',
+  telephone = '☎️',
+  email = '📧',
 }

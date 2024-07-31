@@ -216,14 +216,14 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
 
   @Action(`go-forward_to_work_type`)
   async goForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    let isFilePhotoId: boolean;
-    if (
-      !ctx.session.__scenes.state.documentFileId &&
-      !ctx.session.__scenes.state.documentPhotoId
-    ) {
-      isFilePhotoId = false;
-    }
-    if (ctx.scene.current.id !== 'PHOTOFILE_LOAD_SCENE' || !isFilePhotoId) {
+    // let isFilePhotoId: boolean;
+    // if (
+    //   !ctx.session.__scenes.state.documentFileId &&
+    //   !ctx.session.__scenes.state.documentPhotoId
+    // ) {
+    //   isFilePhotoId = false;
+    // }
+    if (ctx.scene.current.id !== 'PHOTOFILE_LOAD_SCENE') {
       return;
     }
     await ctx.answerCbQuery();

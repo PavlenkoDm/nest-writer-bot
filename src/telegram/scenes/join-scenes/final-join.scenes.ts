@@ -69,8 +69,8 @@ export class FinalJoinScene extends Scenes.BaseScene<
       <b>${Emoji.pin} Види робіт які я можу виконувати:</b>  <i>"${workTypeCollection}"</i>\n\n
       <b>${Emoji.pin} Технічні навички:</b>  <i>"${isTechSkills}"</i>\n\n
       <b>${Emoji.time} Термін(и) виконання:</b>  <i>"${deadlines}"</i>\n\n
-      <b>${Emoji.book} Електронна адреса:</b>  <i>${email}</i>\n\n
-      <b>${Emoji.note} Номер телефону:</b>  <i>${phoneNumber}</i>\n\n
+      <b>${Emoji.email} Електронна адреса:</b>  <i>${email}</i>\n\n
+      <b>${Emoji.telephone} Номер телефону:</b>  <i>${phoneNumber}</i>\n\n
       <b>${Emoji.note} Ознайомлений з політикою конфіденційності:</b>  <i>${privacyPolicy}</i>\n\n
       <b>${Emoji.note} Погоджуюсь на обробку персональних даних:</b>  <i>${privacyPolicy}</i>
       `;
@@ -172,7 +172,11 @@ export class FinalJoinScene extends Scenes.BaseScene<
     await ctx.editMessageText(
       `<b>${Emoji.sad} На жаль, процедура приєднання до команди виконавців була відмінена</b>
       \n${Emoji.wink} Але... Якщо захочете пройти опитування знову - тисніть /start_join`,
+      {
+        parse_mode: 'HTML',
+      },
     );
+    await ctx.scene.leave();
   }
 
   @SceneLeave()

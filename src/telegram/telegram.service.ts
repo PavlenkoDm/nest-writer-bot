@@ -41,6 +41,39 @@ export class TelegramService extends Telegraf<Context> {
     ]);
   }
 
+  private startJoinMessageId: number;
+  private startOrderMessageId: number;
+
+  private async onStartJoinMarkup(ctx: SceneContext<IJoinSceneState>) {
+    const startJoinMessage = await ctx.replyWithHTML(
+      `<b>Вітаю ${ctx.from.username}!</b>${Emoji.greeting}
+      \nДякуємо, що вирішили приєднатися до нашої команди виконавців. Будь ласка, дайте відповіді на наступні запитання, щоб ми могли додати Вас до нашої бази виконавців.
+      \nТисніть   ${Emoji.pushGo} "Join"   і починаємо.`,
+      Markup.inlineKeyboard([
+        Markup.button.callback(`${Emoji.go} Join`, `go_join`),
+      ]),
+    );
+
+    this.startJoinMessageId = startJoinMessage.message_id;
+
+    return startJoinMessage;
+  }
+
+  private async onStartOrderMarkup(ctx: SceneContext<IOrderSceneState>) {
+    const startOrderMessage = await ctx.replyWithHTML(
+      `<b>Вітаю ${ctx.from.username}!</b>${Emoji.greeting}
+      \nЦей бот допоможе в замовленні роботи.
+      \nТисніть   ${Emoji.pushGo} "Go"   і починаємо.`,
+      Markup.inlineKeyboard([
+        Markup.button.callback(`${Emoji.go} Go`, `go_order`),
+      ]),
+    );
+
+    this.startOrderMessageId = startOrderMessage.message_id;
+
+    return startOrderMessage;
+  }
+
   @Start()
   async onStart(@Ctx() ctx: SceneContext<MyOrderJoinContext>) {
     const startPayload = ctx.text.trim().split(' ')[1];
@@ -89,26 +122,16 @@ export class TelegramService extends Telegraf<Context> {
 
   @Command('start_order')
   async onStartOrder(@Ctx() ctx: SceneContext<IOrderSceneState>) {
-    await ctx.replyWithHTML(
-      `<b>Вітаю ${ctx.from.username}!</b>${Emoji.greeting}
-      \nЦей бот допоможе в замовленні роботи.
-      \nТисніть   ${Emoji.pushGo} "Go"   і починаємо.`,
-      Markup.inlineKeyboard([
-        Markup.button.callback(`${Emoji.go} Go`, `go_order`),
-      ]),
-    );
+    this.startOrderMessageId &&
+      (await ctx.deleteMessage(this.startOrderMessageId));
+    await this.onStartOrderMarkup(ctx);
   }
 
   @Command('start_join')
   async onStartJoin(@Ctx() ctx: SceneContext<IJoinSceneState>) {
-    await ctx.replyWithHTML(
-      `<b>Вітаю ${ctx.from.username}!</b>${Emoji.greeting}
-      \nДякуємо, що вирішили приєднатися до нашої команди виконавців. Будь ласка, дайте відповіді на наступні запитання, щоб ми могли додати Вас до нашої бази виконавців.
-      \nТисніть   ${Emoji.pushGo} "Join"   і починаємо.`,
-      Markup.inlineKeyboard([
-        Markup.button.callback(`${Emoji.go} Join`, `go_join`),
-      ]),
-    );
+    this.startJoinMessageId &&
+      (await ctx.deleteMessage(this.startJoinMessageId));
+    await this.onStartJoinMarkup(ctx);
   }
 
   @On('text')
@@ -149,11 +172,21 @@ export class TelegramService extends Telegraf<Context> {
     if (!ctx.session.__scenes.state) {
       ctx.session.__scenes.state = {};
       ctx.session.__scenes.state.isJoinScenario = true;
+
       await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
+
+      this.startJoinMessageId &&
+        (await ctx.deleteMessage(this.startJoinMessageId));
+
       return;
     } else {
       ctx.session.__scenes.state.isJoinScenario = true;
+
       await ctx.scene.enter('FULL_NAME_SCENE');
+
+      this.startJoinMessageId &&
+        (await ctx.deleteMessage(this.startJoinMessageId));
+
       return;
     }
   }
