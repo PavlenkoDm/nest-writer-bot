@@ -31,7 +31,7 @@ export class AddEmailScene extends Scenes.BaseScene<
 
   private async addEmailStartMarkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
     const startMessage = await ctx.replyWithHTML(
-      `<b>${Emoji.question} Вкажіть Вашу електронну адресу</b>
+      `<b>${Emoji.question} Вкажіть вашу електронну адресу.</b>
       \n${Emoji.attention} - Увага! Формат запису: 
       \nmymail@example.com`,
     );
@@ -49,7 +49,7 @@ export class AddEmailScene extends Scenes.BaseScene<
     const message = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Ви вказали таку електронну адресу:</b>
       \n"<i>${ctx.session.__scenes.state.email}</i>"
-      \n${Emoji.attention} - Для зміни email - введіть новий`,
+      \n${Emoji.attention} - Для зміни email введіть новий.`,
       Markup.inlineKeyboard([
         [
           Markup.button.callback(
@@ -93,7 +93,7 @@ export class AddEmailScene extends Scenes.BaseScene<
 
     if (!addEmailRegExp.test(message)) {
       await ctx.replyWithHTML(
-        `<b>${Emoji.reject} Ви ввели некоректне значення</b>`,
+        `<b>${Emoji.reject} Ви ввели некоректне значення!</b>`,
       );
 
       if (!ctx.session.__scenes.state.email) {

@@ -237,9 +237,7 @@ export class WorkTypeScene extends Scenes.BaseScene<
       !ctx.session.__scenes.state.workType ||
       ctx.session.__scenes.state.workType.length === 0
     ) {
-      await ctx.replyWithHTML(
-        `${Emoji.reject} Ви не вибрали жодного значення!`,
-      );
+      await ctx.replyWithHTML(`${Emoji.reject} Ви не обрали жодного значення!`);
       await ctx.scene.enter('WORK_TYPE_SCENE', ctx.session.__scenes.state);
       return;
     }

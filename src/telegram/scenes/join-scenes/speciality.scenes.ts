@@ -50,7 +50,7 @@ export class SpecialityScene extends Scenes.BaseScene<
     const message = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Додана така інформація про освіту:</b>
       \n"<i>${ctx.session.__scenes.state.speciality}</i>"
-      \n${Emoji.attention} - Для зміни інформації про освіту, введіть нові дані`,
+      \n${Emoji.attention} - Для зміни інформації про освіту введіть нові дані.`,
       Markup.inlineKeyboard([
         [
           Markup.button.callback(

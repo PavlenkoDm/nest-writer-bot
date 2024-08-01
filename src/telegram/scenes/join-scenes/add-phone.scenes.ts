@@ -31,7 +31,7 @@ export class AddPhoneScene extends Scenes.BaseScene<
 
   private async addPhoneStartMarkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
     const startMessage = await ctx.replyWithHTML(
-      `<b>${Emoji.question} Вкажіть ваш номер телефону</b>
+      `<b>${Emoji.question} Вкажіть ваш номер телефону.</b>
       \n${Emoji.attention} - Увага! Формат запису: 
       \n+38 (097) 111-22-33`,
     );
@@ -49,7 +49,7 @@ export class AddPhoneScene extends Scenes.BaseScene<
     const message = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Ви вказали такий номер телефону:</b>
       \n<i>${ctx.session.__scenes.state.phoneNumber}</i>
-      \n${Emoji.attention} - Для зміни номера - введіть новий`,
+      \n${Emoji.attention} - Для зміни номера введіть новий.`,
       Markup.inlineKeyboard([
         [
           Markup.button.callback(

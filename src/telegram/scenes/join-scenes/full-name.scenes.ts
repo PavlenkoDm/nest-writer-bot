@@ -15,20 +15,18 @@ import {
 } from '../helpers-scenes/scene-gate.helper';
 import { Emoji } from 'src/telegram/emoji/emoji';
 import { dangerRegexp } from '../helpers-scenes/regexps.helper';
-import { onCreateAlertMessage } from '../helpers-scenes/alert-message.helper';
+import { CommonJoinClass } from './common-join.abstract';
 
 @Injectable()
 @Scene('FULL_NAME_SCENE')
-export class FullNameScene extends Scenes.BaseScene<
-  Scenes.SceneContext<IJoinSceneState>
-> {
+export class FullNameScene extends CommonJoinClass {
   constructor() {
     super('FULL_NAME_SCENE');
   }
 
   private fullNameStartMessageId: number;
   private fullNameChoiceMessageId: number;
-  private alertMessageId: number;
+  protected alertMessageId: number;
 
   private async fullNameStartMarkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
     const startMessage = await ctx.replyWithHTML(
@@ -46,11 +44,12 @@ export class FullNameScene extends Scenes.BaseScene<
   ) {
     this.fullNameChoiceMessageId &&
       (await ctx.deleteMessage(this.fullNameChoiceMessageId));
+    this.fullNameChoiceMessageId = 0;
 
     const choiceMessage = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Додані повне імʼя та вік:</b>
       \n"<i>${ctx.session.__scenes.state.fullName}</i>"
-      \n${Emoji.attention} - Для зміни доданої інформації, введіть нові дані`,
+      \n${Emoji.attention} - Для зміни доданої інформації введіть нові дані.`,
       Markup.inlineKeyboard([
         [
           Markup.button.callback(
@@ -62,6 +61,7 @@ export class FullNameScene extends Scenes.BaseScene<
     );
 
     this.fullNameChoiceMessageId = choiceMessage.message_id;
+
     return choiceMessage;
   }
 
@@ -69,6 +69,7 @@ export class FullNameScene extends Scenes.BaseScene<
   async onEnterFullNameScene(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
     this.fullNameStartMessageId &&
       (await ctx.deleteMessage(this.fullNameStartMessageId));
+    this.fullNameStartMessageId = 0;
     await this.fullNameStartMarkup(ctx);
     return;
   }
@@ -92,13 +93,11 @@ export class FullNameScene extends Scenes.BaseScene<
 
     const message = ctx.text.trim();
 
+    dangerRegexp.lastIndex = 0;
     if (dangerRegexp.test(message)) {
-      console.log('!!!!!!!!!');
       this.alertMessageId && (await ctx.deleteMessage(this.alertMessageId));
-      await onCreateAlertMessage(ctx, this.alertMessageId);
-      // await ctx.replyWithHTML(
-      //   `<b>${Emoji.reject} Ви ввели некоректне значення</b>`,
-      // );
+
+      await this.onCreateAlertMessage(ctx);
 
       if (!ctx.session.__scenes.state.fullName) {
         await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
@@ -136,6 +135,10 @@ export class FullNameScene extends Scenes.BaseScene<
       (await ctx.deleteMessage(this.fullNameStartMessageId));
     this.fullNameChoiceMessageId &&
       (await ctx.deleteMessage(this.fullNameChoiceMessageId));
+    this.alertMessageId && (await ctx.deleteMessage(this.alertMessageId));
+    this.fullNameStartMessageId = 0;
+    this.fullNameChoiceMessageId = 0;
+    this.alertMessageId = 0;
     return;
   }
 

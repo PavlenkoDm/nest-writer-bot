@@ -46,7 +46,7 @@ export class TelegramService extends Telegraf<Context> {
 
   private async onStartJoinMarkup(ctx: SceneContext<IJoinSceneState>) {
     const startJoinMessage = await ctx.replyWithHTML(
-      `<b>Вітаю ${ctx.from.username}!</b>${Emoji.greeting}
+      `<b>Вітаю, ${ctx.from.username}!</b>${Emoji.greeting}
       \nДякуємо, що вирішили приєднатися до нашої команди виконавців. Будь ласка, дайте відповіді на наступні запитання, щоб ми могли додати Вас до нашої бази виконавців.
       \nТисніть   ${Emoji.pushGo} "Join"   і починаємо.`,
       Markup.inlineKeyboard([
@@ -61,7 +61,7 @@ export class TelegramService extends Telegraf<Context> {
 
   private async onStartOrderMarkup(ctx: SceneContext<IOrderSceneState>) {
     const startOrderMessage = await ctx.replyWithHTML(
-      `<b>Вітаю ${ctx.from.username}!</b>${Emoji.greeting}
+      `<b>Вітаю, ${ctx.from.username}!</b>${Emoji.greeting}
       \nЦей бот допоможе в замовленні роботи.
       \nТисніть   ${Emoji.pushGo} "Go"   і починаємо.`,
       Markup.inlineKeyboard([
@@ -124,6 +124,7 @@ export class TelegramService extends Telegraf<Context> {
   async onStartOrder(@Ctx() ctx: SceneContext<IOrderSceneState>) {
     this.startOrderMessageId &&
       (await ctx.deleteMessage(this.startOrderMessageId));
+    this.startOrderMessageId = 0;
     await this.onStartOrderMarkup(ctx);
   }
 
@@ -131,6 +132,7 @@ export class TelegramService extends Telegraf<Context> {
   async onStartJoin(@Ctx() ctx: SceneContext<IJoinSceneState>) {
     this.startJoinMessageId &&
       (await ctx.deleteMessage(this.startJoinMessageId));
+    this.startJoinMessageId = 0;
     await this.onStartJoinMarkup(ctx);
   }
 
@@ -144,7 +146,6 @@ export class TelegramService extends Telegraf<Context> {
 
   @Action(`go_order`)
   async onGoOrder(@Ctx() ctx: SceneContext<IOrderSceneState>) {
-    await ctx.answerCbQuery();
     if (!ctx.session.__scenes.state) {
       ctx.session.__scenes.state = {};
       ctx.session.__scenes.state.isScenario = true;
@@ -155,6 +156,7 @@ export class TelegramService extends Telegraf<Context> {
       ctx.session.__scenes.state.typeOfWork &&
       !ctx.session.__scenes.state.uniqueness
     ) {
+      await ctx.answerCbQuery();
       await ctx.replyWithHTML(
         `<b>${Emoji.answer} Вибраний(попередньо) тип роботи:</b>
         \n"<i>${ctx.session.__scenes.state.typeOfWork}</i>"`,
@@ -162,30 +164,32 @@ export class TelegramService extends Telegraf<Context> {
       await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
       return;
     }
+    await ctx.answerCbQuery();
     await ctx.scene.enter('TYPE_SCENE');
     return;
   }
 
   @Action(`go_join`)
   async onGoJoin(@Ctx() ctx: SceneContext<IJoinSceneState>) {
-    await ctx.answerCbQuery();
     if (!ctx.session.__scenes.state) {
       ctx.session.__scenes.state = {};
+      ctx.session.__scenes.state.isJoinScenario = true;
+      await ctx.answerCbQuery();
+      await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
+
+      this.startJoinMessageId &&
+        (await ctx.deleteMessage(this.startJoinMessageId));
+      this.startJoinMessageId = 0;
+
+      return;
+    } else {
       ctx.session.__scenes.state.isJoinScenario = true;
 
       await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
 
       this.startJoinMessageId &&
         (await ctx.deleteMessage(this.startJoinMessageId));
-
-      return;
-    } else {
-      ctx.session.__scenes.state.isJoinScenario = true;
-
-      await ctx.scene.enter('FULL_NAME_SCENE');
-
-      this.startJoinMessageId &&
-        (await ctx.deleteMessage(this.startJoinMessageId));
+      this.startJoinMessageId = 0;
 
       return;
     }
