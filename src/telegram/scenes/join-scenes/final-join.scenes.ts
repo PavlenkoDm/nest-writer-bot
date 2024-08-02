@@ -105,7 +105,7 @@ export class FinalJoinScene extends Scenes.BaseScene<
   private async messageToSend(ctx: Scenes.SceneContext<IJoinSceneState>) {
     const commonMarkup = await this.commonFinalJoinMarkup(ctx);
     const message = `
-    <b>Замовлення від:</b>  <i>@${ctx.from.username}</i>\n\n
+    <b>${Emoji.alert} Анкета на приєднання від:</b>  <i>@${ctx.from.username}</i>\n\n
     ${commonMarkup}
     `;
 
@@ -146,7 +146,7 @@ export class FinalJoinScene extends Scenes.BaseScene<
     });
     await ctx.replyWithHTML(
       `<b>${Emoji.answer} Дякуємо за надану інформацію!</b>
-      \n${Emoji.time} Чекайте на зв’язок з менеджером`,
+      \n${Emoji.time} Чекайте на зв’язок з менеджером.`,
     );
     await ctx.scene.leave();
   }

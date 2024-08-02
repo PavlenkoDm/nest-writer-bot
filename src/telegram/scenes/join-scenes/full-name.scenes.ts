@@ -9,13 +9,9 @@ import {
 } from 'nestjs-telegraf';
 import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
-import {
-  Forbidden,
-  onSceneGateWithoutEnterScene,
-} from '../helpers-scenes/scene-gate.helper';
 import { Emoji } from 'src/telegram/emoji/emoji';
 import { dangerRegexp } from '../helpers-scenes/regexps.helper';
-import { CommonJoinClass } from './common-join.abstract';
+import { CommonJoinClass, Forbidden } from './common-join.abstract';
 
 @Injectable()
 @Scene('FULL_NAME_SCENE')
@@ -27,6 +23,7 @@ export class FullNameScene extends CommonJoinClass {
   private fullNameStartMessageId: number;
   private fullNameChoiceMessageId: number;
   protected alertMessageId: number;
+  protected commandForbiddenMessageId: number;
 
   private async fullNameStartMarkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
     const startMessage = await ctx.replyWithHTML(
@@ -76,7 +73,7 @@ export class FullNameScene extends CommonJoinClass {
 
   @On('text')
   async onFullName(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    const gate = await onSceneGateWithoutEnterScene(
+    const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
       'FULL_NAME_SCENE',
       Forbidden.untilJoin,
@@ -131,14 +128,22 @@ export class FullNameScene extends CommonJoinClass {
     }
     await ctx.answerCbQuery();
     await ctx.scene.enter('SPECIALITY_SCENE', ctx.session.__scenes.state);
-    this.fullNameStartMessageId &&
-      (await ctx.deleteMessage(this.fullNameStartMessageId));
-    this.fullNameChoiceMessageId &&
-      (await ctx.deleteMessage(this.fullNameChoiceMessageId));
-    this.alertMessageId && (await ctx.deleteMessage(this.alertMessageId));
-    this.fullNameStartMessageId = 0;
-    this.fullNameChoiceMessageId = 0;
-    this.alertMessageId = 0;
+    // if (this.fullNameStartMessageId) {
+    //   await ctx.deleteMessage(this.fullNameStartMessageId);
+    //   this.fullNameStartMessageId = 0;
+    // }
+    // if (this.fullNameChoiceMessageId) {
+    //   await ctx.deleteMessage(this.fullNameChoiceMessageId);
+    //   this.fullNameChoiceMessageId = 0;
+    // }
+    if (this.alertMessageId) {
+      await ctx.deleteMessage(this.alertMessageId);
+      this.alertMessageId = 0;
+    }
+    if (this.commandForbiddenMessageId) {
+      await ctx.deleteMessage(this.commandForbiddenMessageId);
+      this.commandForbiddenMessageId = 0;
+    }
     return;
   }
 

@@ -122,18 +122,30 @@ export class TelegramService extends Telegraf<Context> {
 
   @Command('start_order')
   async onStartOrder(@Ctx() ctx: SceneContext<IOrderSceneState>) {
-    this.startOrderMessageId &&
-      (await ctx.deleteMessage(this.startOrderMessageId));
-    this.startOrderMessageId = 0;
+    if (this.startOrderMessageId) {
+      await ctx.deleteMessage(this.startOrderMessageId);
+      this.startOrderMessageId = 0;
+    }
+    if (this.startJoinMessageId) {
+      await ctx.deleteMessage(this.startJoinMessageId);
+      this.startJoinMessageId = 0;
+    }
     await this.onStartOrderMarkup(ctx);
+    return;
   }
 
   @Command('start_join')
   async onStartJoin(@Ctx() ctx: SceneContext<IJoinSceneState>) {
-    this.startJoinMessageId &&
-      (await ctx.deleteMessage(this.startJoinMessageId));
-    this.startJoinMessageId = 0;
+    if (this.startJoinMessageId) {
+      await ctx.deleteMessage(this.startJoinMessageId);
+      this.startJoinMessageId = 0;
+    }
+    if (this.startOrderMessageId) {
+      await ctx.deleteMessage(this.startOrderMessageId);
+      this.startOrderMessageId = 0;
+    }
     await this.onStartJoinMarkup(ctx);
+    return;
   }
 
   @On('text')
@@ -177,9 +189,14 @@ export class TelegramService extends Telegraf<Context> {
       await ctx.answerCbQuery();
       await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
 
-      this.startJoinMessageId &&
-        (await ctx.deleteMessage(this.startJoinMessageId));
-      this.startJoinMessageId = 0;
+      if (this.startJoinMessageId) {
+        await ctx.deleteMessage(this.startJoinMessageId);
+        this.startJoinMessageId = 0;
+      }
+      if (this.startOrderMessageId) {
+        await ctx.deleteMessage(this.startOrderMessageId);
+        this.startOrderMessageId = 0;
+      }
 
       return;
     } else {
@@ -187,9 +204,14 @@ export class TelegramService extends Telegraf<Context> {
 
       await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
 
-      this.startJoinMessageId &&
-        (await ctx.deleteMessage(this.startJoinMessageId));
-      this.startJoinMessageId = 0;
+      if (this.startJoinMessageId) {
+        await ctx.deleteMessage(this.startJoinMessageId);
+        this.startJoinMessageId = 0;
+      }
+      if (this.startOrderMessageId) {
+        await ctx.deleteMessage(this.startOrderMessageId);
+        this.startOrderMessageId = 0;
+      }
 
       return;
     }
