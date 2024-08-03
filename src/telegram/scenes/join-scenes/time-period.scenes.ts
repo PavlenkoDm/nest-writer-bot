@@ -63,7 +63,7 @@ export class TimePeriodScene extends Scenes.BaseScene<
 
   private async createStartMurkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
     const startMessage = await ctx.reply(
-      `<b>${Emoji.question} Oберіть терміни, в які Ви готові виконувати роботи:</b>
+      `<b>${Emoji.question} Oберіть терміни, в які ви готові виконувати роботи:</b>
       \n  <i>( Можна  обрати  не  1  варіант,  а  декілька )</i>`,
       {
         parse_mode: 'HTML',
@@ -124,7 +124,7 @@ export class TimePeriodScene extends Scenes.BaseScene<
 
     await ctx.answerCbQuery();
     await ctx.editMessageText(
-      `<b>${Emoji.question} Oберіть терміни, в які Ви готові виконувати роботи:</b>
+      `<b>${Emoji.question} Oберіть терміни, в які ви готові виконувати роботи:</b>
       \n  <i>( Можна  обрати  не  1  варіант,  а  декілька )</i>`,
       {
         parse_mode: 'HTML',
@@ -170,7 +170,7 @@ export class TimePeriodScene extends Scenes.BaseScene<
       !ctx.session.__scenes.state.timePeriod ||
       ctx.session.__scenes.state.timePeriod.length === 0
     ) {
-      await ctx.replyWithHTML(`${Emoji.reject} Ви не ввели жодного значення!`);
+      await ctx.replyWithHTML(`${Emoji.reject} Ви не обрали жодного значення!`);
       await ctx.scene.enter('TIME_PERIOD_SCENE', ctx.session.__scenes.state);
       return;
     }

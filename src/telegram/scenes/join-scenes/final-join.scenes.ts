@@ -66,7 +66,7 @@ export class FinalJoinScene extends Scenes.BaseScene<
     const startMessage = `<b>${Emoji.pin} Повне імʼя та вік:</b>  <i>"${fullName}"</i>\n\n
       <b>${Emoji.pin} Інформація про освіту:</b>  <i>"${speciality}"</i>\n\n
       <b>${Emoji.pin} Фото або скан-копія документа про освіту:</b>  <i><a href="${isLinkToFile}">${isSavedFile}</a></i>\n\n
-      <b>${Emoji.pin} Види робіт які я можу виконувати:</b>  <i>"${workTypeCollection}"</i>\n\n
+      <b>${Emoji.pin} Види робіт, які я можу виконувати:</b>  <i>"${workTypeCollection}"</i>\n\n
       <b>${Emoji.pin} Технічні навички:</b>  <i>"${isTechSkills}"</i>\n\n
       <b>${Emoji.time} Термін(и) виконання:</b>  <i>"${deadlines}"</i>\n\n
       <b>${Emoji.email} Електронна адреса:</b>  <i>${email}</i>\n\n
@@ -83,7 +83,7 @@ export class FinalJoinScene extends Scenes.BaseScene<
   ) {
     const commonMarkup = await this.commonFinalJoinMarkup(ctx);
     const initialFinalJoinMessage = await ctx.replyWithHTML(
-      `<b>${Emoji.alert} Ваша анткета:</b>\n\n
+      `<b>${Emoji.alert} Ваша анкета:</b>\n\n
       ${commonMarkup}`,
       Markup.inlineKeyboard([
         [
@@ -92,7 +92,7 @@ export class FinalJoinScene extends Scenes.BaseScene<
             `send_join_info`,
           ),
         ],
-        [Markup.button.callback(`${Emoji.restart} Restart`, `restart`)],
+        [Markup.button.callback(`${Emoji.restart} Restart`, `restart_join`)],
         [Markup.button.callback(`${Emoji.change} Відмінити`, `break_join`)],
       ]),
     );
@@ -105,7 +105,7 @@ export class FinalJoinScene extends Scenes.BaseScene<
   private async messageToSend(ctx: Scenes.SceneContext<IJoinSceneState>) {
     const commonMarkup = await this.commonFinalJoinMarkup(ctx);
     const message = `
-    <b>Замовлення від:</b>  <i>@${ctx.from.username}</i>\n\n
+    <b>${Emoji.alert} Анкета на приєднання від:</b>  <i>@${ctx.from.username}</i>\n\n
     ${commonMarkup}
     `;
 
@@ -146,12 +146,12 @@ export class FinalJoinScene extends Scenes.BaseScene<
     });
     await ctx.replyWithHTML(
       `<b>${Emoji.answer} Дякуємо за надану інформацію!</b>
-      \n${Emoji.time} Чекайте на зв’язок з менеджером`,
+      \n${Emoji.time} Чекайте на зв’язок з менеджером.`,
     );
     await ctx.scene.leave();
   }
 
-  @Action(`restart`)
+  @Action(`restart_join`)
   async onRestart(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
     if (ctx.scene.current.id !== 'FINAL_JOIN_SCENE') {
       return;
@@ -160,6 +160,7 @@ export class FinalJoinScene extends Scenes.BaseScene<
     ctx.session.__scenes.state.isJoinScenario = true;
     await ctx.answerCbQuery();
     await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
+    return;
   }
 
   @Action(`break_join`)
