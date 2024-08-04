@@ -1,0 +1,7 @@
+./test
+.vscode
+.github
+./node_modules
+./dist
+README.md
+.prettierrc
