@@ -10,7 +10,7 @@ export enum Forbidden {
   enterCommands = 'Заборонено вводити команди до закінчення замовлення!',
 }
 
-export abstract class CommonJoinClass extends Scenes.BaseScene<
+export abstract class CommonOrderClass extends Scenes.BaseScene<
   Scenes.SceneContext<IOrderSceneState>
 > {
   protected alertMessageId: number;

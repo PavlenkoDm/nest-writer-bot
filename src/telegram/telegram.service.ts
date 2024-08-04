@@ -161,7 +161,13 @@ export class TelegramService extends Telegraf<Context> {
     if (!ctx.session.__scenes.state) {
       ctx.session.__scenes.state = {};
       ctx.session.__scenes.state.isScenario = true;
+
+      await ctx.answerCbQuery();
       await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
+      if (this.startOrderMessageId) {
+        await ctx.deleteMessage(this.startOrderMessageId);
+        this.startOrderMessageId = 0;
+      }
       return;
     }
     if (
@@ -173,11 +179,18 @@ export class TelegramService extends Telegraf<Context> {
         `<b>${Emoji.answer} Вибраний(попередньо) тип роботи:</b>
         \n"<i>${ctx.session.__scenes.state.typeOfWork}</i>"`,
       );
+
       await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
       return;
     }
+    ctx.session.__scenes.state.isScenario = true;
     await ctx.answerCbQuery();
-    await ctx.scene.enter('TYPE_SCENE');
+    await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
+
+    if (this.startOrderMessageId) {
+      await ctx.deleteMessage(this.startOrderMessageId);
+      this.startOrderMessageId = 0;
+    }
     return;
   }
 

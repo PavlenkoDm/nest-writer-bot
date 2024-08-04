@@ -9,11 +9,8 @@ import {
 } from 'nestjs-telegraf';
 import { Markup, Scenes } from 'telegraf';
 import { IOrderSceneState } from './order.config';
-import {
-  Forbidden,
-  onSceneGateFromCommand,
-} from '../helpers-scenes/scene-gate.helper';
 import { Emoji } from 'src/telegram/emoji/emoji';
+import { CommonOrderClass, Forbidden } from './common-order.abstract';
 
 enum Branch {
   education = 'Освіта',
@@ -242,45 +239,18 @@ enum Transport {
 
 @Injectable()
 @Scene('DISCIPLINE_SCENE')
-export class DisciplineScene extends Scenes.BaseScene<
-  Scenes.SceneContext<IOrderSceneState>
-> {
+export class DisciplineScene extends CommonOrderClass {
   constructor() {
     super('DISCIPLINE_SCENE');
   }
+  private disciplineStartMessageId: number;
+  private disciplineChoiceMessageId: number;
+  protected commandForbiddenMessageId: number;
 
-  private async chooseDiscipline(
-    branch: string,
-    specialization: string,
+  private async disciplineStartMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    if (!ctx.session.__scenes.state.discipline) {
-      ctx.session.__scenes.state.discipline = { branch, specialization };
-    }
-    ctx.session.__scenes.state.discipline.branch = branch;
-    ctx.session.__scenes.state.discipline.specialization = specialization;
-    await ctx.replyWithHTML(
-      `<b>${Emoji.answer} Вибрана галузь знань:</b>
-      \n"<i>${ctx.session.__scenes.state.discipline.branch}</i>"
-      \n\n<b>${Emoji.answer} Вибрана спеціальність:</b>
-      \n"<i>${ctx.session.__scenes.state.discipline.specialization}</i>"`,
-      Markup.inlineKeyboard([
-        [Markup.button.callback(`${Emoji.forward} Далі`, 'go-forward')],
-        [
-          Markup.button.callback(
-            `${Emoji.change} Змінити галузь та спеціалізацію`,
-            'change_discipline',
-          ),
-        ],
-      ]),
-    );
-  }
-
-  @SceneEnter()
-  async onEnterDisciplineScene(
-    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
-  ) {
-    await ctx.replyWithHTML(
+    const startMessage = await ctx.replyWithHTML(
       `<b>${Emoji.question} Виберіть галузь знань:</b>`,
       Markup.inlineKeyboard([
         [Markup.button.callback(Branch.education, 'education')],
@@ -372,6 +342,71 @@ export class DisciplineScene extends Scenes.BaseScene<
         [Markup.button.callback(Branch.transport, 'transport')],
       ]),
     );
+
+    this.disciplineStartMessageId = startMessage.message_id;
+
+    return startMessage;
+  }
+
+  private async chooseDiscipline(
+    branch: string,
+    specialization: string,
+    ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    if (!ctx.session.__scenes.state.discipline) {
+      ctx.session.__scenes.state.discipline = { branch, specialization };
+    }
+    ctx.session.__scenes.state.discipline.branch = branch;
+    ctx.session.__scenes.state.discipline.specialization = specialization;
+    await ctx.answerCbQuery();
+    await this.disciplineChoiceMarkup(ctx);
+    return;
+  }
+
+  private async disciplineChoiceMarkup(
+    ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    if (this.disciplineChoiceMessageId) {
+      await ctx.deleteMessage(this.disciplineChoiceMessageId);
+      this.disciplineChoiceMessageId = 0;
+    }
+
+    const choiceMessage = await ctx.replyWithHTML(
+      `<b>${Emoji.answer} Вибрана галузь знань:</b>
+      \n"<i>${ctx.session.__scenes.state.discipline.branch}</i>"
+      \n\n<b>${Emoji.answer} Вибрана спеціальність:</b>
+      \n"<i>${ctx.session.__scenes.state.discipline.specialization}</i>"`,
+      Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            `${Emoji.forward} Далі`,
+            'go-forward_to_theme',
+          ),
+        ],
+        [
+          Markup.button.callback(
+            `${Emoji.change} Змінити галузь та спеціалізацію`,
+            'change_discipline',
+          ),
+        ],
+      ]),
+    );
+
+    this.disciplineChoiceMessageId = choiceMessage.message_id;
+
+    return choiceMessage;
+  }
+
+  @SceneEnter()
+  async onEnterDisciplineScene(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    if (this.disciplineStartMessageId) {
+      await ctx.deleteMessage(this.disciplineStartMessageId);
+      this.disciplineStartMessageId = 0;
+    }
+    await this.disciplineStartMarkup(ctx);
+    return;
   }
 
   // ======= EDUCATION =======================================================
@@ -2757,27 +2792,68 @@ export class DisciplineScene extends Scenes.BaseScene<
     );
   }
 
-  @Action('go-forward')
+  @Action('go-forward_to_theme')
   async goForward(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    if (ctx.scene.current.id !== 'DISCIPLINE_SCENE') {
+      return;
+    }
+
+    await ctx.answerCbQuery();
     await ctx.scene.enter('THEME_SCENE', ctx.session.__scenes.state);
+
+    if (this.disciplineStartMessageId) {
+      await ctx.deleteMessage(this.disciplineStartMessageId);
+      this.disciplineStartMessageId = 0;
+    }
+    if (this.disciplineChoiceMessageId) {
+      await ctx.deleteMessage(this.disciplineChoiceMessageId);
+      this.disciplineChoiceMessageId = 0;
+    }
+    if (this.commandForbiddenMessageId) {
+      await ctx.deleteMessage(this.commandForbiddenMessageId);
+      this.commandForbiddenMessageId = 0;
+    }
+    return;
   }
 
   @Action('change_discipline')
   async changeDiscipline(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    if (ctx.scene.current.id !== 'DISCIPLINE_SCENE') {
+      return;
+    }
+
+    await ctx.answerCbQuery();
     await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
+
+    if (this.disciplineChoiceMessageId) {
+      await ctx.deleteMessage(this.disciplineChoiceMessageId);
+      this.disciplineChoiceMessageId = 0;
+    }
+    if (this.commandForbiddenMessageId) {
+      await ctx.deleteMessage(this.commandForbiddenMessageId);
+      this.commandForbiddenMessageId = 0;
+    }
+    return;
   }
 
   @On('text')
   async onTextInDisciplineScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    const gate = await onSceneGateFromCommand(
+    const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
       'DISCIPLINE_SCENE',
       Forbidden.enterCommands,
     );
     if (gate) {
-      return;
+      const { branch, specialization } = ctx.session.__scenes.state.discipline;
+      if (!branch && !specialization) {
+        await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
+        return;
+      } else {
+        await this.disciplineChoiceMarkup(ctx);
+        return;
+      }
     }
   }
 
