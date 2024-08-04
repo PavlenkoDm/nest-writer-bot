@@ -8,7 +8,7 @@ export enum Alert {
 
 export enum Forbidden {
   enterCommands = 'Заборонено вводити команди до закінчення замовлення!',
-  untilJoin = 'Заборонено вводити команди до закінчення опитування на приєднання!',
+  untilJoin = 'Заборонено вводити команди до закінчення анкетування!',
 }
 
 export abstract class CommonJoinClass extends Scenes.BaseScene<

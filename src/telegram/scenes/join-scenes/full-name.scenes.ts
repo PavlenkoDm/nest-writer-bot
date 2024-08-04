@@ -39,9 +39,10 @@ export class FullNameScene extends CommonJoinClass {
   private async fullNameChoiceMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    this.fullNameChoiceMessageId &&
-      (await ctx.deleteMessage(this.fullNameChoiceMessageId));
-    this.fullNameChoiceMessageId = 0;
+    if (this.fullNameChoiceMessageId) {
+      await ctx.deleteMessage(this.fullNameChoiceMessageId);
+      this.fullNameChoiceMessageId = 0;
+    }
 
     const choiceMessage = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Додані повне імʼя та вік:</b>
@@ -64,9 +65,10 @@ export class FullNameScene extends CommonJoinClass {
 
   @SceneEnter()
   async onEnterFullNameScene(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    this.fullNameStartMessageId &&
-      (await ctx.deleteMessage(this.fullNameStartMessageId));
-    this.fullNameStartMessageId = 0;
+    if (this.fullNameStartMessageId) {
+      await ctx.deleteMessage(this.fullNameStartMessageId);
+      await this.fullNameStartMarkup(ctx);
+    }
     await this.fullNameStartMarkup(ctx);
     return;
   }
@@ -92,7 +94,10 @@ export class FullNameScene extends CommonJoinClass {
 
     dangerRegexp.lastIndex = 0;
     if (dangerRegexp.test(message)) {
-      this.alertMessageId && (await ctx.deleteMessage(this.alertMessageId));
+      if (this.alertMessageId) {
+        await ctx.deleteMessage(this.alertMessageId);
+        this.alertMessageId = 0;
+      }
 
       await this.onCreateAlertMessage(ctx);
 

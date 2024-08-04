@@ -9,22 +9,20 @@ import {
 } from 'nestjs-telegraf';
 import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
-import {
-  Forbidden,
-  onSceneGateWithoutEnterScene,
-} from '../helpers-scenes/scene-gate.helper';
 import { Emoji } from 'src/telegram/emoji/emoji';
+import { CommonJoinClass, Forbidden } from './common-join.abstract';
+import { dangerRegexp } from '../helpers-scenes/regexps.helper';
 
 @Injectable()
 @Scene('SPECIALITY_SCENE')
-export class SpecialityScene extends Scenes.BaseScene<
-  Scenes.SceneContext<IJoinSceneState>
-> {
+export class SpecialityScene extends CommonJoinClass {
   constructor() {
     super('SPECIALITY_SCENE');
   }
   private specialityStartMessageId: number;
   private specialityChoiceMessageId: number;
+  protected alertMessageId: number;
+  protected commandForbiddenMessageId: number;
 
   private async specialityStartMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
@@ -45,8 +43,11 @@ export class SpecialityScene extends Scenes.BaseScene<
   private async specialityChoiseMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    this.specialityChoiceMessageId &&
-      (await ctx.deleteMessage(this.specialityChoiceMessageId));
+    if (this.specialityChoiceMessageId) {
+      await ctx.deleteMessage(this.specialityChoiceMessageId);
+      this.specialityChoiceMessageId = 0;
+    }
+
     const message = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Додана така інформація про освіту:</b>
       \n"<i>${ctx.session.__scenes.state.speciality}</i>"
@@ -70,14 +71,17 @@ export class SpecialityScene extends Scenes.BaseScene<
   async onEnterSpecialityScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    this.specialityStartMessageId &&
-      (await ctx.deleteMessage(this.specialityStartMessageId));
+    if (this.specialityStartMessageId) {
+      await ctx.deleteMessage(this.specialityStartMessageId);
+      this.specialityStartMessageId = 0;
+    }
     await this.specialityStartMarkup(ctx);
+    return;
   }
 
   @On('text')
   async onSpeciality(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    const gate = await onSceneGateWithoutEnterScene(
+    const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
       'SPECIALITY_SCENE',
       Forbidden.untilJoin,
@@ -96,6 +100,24 @@ export class SpecialityScene extends Scenes.BaseScene<
     }
 
     const message = ctx.text.trim();
+
+    dangerRegexp.lastIndex = 0;
+    if (dangerRegexp.test(message)) {
+      if (this.alertMessageId) {
+        await ctx.deleteMessage(this.alertMessageId);
+        this.alertMessageId = 0;
+      }
+
+      await this.onCreateAlertMessage(ctx);
+
+      if (!ctx.session.__scenes.state.speciality) {
+        await ctx.scene.enter('SPECIALITY_SCENE', ctx.session.__scenes.state);
+        return;
+      } else {
+        await this.specialityChoiseMarkup(ctx);
+        return;
+      }
+    }
 
     if (!ctx.session.__scenes.state) {
       ctx.session.__scenes.state = {};
@@ -117,6 +139,15 @@ export class SpecialityScene extends Scenes.BaseScene<
     }
     await ctx.answerCbQuery();
     await ctx.scene.enter('PHOTOFILE_LOAD_SCENE', ctx.session.__scenes.state);
+    if (this.alertMessageId) {
+      await ctx.deleteMessage(this.alertMessageId);
+      this.alertMessageId = 0;
+    }
+    if (this.commandForbiddenMessageId) {
+      await ctx.deleteMessage(this.commandForbiddenMessageId);
+      this.commandForbiddenMessageId = 0;
+    }
+    return;
   }
 
   @SceneLeave()
