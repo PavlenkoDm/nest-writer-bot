@@ -9,25 +9,23 @@ import {
 } from 'nestjs-telegraf';
 import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
-import {
-  Forbidden,
-  onSceneGateWithoutEnterScene,
-} from '../helpers-scenes/scene-gate.helper';
 import { Emoji } from 'src/telegram/emoji/emoji';
+import { CommonJoinClass, Forbidden } from './common-join.abstract';
+import { dangerRegexp } from '../helpers-scenes/regexps.helper';
 
 const addEmailRegExp = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]{2,}$/;
 
 @Injectable()
 @Scene('ADD_EMAIL_SCENE')
-export class AddEmailScene extends Scenes.BaseScene<
-  Scenes.SceneContext<IJoinSceneState>
-> {
+export class AddEmailScene extends CommonJoinClass {
   constructor() {
     super('ADD_EMAIL_SCENE');
   }
 
   private addEmailStartMessageId: number;
   private addEmailChoiceMessageId: number;
+  protected alertMessageId: number;
+  protected commandForbiddenMessageId: number;
 
   private async addEmailStartMarkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
     const startMessage = await ctx.replyWithHTML(
@@ -44,8 +42,11 @@ export class AddEmailScene extends Scenes.BaseScene<
   private async addEmailChoiseMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    this.addEmailChoiceMessageId &&
-      (await ctx.deleteMessage(this.addEmailChoiceMessageId));
+    if (this.addEmailChoiceMessageId) {
+      await ctx.deleteMessage(this.addEmailChoiceMessageId);
+      this.addEmailChoiceMessageId = 0;
+    }
+
     const message = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Ви вказали таку електронну адресу:</b>
       \n"<i>${ctx.session.__scenes.state.email}</i>"
@@ -67,14 +68,17 @@ export class AddEmailScene extends Scenes.BaseScene<
 
   @SceneEnter()
   async onEnterAddEmailScene(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    this.addEmailStartMessageId &&
-      (await ctx.deleteMessage(this.addEmailStartMessageId));
+    if (this.addEmailStartMessageId) {
+      await ctx.deleteMessage(this.addEmailStartMessageId);
+      this.addEmailStartMessageId = 0;
+    }
     await this.addEmailStartMarkup(ctx);
+    return;
   }
 
   @On('text')
   async onAddEmail(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    const gate = await onSceneGateWithoutEnterScene(
+    const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
       'ADD_EMAIL_SCENE',
       Forbidden.untilJoin,
@@ -91,10 +95,14 @@ export class AddEmailScene extends Scenes.BaseScene<
 
     const message = ctx.text.trim();
 
-    if (!addEmailRegExp.test(message)) {
-      await ctx.replyWithHTML(
-        `<b>${Emoji.reject} Ви ввели некоректне значення!</b>`,
-      );
+    dangerRegexp.lastIndex = 0;
+    if (!addEmailRegExp.test(message) || dangerRegexp.test(message)) {
+      if (this.alertMessageId) {
+        await ctx.deleteMessage(this.alertMessageId);
+        this.alertMessageId = 0;
+      }
+
+      await this.onCreateAlertMessage(ctx);
 
       if (!ctx.session.__scenes.state.email) {
         await ctx.scene.enter('ADD_EMAIL_SCENE', ctx.session.__scenes.state);
@@ -113,6 +121,7 @@ export class AddEmailScene extends Scenes.BaseScene<
     }
 
     await this.addEmailChoiseMarkup(ctx);
+    return;
   }
 
   @Action(`go-forward_to_phone_number`)
@@ -125,6 +134,15 @@ export class AddEmailScene extends Scenes.BaseScene<
     }
     await ctx.answerCbQuery();
     await ctx.scene.enter('ADD_PHONE_SCENE', ctx.session.__scenes.state);
+    if (this.alertMessageId) {
+      await ctx.deleteMessage(this.alertMessageId);
+      this.alertMessageId = 0;
+    }
+    if (this.commandForbiddenMessageId) {
+      await ctx.deleteMessage(this.commandForbiddenMessageId);
+      this.commandForbiddenMessageId = 0;
+    }
+    return;
   }
 
   @SceneLeave()

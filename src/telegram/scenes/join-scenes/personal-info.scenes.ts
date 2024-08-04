@@ -9,22 +9,18 @@ import {
 } from 'nestjs-telegraf';
 import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
-import {
-  Forbidden,
-  onSceneGateFromCommand,
-} from '../helpers-scenes/scene-gate.helper';
 import { Emoji } from 'src/telegram/emoji/emoji';
+import { CommonJoinClass, Forbidden } from './common-join.abstract';
 
 @Injectable()
 @Scene('PERSONAL_INFO_SCENE')
-export class PersonalInfoScene extends Scenes.BaseScene<
-  Scenes.SceneContext<IJoinSceneState>
-> {
+export class PersonalInfoScene extends CommonJoinClass {
   constructor() {
     super('PERSONAL_INFO_SCENE');
   }
 
   private personalInfoStartMessageId: number;
+  protected commandForbiddenMessageId: number;
 
   private async personalInfoStartMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
@@ -47,16 +43,19 @@ export class PersonalInfoScene extends Scenes.BaseScene<
   async onEnterPersonalInfoScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    this.personalInfoStartMessageId &&
-      (await ctx.deleteMessage(this.personalInfoStartMessageId));
+    if (this.personalInfoStartMessageId) {
+      await ctx.deleteMessage(this.personalInfoStartMessageId);
+      this.personalInfoStartMessageId = 0;
+    }
     await this.personalInfoStartMarkup(ctx);
+    return;
   }
 
   @On('text')
   async onTextInPersonalInfoScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    const gate = await onSceneGateFromCommand(
+    const gate = await this.onSceneGateFromCommand(
       ctx,
       'PERSONAL_INFO_SCENE',
       Forbidden.untilJoin,
@@ -78,6 +77,11 @@ export class PersonalInfoScene extends Scenes.BaseScene<
     }
     await ctx.answerCbQuery();
     await ctx.scene.enter('FINAL_JOIN_SCENE', ctx.session.__scenes.state);
+    if (this.commandForbiddenMessageId) {
+      await ctx.deleteMessage(this.commandForbiddenMessageId);
+      this.commandForbiddenMessageId = 0;
+    }
+    return;
   }
 
   @Action(`no_i_do_not_agree`)
@@ -91,7 +95,12 @@ export class PersonalInfoScene extends Scenes.BaseScene<
       `<b>${Emoji.sad} На жаль, ми вимушені достроково завершити анкетування.</b>
       \n${Emoji.wink} Але... Якщо захочете пройти його знову тисніть /start_join`,
     );
+    if (this.commandForbiddenMessageId) {
+      await ctx.deleteMessage(this.commandForbiddenMessageId);
+      this.commandForbiddenMessageId = 0;
+    }
     await ctx.scene.leave();
+    return;
   }
 
   @SceneLeave()

@@ -1,15 +1,3 @@
 {
-  "sessions": [
-    {
-      "id": "5775947067:5775947067",
-      "data": {
-        "__scenes": {
-          "current": "FULL_NAME_SCENE",
-          "state": {
-            "isJoinScenario": true
-          }
-        }
-      }
-    }
-  ]
+  "sessions": []
 }

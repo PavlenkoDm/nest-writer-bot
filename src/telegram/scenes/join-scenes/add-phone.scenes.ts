@@ -9,25 +9,23 @@ import {
 } from 'nestjs-telegraf';
 import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
-import {
-  Forbidden,
-  onSceneGateWithoutEnterScene,
-} from '../helpers-scenes/scene-gate.helper';
 import { Emoji } from 'src/telegram/emoji/emoji';
+import { CommonJoinClass, Forbidden } from './common-join.abstract';
+import { dangerRegexp } from '../helpers-scenes/regexps.helper';
 
 const addPhoneRegExp = /^\+\d+\s?\(\d+\)\s?\d+-\d+-\d+$/;
 
 @Injectable()
 @Scene('ADD_PHONE_SCENE')
-export class AddPhoneScene extends Scenes.BaseScene<
-  Scenes.SceneContext<IJoinSceneState>
-> {
+export class AddPhoneScene extends CommonJoinClass {
   constructor() {
     super('ADD_PHONE_SCENE');
   }
 
   private addPhoneStartMessageId: number;
   private addPhoneChoiceMessageId: number;
+  protected alertMessageId: number;
+  protected commandForbiddenMessageId: number;
 
   private async addPhoneStartMarkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
     const startMessage = await ctx.replyWithHTML(
@@ -44,8 +42,11 @@ export class AddPhoneScene extends Scenes.BaseScene<
   private async addPhoneChoiseMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    this.addPhoneChoiceMessageId &&
-      (await ctx.deleteMessage(this.addPhoneChoiceMessageId));
+    if (this.addPhoneChoiceMessageId) {
+      await ctx.deleteMessage(this.addPhoneChoiceMessageId);
+      this.addPhoneChoiceMessageId = 0;
+    }
+
     const message = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Ви вказали такий номер телефону:</b>
       \n<i>${ctx.session.__scenes.state.phoneNumber}</i>
@@ -67,14 +68,17 @@ export class AddPhoneScene extends Scenes.BaseScene<
 
   @SceneEnter()
   async onEnterAddPhoneScene(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    this.addPhoneStartMessageId &&
-      (await ctx.deleteMessage(this.addPhoneStartMessageId));
+    if (this.addPhoneStartMessageId) {
+      await ctx.deleteMessage(this.addPhoneStartMessageId);
+      this.addPhoneStartMessageId = 0;
+    }
     await this.addPhoneStartMarkup(ctx);
+    return;
   }
 
   @On('text')
   async onAddPhone(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    const gate = await onSceneGateWithoutEnterScene(
+    const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
       'ADD_PHONE_SCENE',
       Forbidden.untilJoin,
@@ -91,10 +95,15 @@ export class AddPhoneScene extends Scenes.BaseScene<
 
     const message = ctx.text.trim();
 
-    if (!addPhoneRegExp.test(message)) {
-      await ctx.replyWithHTML(
-        `<b>${Emoji.reject} Ви ввели некоректне значення</b>`,
-      );
+    dangerRegexp.lastIndex = 0;
+    if (!addPhoneRegExp.test(message) || dangerRegexp.test(message)) {
+      if (this.alertMessageId) {
+        await ctx.deleteMessage(this.alertMessageId);
+        this.alertMessageId = 0;
+      }
+
+      await this.onCreateAlertMessage(ctx);
+
       if (!ctx.session.__scenes.state.phoneNumber) {
         await ctx.scene.enter('ADD_PHONE_SCENE', ctx.session.__scenes.state);
         return;
@@ -112,6 +121,7 @@ export class AddPhoneScene extends Scenes.BaseScene<
     }
 
     await this.addPhoneChoiseMarkup(ctx);
+    return;
   }
 
   @Action(`go-forward_to_personal_info`)
@@ -126,6 +136,15 @@ export class AddPhoneScene extends Scenes.BaseScene<
     }
     await ctx.answerCbQuery();
     await ctx.scene.enter('PERSONAL_INFO_SCENE', ctx.session.__scenes.state);
+    if (this.alertMessageId) {
+      await ctx.deleteMessage(this.alertMessageId);
+      this.alertMessageId = 0;
+    }
+    if (this.commandForbiddenMessageId) {
+      await ctx.deleteMessage(this.commandForbiddenMessageId);
+      this.commandForbiddenMessageId = 0;
+    }
+    return;
   }
 
   @SceneLeave()

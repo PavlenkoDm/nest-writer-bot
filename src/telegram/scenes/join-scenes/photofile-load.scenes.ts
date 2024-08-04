@@ -9,20 +9,15 @@ import {
 } from 'nestjs-telegraf';
 import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
-import {
-  Forbidden,
-  onSceneGateWithoutEnterScene,
-} from '../helpers-scenes/scene-gate.helper';
 import { Message } from 'telegraf/typings/core/types/typegram';
 import { Emoji } from 'src/telegram/emoji/emoji';
+import { CommonJoinClass, Forbidden } from './common-join.abstract';
 
 const allowedMimeTypes = ['application/pdf', 'image/jpeg'];
 
 @Injectable()
 @Scene('PHOTOFILE_LOAD_SCENE')
-export class PhotoFileLoadScene extends Scenes.BaseScene<
-  Scenes.SceneContext<IJoinSceneState>
-> {
+export class PhotoFileLoadScene extends CommonJoinClass {
   constructor() {
     super('PHOTOFILE_LOAD_SCENE');
   }
@@ -30,6 +25,7 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
   private loadedPhotoId: string;
   private photofileLoadStartMessageId: number;
   private photofileLoadChoiceMessageId: number;
+  protected commandForbiddenMessageId: number;
 
   private async photofileLoadStartMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
@@ -39,12 +35,12 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
       \n${Emoji.attention} Увага! Файли для завантаження мають бути наступного формату:
       \n    - .pdf,
       \n    - .jpg`,
-      Markup.inlineKeyboard([
-        Markup.button.callback(
-          `${Emoji.skip} Пропустити`,
-          'skip_photofile_load',
-        ),
-      ]),
+      // Markup.inlineKeyboard([
+      //   Markup.button.callback(
+      //     `${Emoji.skip} Пропустити`,
+      //     'skip_photofile_load',
+      //   ),
+      // ]),
     );
 
     this.photofileLoadStartMessageId = startMessage.message_id;
@@ -56,8 +52,10 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
     fileName: string,
     photoId: string,
   ) {
-    this.photofileLoadChoiceMessageId &&
-      (await ctx.deleteMessage(this.photofileLoadChoiceMessageId));
+    if (this.photofileLoadChoiceMessageId) {
+      await ctx.deleteMessage(this.photofileLoadChoiceMessageId);
+      this.photofileLoadChoiceMessageId = 0;
+    }
 
     if (fileName) {
       const fileChoiceMessage = await ctx.replyWithHTML(
@@ -102,17 +100,19 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
   async onEnterPhotoFileLoadScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    this.photofileLoadStartMessageId &&
-      (await ctx.deleteMessage(this.photofileLoadStartMessageId));
-
+    if (this.photofileLoadStartMessageId) {
+      await ctx.deleteMessage(this.photofileLoadStartMessageId);
+      this.photofileLoadStartMessageId = 0;
+    }
     await this.photofileLoadStartMarkup(ctx);
+    return;
   }
 
   @On('text')
   async onEnterTextInFileLoad(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    const gate = await onSceneGateWithoutEnterScene(
+    const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
       'PHOTOFILE_LOAD_SCENE',
       Forbidden.untilJoin,
@@ -175,6 +175,7 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
     this.loadedFileName = fileName;
 
     await this.photofileLoadChoiseMarkup(ctx, fileName, '');
+    return;
   }
 
   @On('photo')
@@ -212,34 +213,39 @@ export class PhotoFileLoadScene extends Scenes.BaseScene<
     this.loadedPhotoId = smallestPhotoId;
 
     await this.photofileLoadChoiseMarkup(ctx, '', smallestPhotoId);
+    return;
   }
 
   @Action(`go-forward_to_work_type`)
   async goForward(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    // let isFilePhotoId: boolean;
-    // if (
-    //   !ctx.session.__scenes.state.documentFileId &&
-    //   !ctx.session.__scenes.state.documentPhotoId
-    // ) {
-    //   isFilePhotoId = false;
-    // }
     if (ctx.scene.current.id !== 'PHOTOFILE_LOAD_SCENE') {
+      return;
+    }
+    if (
+      !ctx.session.__scenes.state.documentFileId &&
+      !ctx.session.__scenes.state.documentPhotoId
+    ) {
       return;
     }
     await ctx.answerCbQuery();
     await ctx.scene.enter('WORK_TYPE_SCENE', ctx.session.__scenes.state);
+    if (this.commandForbiddenMessageId) {
+      await ctx.deleteMessage(this.commandForbiddenMessageId);
+      this.commandForbiddenMessageId = 0;
+    }
+    return;
   }
 
-  @Action('skip_photofile_load')
-  async onSkip(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    if (ctx.scene.current.id !== 'PHOTOFILE_LOAD_SCENE') {
-      return;
-    }
-    ctx.session.__scenes.state.documentPhotoId = '';
-    ctx.session.__scenes.state.documentFileId = '';
-    await ctx.answerCbQuery();
-    await ctx.scene.enter('WORK_TYPE_SCENE', ctx.session.__scenes.state);
-  }
+  // @Action('skip_photofile_load')
+  // async onSkip(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+  //   if (ctx.scene.current.id !== 'PHOTOFILE_LOAD_SCENE') {
+  //     return;
+  //   }
+  //   ctx.session.__scenes.state.documentPhotoId = '';
+  //   ctx.session.__scenes.state.documentFileId = '';
+  //   await ctx.answerCbQuery();
+  //   await ctx.scene.enter('WORK_TYPE_SCENE', ctx.session.__scenes.state);
+  // }
 
   @SceneLeave()
   onSceneLeave(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {

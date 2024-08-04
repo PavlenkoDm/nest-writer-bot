@@ -127,6 +127,7 @@ export class SpecialityScene extends CommonJoinClass {
     }
 
     await this.specialityChoiseMarkup(ctx);
+    return;
   }
 
   @Action(`go-forward_to_photo_load`)

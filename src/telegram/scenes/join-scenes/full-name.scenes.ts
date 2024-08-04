@@ -67,7 +67,7 @@ export class FullNameScene extends CommonJoinClass {
   async onEnterFullNameScene(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
     if (this.fullNameStartMessageId) {
       await ctx.deleteMessage(this.fullNameStartMessageId);
-      await this.fullNameStartMarkup(ctx);
+      this.fullNameStartMessageId = 0;
     }
     await this.fullNameStartMarkup(ctx);
     return;

@@ -9,26 +9,22 @@ import {
 } from 'nestjs-telegraf';
 import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
-import {
-  Forbidden,
-  onSceneGateFromCommand,
-} from '../helpers-scenes/scene-gate.helper';
 import { Emoji } from 'src/telegram/emoji/emoji';
 import { CallbackQuery } from 'telegraf/typings/core/types/typegram';
 import { ExecTime } from '../order-scenes/time-limit.scenes';
+import { CommonJoinClass, Forbidden } from './common-join.abstract';
 
 const regExpForButton = /settimeperiod-(?![\d\s\n^])[^\n]+/;
 
 @Injectable()
 @Scene('TIME_PERIOD_SCENE')
-export class TimePeriodScene extends Scenes.BaseScene<
-  Scenes.SceneContext<IJoinSceneState>
-> {
+export class TimePeriodScene extends CommonJoinClass {
   constructor() {
     super('TIME_PERIOD_SCENE');
   }
 
   private timePeriodMessageId: number;
+  protected commandForbiddenMessageId: number;
 
   private async onTimePeriodSet(
     period: string,
@@ -105,9 +101,12 @@ export class TimePeriodScene extends Scenes.BaseScene<
   async onEnterTimePeriodScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    this.timePeriodMessageId &&
-      (await ctx.deleteMessage(this.timePeriodMessageId));
+    if (this.timePeriodMessageId) {
+      await ctx.deleteMessage(this.timePeriodMessageId);
+      this.timePeriodMessageId = 0;
+    }
     await this.createStartMurkup(ctx);
+    return;
   }
 
   @Action(regExpForButton)
@@ -158,6 +157,21 @@ export class TimePeriodScene extends Scenes.BaseScene<
         },
       },
     );
+    return;
+  }
+
+  @On('text')
+  async onTextInWorkTypeScene(
+    @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
+  ) {
+    const gate = await this.onSceneGateFromCommand(
+      ctx,
+      'TIME_PERIOD_SCENE',
+      Forbidden.untilJoin,
+    );
+    if (gate) {
+      return;
+    }
   }
 
   @Action(`go-forward_to_add_email`)
@@ -172,24 +186,18 @@ export class TimePeriodScene extends Scenes.BaseScene<
     ) {
       await ctx.replyWithHTML(`${Emoji.reject} Ви не обрали жодного значення!`);
       await ctx.scene.enter('TIME_PERIOD_SCENE', ctx.session.__scenes.state);
+      if (this.commandForbiddenMessageId) {
+        await ctx.deleteMessage(this.commandForbiddenMessageId);
+        this.commandForbiddenMessageId = 0;
+      }
       return;
     }
     await ctx.scene.enter('ADD_EMAIL_SCENE', ctx.session.__scenes.state);
-    return;
-  }
-
-  @On('text')
-  async onTextInWorkTypeScene(
-    @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
-  ) {
-    const gate = await onSceneGateFromCommand(
-      ctx,
-      'TIME_PERIOD_SCENE',
-      Forbidden.untilJoin,
-    );
-    if (gate) {
-      return;
+    if (this.commandForbiddenMessageId) {
+      await ctx.deleteMessage(this.commandForbiddenMessageId);
+      this.commandForbiddenMessageId = 0;
     }
+    return;
   }
 
   @SceneLeave()

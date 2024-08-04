@@ -9,26 +9,22 @@ import {
 } from 'nestjs-telegraf';
 import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
-import {
-  Forbidden,
-  onSceneGateFromCommand,
-} from '../helpers-scenes/scene-gate.helper';
 import { Emoji } from 'src/telegram/emoji/emoji';
 import { TypeOfWork } from '../order-scenes/type.scenes';
 import { CallbackQuery } from 'telegraf/typings/core/types/typegram';
+import { CommonJoinClass, Forbidden } from './common-join.abstract';
 
 const regExpForButton = /selworktype-(?![\d\s\n^])[^\n]+/;
 
 @Injectable()
 @Scene('WORK_TYPE_SCENE')
-export class WorkTypeScene extends Scenes.BaseScene<
-  Scenes.SceneContext<IJoinSceneState>
-> {
+export class WorkTypeScene extends CommonJoinClass {
   constructor() {
     super('WORK_TYPE_SCENE');
   }
 
   private workTypeStartMessageId: number;
+  protected commandForbiddenMessageId: number;
 
   private async onWorkTypeSet(
     workType: string,
@@ -138,9 +134,12 @@ export class WorkTypeScene extends Scenes.BaseScene<
 
   @SceneEnter()
   async onEnterWorkTypeScene(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    this.workTypeStartMessageId &&
-      (await ctx.deleteMessage(this.workTypeStartMessageId));
+    if (this.workTypeStartMessageId) {
+      await ctx.deleteMessage(this.workTypeStartMessageId);
+      this.workTypeStartMessageId = 0;
+    }
     await this.createStartMurkup(ctx);
+    return;
   }
 
   @Action(regExpForButton)
@@ -225,6 +224,21 @@ export class WorkTypeScene extends Scenes.BaseScene<
         },
       },
     );
+    return;
+  }
+
+  @On('text')
+  async onTextInWorkTypeScene(
+    @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
+  ) {
+    const gate = await this.onSceneGateFromCommand(
+      ctx,
+      'WORK_TYPE_SCENE',
+      Forbidden.untilJoin,
+    );
+    if (gate) {
+      return;
+    }
   }
 
   @Action('go-forward_to_tech_skills')
@@ -239,24 +253,18 @@ export class WorkTypeScene extends Scenes.BaseScene<
     ) {
       await ctx.replyWithHTML(`${Emoji.reject} Ви не обрали жодного значення!`);
       await ctx.scene.enter('WORK_TYPE_SCENE', ctx.session.__scenes.state);
+      if (this.commandForbiddenMessageId) {
+        await ctx.deleteMessage(this.commandForbiddenMessageId);
+        this.commandForbiddenMessageId = 0;
+      }
       return;
     }
     await ctx.scene.enter('TECH_SKILLS_SCENE', ctx.session.__scenes.state);
-    return;
-  }
-
-  @On('text')
-  async onTextInWorkTypeScene(
-    @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
-  ) {
-    const gate = await onSceneGateFromCommand(
-      ctx,
-      'WORK_TYPE_SCENE',
-      Forbidden.untilJoin,
-    );
-    if (gate) {
-      return;
+    if (this.commandForbiddenMessageId) {
+      await ctx.deleteMessage(this.commandForbiddenMessageId);
+      this.commandForbiddenMessageId = 0;
     }
+    return;
   }
 
   @SceneLeave()

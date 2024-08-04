@@ -9,18 +9,13 @@ import {
 } from 'nestjs-telegraf';
 import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
-import {
-  Forbidden,
-  onSceneGateFromCommand,
-} from '../helpers-scenes/scene-gate.helper';
 import { Emoji } from 'src/telegram/emoji/emoji';
 import { ConfigService } from '@nestjs/config';
+import { CommonJoinClass, Forbidden } from './common-join.abstract';
 
 @Injectable()
 @Scene('FINAL_JOIN_SCENE')
-export class FinalJoinScene extends Scenes.BaseScene<
-  Scenes.SceneContext<IJoinSceneState>
-> {
+export class FinalJoinScene extends CommonJoinClass {
   constructor(
     @Inject(ConfigService) private readonly configService: ConfigService,
   ) {
@@ -29,6 +24,7 @@ export class FinalJoinScene extends Scenes.BaseScene<
   }
   private readonly chatId: number;
   private finalJoinStartMessageId: number;
+  protected commandForbiddenMessageId: number;
 
   private async commonFinalJoinMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
@@ -106,8 +102,7 @@ export class FinalJoinScene extends Scenes.BaseScene<
     const commonMarkup = await this.commonFinalJoinMarkup(ctx);
     const message = `
     <b>${Emoji.alert} Анкета на приєднання від:</b>  <i>@${ctx.from.username}</i>\n\n
-    ${commonMarkup}
-    `;
+     ${commonMarkup}`;
 
     return message;
   }
@@ -116,15 +111,17 @@ export class FinalJoinScene extends Scenes.BaseScene<
   async onEnterFinalJoinScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    this.finalJoinStartMessageId &&
-      (await ctx.deleteMessage(this.finalJoinStartMessageId));
-
+    if (this.finalJoinStartMessageId) {
+      await ctx.deleteMessage(this.finalJoinStartMessageId);
+      this.finalJoinStartMessageId = 0;
+    }
     await this.initialFinalJoinStartMarkup(ctx);
+    return;
   }
 
   @On('text')
   async onFinalJoin(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    const gate = await onSceneGateFromCommand(
+    const gate = await this.onSceneGateFromCommand(
       ctx,
       'FINAL_JOIN_SCENE',
       Forbidden.untilJoin,
@@ -148,7 +145,12 @@ export class FinalJoinScene extends Scenes.BaseScene<
       `<b>${Emoji.answer} Дякуємо за надану інформацію!</b>
       \n${Emoji.time} Чекайте на зв’язок з менеджером.`,
     );
+    if (this.commandForbiddenMessageId) {
+      await ctx.deleteMessage(this.commandForbiddenMessageId);
+      this.commandForbiddenMessageId = 0;
+    }
     await ctx.scene.leave();
+    return;
   }
 
   @Action(`restart_join`)
@@ -160,6 +162,10 @@ export class FinalJoinScene extends Scenes.BaseScene<
     ctx.session.__scenes.state.isJoinScenario = true;
     await ctx.answerCbQuery();
     await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
+    if (this.commandForbiddenMessageId) {
+      await ctx.deleteMessage(this.commandForbiddenMessageId);
+      this.commandForbiddenMessageId = 0;
+    }
     return;
   }
 
@@ -171,13 +177,18 @@ export class FinalJoinScene extends Scenes.BaseScene<
     ctx.session.__scenes.state = {};
     await ctx.answerCbQuery();
     await ctx.editMessageText(
-      `<b>${Emoji.sad} На жаль, процедура приєднання до команди виконавців була відмінена</b>
+      `<b>${Emoji.sad} На жаль, процедура приєднання до команди виконавців була відмінена.</b>
       \n${Emoji.wink} Але... Якщо захочете пройти опитування знову - тисніть /start_join`,
       {
         parse_mode: 'HTML',
       },
     );
+    if (this.commandForbiddenMessageId) {
+      await ctx.deleteMessage(this.commandForbiddenMessageId);
+      this.commandForbiddenMessageId = 0;
+    }
     await ctx.scene.leave();
+    return;
   }
 
   @SceneLeave()

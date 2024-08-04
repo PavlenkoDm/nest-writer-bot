@@ -1,5 +1,5 @@
 import { Scenes } from 'telegraf';
-import { IJoinSceneState } from './join.config';
+import { IOrderSceneState } from './order.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
 
 export enum Alert {
@@ -7,17 +7,17 @@ export enum Alert {
 }
 
 export enum Forbidden {
-  untilJoin = 'Заборонено вводити команди до закінчення анкетування!',
+  enterCommands = 'Заборонено вводити команди до закінчення замовлення!',
 }
 
 export abstract class CommonJoinClass extends Scenes.BaseScene<
-  Scenes.SceneContext<IJoinSceneState>
+  Scenes.SceneContext<IOrderSceneState>
 > {
   protected alertMessageId: number;
   protected commandForbiddenMessageId: number;
 
   protected async onCreateAlertMessage(
-    ctx: Scenes.SceneContext<IJoinSceneState>,
+    ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     const alertMsg = await ctx.replyWithHTML(
       `<b>${Emoji.reject} ${Alert.notCorrect}</b>`,
@@ -29,7 +29,7 @@ export abstract class CommonJoinClass extends Scenes.BaseScene<
   }
 
   protected async onCommandForbiddenMessage(
-    ctx: Scenes.SceneContext<IJoinSceneState>,
+    ctx: Scenes.SceneContext<IOrderSceneState>,
     msg: string,
   ) {
     const forbiddenMsg = await ctx.replyWithHTML(
@@ -42,7 +42,7 @@ export abstract class CommonJoinClass extends Scenes.BaseScene<
   }
 
   protected async onSceneGateFromCommand(
-    ctx: Scenes.SceneContext<IJoinSceneState>,
+    ctx: Scenes.SceneContext<IOrderSceneState>,
     sceneName: string,
     msg: string,
   ) {
@@ -51,7 +51,7 @@ export abstract class CommonJoinClass extends Scenes.BaseScene<
       ctx.scene.current.id !== `${sceneName}` ||
       ctx.text.trim().startsWith('/')
     ) {
-      if (ctx.session.__scenes.state.isJoinScenario) {
+      if (ctx.session.__scenes.state.isScenario) {
         if (this.commandForbiddenMessageId) {
           await ctx.deleteMessage(this.commandForbiddenMessageId);
           this.commandForbiddenMessageId = 0;
@@ -65,7 +65,7 @@ export abstract class CommonJoinClass extends Scenes.BaseScene<
   }
 
   protected async onSceneGateWithoutEnterScene(
-    ctx: Scenes.SceneContext<IJoinSceneState>,
+    ctx: Scenes.SceneContext<IOrderSceneState>,
     sceneName: string,
     msg: string,
   ) {
@@ -74,7 +74,7 @@ export abstract class CommonJoinClass extends Scenes.BaseScene<
       ctx.scene.current.id !== `${sceneName}` ||
       ctx.text.trim().startsWith('/')
     ) {
-      if (ctx.session.__scenes.state.isJoinScenario) {
+      if (ctx.session.__scenes.state.isScenario) {
         if (this.commandForbiddenMessageId) {
           await ctx.deleteMessage(this.commandForbiddenMessageId);
           this.commandForbiddenMessageId = 0;
