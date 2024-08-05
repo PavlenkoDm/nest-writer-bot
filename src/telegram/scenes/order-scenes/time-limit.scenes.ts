@@ -9,11 +9,8 @@ import {
 } from 'nestjs-telegraf';
 import { Markup, Scenes } from 'telegraf';
 import { IOrderSceneState } from './order.config';
-import {
-  Forbidden,
-  onSceneGateFromCommand,
-} from '../helpers-scenes/scene-gate.helper';
 import { Emoji } from 'src/telegram/emoji/emoji';
+import { CommonOrderClass, Forbidden } from './common-order.abstract';
 
 export enum ExecTime {
   longTerm = 'Довготривалий: від 14 днів і довше',
@@ -25,11 +22,62 @@ export enum ExecTime {
 
 @Injectable()
 @Scene('TIME_LIMIT_SCENE')
-export class TimeLimitScene extends Scenes.BaseScene<
-  Scenes.SceneContext<IOrderSceneState>
-> {
+export class TimeLimitScene extends CommonOrderClass {
   constructor() {
     super('TIME_LIMIT_SCENE');
+  }
+
+  private timeLimitStartMessageId: number;
+  private timeLimitChoiceMessageId: number;
+  protected commandForbiddenMessageId: number;
+
+  private async timeLimitStartMarkup(
+    ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    const startMessage = await ctx.replyWithHTML(
+      `<b>${Emoji.question} Введіть термін виконання замовлення:</b>`,
+      Markup.inlineKeyboard([
+        [Markup.button.callback(ExecTime.urgent, 'urgent')],
+        [Markup.button.callback(ExecTime.mediumTerm, 'medium_term')],
+        [Markup.button.callback(ExecTime.longTerm, 'long_term')],
+      ]),
+    );
+
+    this.timeLimitStartMessageId = startMessage.message_id;
+
+    return startMessage;
+  }
+
+  private async timeLimitChoiceMarkup(
+    ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    if (this.timeLimitChoiceMessageId) {
+      await ctx.deleteMessage(this.timeLimitChoiceMessageId);
+      this.timeLimitChoiceMessageId = 0;
+    }
+
+    const choiceMessage = await ctx.replyWithHTML(
+      `<b>${Emoji.answer} Вибраний термін виконання:</b>
+      \n"<i>${ctx.session.__scenes.state.timeLimit}</i>"`,
+      Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            `${Emoji.forward} Далі`,
+            'go-forward_to_file_load',
+          ),
+        ],
+        [
+          Markup.button.callback(
+            `${Emoji.change} Змінити термін виконання`,
+            'change_days_amount',
+          ),
+        ],
+      ]),
+    );
+
+    this.timeLimitChoiceMessageId = choiceMessage.message_id;
+
+    return choiceMessage;
   }
 
   private async chooseTimeLimit(
@@ -42,33 +90,20 @@ export class TimeLimitScene extends Scenes.BaseScene<
 
     ctx.session.__scenes.state.timeLimit = timePeriod;
 
-    await ctx.replyWithHTML(
-      `<b>${Emoji.answer} Вибраний термін виконання:</b>
-      \n"<i>${ctx.session.__scenes.state.timeLimit}</i>"`,
-      Markup.inlineKeyboard([
-        [Markup.button.callback(`${Emoji.forward} Далі`, 'go-forward')],
-        [
-          Markup.button.callback(
-            `${Emoji.change} Змінити термін виконання`,
-            'change_days_amount',
-          ),
-        ],
-      ]),
-    );
+    await this.timeLimitChoiceMarkup(ctx);
+    return;
   }
 
   @SceneEnter()
   async onEnterTimeLimitScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    await ctx.replyWithHTML(
-      `<b>${Emoji.question} Введіть термін виконання замовлення:</b>`, // \n<i>☝️ Це має бути лише ціле число, не більше трьох знаків</i>
-      Markup.inlineKeyboard([
-        [Markup.button.callback(ExecTime.urgent, 'urgent')],
-        [Markup.button.callback(ExecTime.mediumTerm, 'medium_term')],
-        [Markup.button.callback(ExecTime.longTerm, 'long_term')],
-      ]),
-    );
+    if (this.timeLimitStartMessageId) {
+      await ctx.deleteMessage(this.timeLimitStartMessageId);
+      this.timeLimitStartMessageId = 0;
+    }
+    await this.timeLimitStartMarkup(ctx);
+    return;
   }
 
   // @Hears(regExpForTimeLimit)
@@ -102,39 +137,82 @@ export class TimeLimitScene extends Scenes.BaseScene<
   @Action('urgent')
   async onUrgent(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await this.chooseTimeLimit(ExecTime.urgent, ctx);
+    return;
   }
 
   @Action('medium_term')
   async onMediumTerm(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await this.chooseTimeLimit(ExecTime.mediumTerm, ctx);
+    return;
   }
 
   @Action('long_term')
   async onLongTerm(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     await this.chooseTimeLimit(ExecTime.longTerm, ctx);
+    return;
   }
 
-  @Action('go-forward')
+  @Action('go-forward_to_file_load')
   async goForward(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    if (ctx.scene.current.id !== 'TIME_LIMIT_SCENE') {
+      return;
+    }
+
+    await ctx.answerCbQuery();
     await ctx.scene.enter('FILE_LOAD_SCENE', ctx.session.__scenes.state);
+
+    if (this.timeLimitStartMessageId) {
+      await ctx.deleteMessage(this.timeLimitStartMessageId);
+      this.timeLimitStartMessageId = 0;
+    }
+    if (this.timeLimitChoiceMessageId) {
+      await ctx.deleteMessage(this.timeLimitChoiceMessageId);
+      this.timeLimitChoiceMessageId = 0;
+    }
+    if (this.commandForbiddenMessageId) {
+      await ctx.deleteMessage(this.commandForbiddenMessageId);
+      this.commandForbiddenMessageId = 0;
+    }
+    return;
   }
 
   @Action('change_days_amount')
   async changeDaysAmount(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
-    ctx.scene.enter('TIME_LIMIT_SCENE', ctx.session.__scenes.state);
+    if (ctx.scene.current.id !== 'TIME_LIMIT_SCENE') {
+      return;
+    }
+
+    await ctx.answerCbQuery();
+    await ctx.scene.enter('TIME_LIMIT_SCENE', ctx.session.__scenes.state);
+
+    if (this.timeLimitChoiceMessageId) {
+      await ctx.deleteMessage(this.timeLimitChoiceMessageId);
+      this.timeLimitChoiceMessageId = 0;
+    }
+    if (this.commandForbiddenMessageId) {
+      await ctx.deleteMessage(this.commandForbiddenMessageId);
+      this.commandForbiddenMessageId = 0;
+    }
+    return;
   }
 
   @On('text')
   async onTextInTimeLimitScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    const gate = await onSceneGateFromCommand(
+    const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
       'TIME_LIMIT_SCENE',
       Forbidden.enterCommands,
     );
     if (gate) {
-      return;
+      if (!ctx.session.__scenes.state.timeLimit) {
+        await ctx.scene.enter('TIME_LIMIT_SCENE', ctx.session.__scenes.state);
+        return;
+      } else {
+        await this.timeLimitChoiceMarkup(ctx);
+        return;
+      }
     }
   }
 

@@ -189,6 +189,10 @@ export class TypeScene extends CommonOrderClass {
 
   @Action('change_type_of_work')
   async changeTypeOfWork(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    if (ctx.scene.current.id !== 'TYPE_SCENE') {
+      return;
+    }
+
     await ctx.answerCbQuery();
     await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
     // if (this.typeStartMessageId) {

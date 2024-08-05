@@ -10,19 +10,64 @@ import {
 import { Markup, Scenes } from 'telegraf';
 import { IOrderSceneState } from './order.config';
 import { TypeOfWork } from './type.scenes';
-import {
-  Forbidden,
-  onSceneGateFromCommand,
-} from '../helpers-scenes/scene-gate.helper';
 import { Emoji } from 'src/telegram/emoji/emoji';
+import { CommonOrderClass, Forbidden } from './common-order.abstract';
+import { dangerRegexp } from '../helpers-scenes/regexps.helper';
 
 @Injectable()
 @Scene('UNIQUENESS_SCENE')
-export class UniquenessScene extends Scenes.BaseScene<
-  Scenes.SceneContext<IOrderSceneState>
-> {
+export class UniquenessScene extends CommonOrderClass {
   constructor() {
     super('UNIQUENESS_SCENE');
+  }
+
+  private uniquenessStartMessageId: number;
+  private uniquenessChoiceMessageId: number;
+  protected commandForbiddenMessageId: number;
+  protected alertMessageId: number;
+
+  private async uniquenessStartMarkup(
+    ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    const startMessage = await ctx.replyWithHTML(
+      `<b>${Emoji.question} Введіть бажаний відсоток унікальності роботи</b>
+      \n<i>${Emoji.attention} Це має бути число від ${this.showUniquenessPersent(ctx)} до 100</i>`,
+    );
+
+    this.uniquenessStartMessageId = startMessage.message_id;
+
+    return startMessage;
+  }
+
+  private async uniquenessChoiceMarkup(
+    ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    if (this.uniquenessChoiceMessageId) {
+      await ctx.deleteMessage(this.uniquenessChoiceMessageId);
+      this.uniquenessChoiceMessageId = 0;
+    }
+
+    const choiceMessage = await ctx.replyWithHTML(
+      `<b>${Emoji.answer} Вибраний відсоток унікальності:</b>  <i>${ctx.session.__scenes.state.uniqueness}%</i>`,
+      Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            `${Emoji.forward} Далі`,
+            'go-forward_to_time_limit',
+          ),
+        ],
+        [
+          Markup.button.callback(
+            `${Emoji.change} Змінити відсоток унікальності`,
+            'change_persent_amount',
+          ),
+        ],
+      ]),
+    );
+
+    this.uniquenessChoiceMessageId = choiceMessage.message_id;
+
+    return choiceMessage;
   }
 
   private showUniquenessPersent(
@@ -77,31 +122,49 @@ export class UniquenessScene extends Scenes.BaseScene<
   async onEnterUniquenessScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    await ctx.replyWithHTML(
-      `<b>${Emoji.question} Введіть бажаний відсоток унікальності роботи</b>
-      \n<i>${Emoji.attention} Це має бути число від ${this.showUniquenessPersent(ctx)} до 100</i>`,
-    );
+    if (this.uniquenessStartMessageId) {
+      await ctx.deleteMessage(this.uniquenessStartMessageId);
+      this.uniquenessStartMessageId = 0;
+    }
+    await this.uniquenessStartMarkup(ctx);
+    return;
   }
 
   @On('text')
   async onEnterUniqueness(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
-    const gate = await onSceneGateFromCommand(
+    const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
       'UNIQUENESS_SCENE',
       Forbidden.enterCommands,
     );
     if (gate) {
-      return;
+      if (!ctx.session.__scenes.state.uniqueness) {
+        await ctx.scene.enter('UNIQUENESS_SCENE', ctx.session.__scenes.state);
+        return;
+      } else {
+        await this.uniquenessChoiceMarkup(ctx);
+        return;
+      }
     }
 
     const message = ctx.text.trim();
 
-    if (!this.regExpForUniq(ctx).test(message)) {
-      await ctx.replyWithHTML(
-        `<b>${Emoji.reject} Ви ввели некоректне значення</b>`,
-      );
-      await ctx.scene.enter('UNIQUENESS_SCENE', ctx.session.__scenes.state);
-      return;
+    dangerRegexp.lastIndex = 0;
+    if (!this.regExpForUniq(ctx).test(message) || dangerRegexp.test(message)) {
+      if (this.alertMessageId) {
+        await ctx.deleteMessage(this.alertMessageId);
+        this.alertMessageId = 0;
+      }
+
+      await this.onCreateAlertMessage(ctx);
+
+      if (!ctx.session.__scenes.state.uniqueness) {
+        await ctx.scene.enter('UNIQUENESS_SCENE', ctx.session.__scenes.state);
+        return;
+      } else {
+        await this.uniquenessChoiceMarkup(ctx);
+        return;
+      }
     }
     const uniquenessPersent = parseInt(message, 10);
 
@@ -111,28 +174,62 @@ export class UniquenessScene extends Scenes.BaseScene<
       ctx.session.__scenes.state.uniqueness = uniquenessPersent;
     }
 
-    ctx.replyWithHTML(
-      `<b>${Emoji.answer} Вибраний відсоток унікальності:</b>  <i>${ctx.session.__scenes.state.uniqueness}%</i>`,
-      Markup.inlineKeyboard([
-        [Markup.button.callback(`${Emoji.forward} Далі`, 'go-forward')],
-        [
-          Markup.button.callback(
-            `${Emoji.change} Змінити відсоток унікальності`,
-            'change_persent_amount',
-          ),
-        ],
-      ]),
-    );
+    await this.uniquenessChoiceMarkup(ctx);
+    return;
   }
 
-  @Action('go-forward')
+  @Action('go-forward_to_time_limit')
   async goForward(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    if (ctx.scene.current.id !== 'UNIQUENESS_SCENE') {
+      return;
+    }
+
+    await ctx.answerCbQuery();
     await ctx.scene.enter('TIME_LIMIT_SCENE', ctx.session.__scenes.state);
+
+    if (this.uniquenessStartMessageId) {
+      await ctx.deleteMessage(this.uniquenessStartMessageId);
+      this.uniquenessStartMessageId = 0;
+    }
+    if (this.uniquenessChoiceMessageId) {
+      await ctx.deleteMessage(this.uniquenessChoiceMessageId);
+      this.uniquenessChoiceMessageId = 0;
+    }
+    if (this.commandForbiddenMessageId) {
+      await ctx.deleteMessage(this.commandForbiddenMessageId);
+      this.commandForbiddenMessageId = 0;
+    }
+    if (this.alertMessageId) {
+      await ctx.deleteMessage(this.alertMessageId);
+      this.alertMessageId = 0;
+    }
+
+    return;
   }
 
   @Action('change_persent_amount')
   async changePersent(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    if (ctx.scene.current.id !== 'UNIQUENESS_SCENE') {
+      return;
+    }
+
+    await ctx.answerCbQuery();
     await ctx.scene.enter('UNIQUENESS_SCENE', ctx.session.__scenes.state);
+
+    if (this.uniquenessChoiceMessageId) {
+      await ctx.deleteMessage(this.uniquenessChoiceMessageId);
+      this.uniquenessChoiceMessageId = 0;
+    }
+    if (this.commandForbiddenMessageId) {
+      await ctx.deleteMessage(this.commandForbiddenMessageId);
+      this.commandForbiddenMessageId = 0;
+    }
+    if (this.alertMessageId) {
+      await ctx.deleteMessage(this.alertMessageId);
+      this.alertMessageId = 0;
+    }
+
+    return;
   }
 
   @SceneLeave()
