@@ -405,6 +405,12 @@ export class DisciplineScene extends CommonOrderClass {
       await ctx.deleteMessage(this.disciplineStartMessageId);
       this.disciplineStartMessageId = 0;
     }
+    if (!ctx.session.__scenes.state.discipline) {
+      ctx.session.__scenes.state.discipline = {
+        branch: '',
+        specialization: '',
+      };
+    }
     await this.disciplineStartMarkup(ctx);
     return;
   }

@@ -164,14 +164,10 @@ export class TypeScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'TYPE_SCENE') {
       return;
     }
-    if (!ctx.session.__scenes.state.discipline) {
-      ctx.session.__scenes.state.discipline = {
-        branch: '',
-        specialization: '',
-      };
-    }
+
     await ctx.answerCbQuery();
     await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
+
     if (this.typeStartMessageId) {
       await ctx.deleteMessage(this.typeStartMessageId);
       this.typeStartMessageId = 0;
@@ -184,6 +180,7 @@ export class TypeScene extends CommonOrderClass {
       await ctx.deleteMessage(this.commandForbiddenMessageId);
       this.commandForbiddenMessageId = 0;
     }
+
     return;
   }
 
