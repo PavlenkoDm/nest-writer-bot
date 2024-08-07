@@ -212,7 +212,7 @@ export class UniquenessScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'UNIQUENESS_SCENE') {
       return;
     }
-
+    ctx.session.__scenes.state.uniqueness = 0;
     await ctx.answerCbQuery();
     await ctx.scene.enter('UNIQUENESS_SCENE', ctx.session.__scenes.state);
 

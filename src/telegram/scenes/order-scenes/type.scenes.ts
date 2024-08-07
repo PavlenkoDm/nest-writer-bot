@@ -36,7 +36,7 @@ export class TypeScene extends CommonOrderClass {
 
   private async typeStartMarkup(ctx: Scenes.SceneContext<IOrderSceneState>) {
     const startMessage = await ctx.replyWithHTML(
-      `<b>${Emoji.question} Виберіть тип роботи, та натисніть</b>\n  "<b>Далі</b>"`,
+      `<b>${Emoji.question} Виберіть потрібний тип роботи:</b>`,
       Markup.inlineKeyboard([
         [Markup.button.callback(TypeOfWork.coursework, 'coursework')],
         [Markup.button.callback(TypeOfWork.bachelor, 'bachelor')],
@@ -189,13 +189,10 @@ export class TypeScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'TYPE_SCENE') {
       return;
     }
-
+    ctx.session.__scenes.state.typeOfWork = '';
     await ctx.answerCbQuery();
     await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
-    // if (this.typeStartMessageId) {
-    //   await ctx.deleteMessage(this.typeStartMessageId);
-    //   this.typeStartMessageId = 0;
-    // }
+
     if (this.typeChoiceMessageId) {
       await ctx.deleteMessage(this.typeChoiceMessageId);
       this.typeChoiceMessageId = 0;

@@ -2827,7 +2827,8 @@ export class DisciplineScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'DISCIPLINE_SCENE') {
       return;
     }
-
+    ctx.session.__scenes.state.discipline.branch = '';
+    ctx.session.__scenes.state.discipline.specialization = '';
     await ctx.answerCbQuery();
     await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
 

@@ -186,6 +186,8 @@ export class CommentScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'COMMENT_SCENE') {
       return;
     }
+
+    ctx.session.__scenes.state.comment = '';
     await ctx.answerCbQuery();
     await ctx.scene.enter('COMMENT_SCENE', ctx.session.__scenes.state);
 

@@ -283,7 +283,7 @@ export class FileLoadScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'FILE_LOAD_SCENE') {
       return;
     }
-
+    ctx.session.__scenes.state.fileId = '';
     await ctx.answerCbQuery();
     await ctx.scene.enter('FILE_LOAD_SCENE', ctx.session.__scenes.state);
 

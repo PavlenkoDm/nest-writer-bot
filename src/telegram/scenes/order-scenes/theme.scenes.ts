@@ -220,6 +220,7 @@ export class ThemeScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'THEME_SCENE') {
       return;
     }
+    ctx.session.__scenes.state.theme = '';
     await ctx.answerCbQuery();
     await ctx.scene.enter('THEME_SCENE', ctx.session.__scenes.state);
 

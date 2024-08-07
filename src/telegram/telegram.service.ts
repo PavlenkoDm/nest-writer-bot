@@ -31,6 +31,10 @@ export class TelegramService extends Telegraf<Context> {
     this.setupBotCommands();
   }
 
+  private startJoinMessageId: number;
+  private startOrderMessageId: number;
+  protected finalOrderMessageId: number;
+
   private setupBotCommands() {
     this.telegram.setMyCommands([
       { command: '/start_order', description: 'Замовити роботу' },
@@ -40,9 +44,6 @@ export class TelegramService extends Telegraf<Context> {
       },
     ]);
   }
-
-  private startJoinMessageId: number;
-  private startOrderMessageId: number;
 
   private async onStartJoinMarkup(ctx: SceneContext<IJoinSceneState>) {
     const startJoinMessage = await ctx.replyWithHTML(
@@ -76,6 +77,14 @@ export class TelegramService extends Telegraf<Context> {
 
   @Start()
   async onStart(@Ctx() ctx: SceneContext<MyOrderJoinContext>) {
+    if (!!this.startOrderMessageId) {
+      await ctx.deleteMessage(this.startOrderMessageId);
+      this.startOrderMessageId = 0;
+    }
+    if (!!this.startJoinMessageId) {
+      await ctx.deleteMessage(this.startJoinMessageId);
+      this.startJoinMessageId = 0;
+    }
     const startPayload = ctx.text.trim().split(' ')[1];
     if (!startPayload) {
       return;
@@ -112,21 +121,23 @@ export class TelegramService extends Telegraf<Context> {
           ctx.session.__scenes.state.typeOfWork = onFillTypeOfWork(workType);
         }
         await this.onStartOrder(ctx);
+        return;
       }
     }
 
     if (command && command === 'join') {
       await this.onStartJoin(ctx);
+      return;
     }
   }
 
   @Command('start_order')
   async onStartOrder(@Ctx() ctx: SceneContext<IOrderSceneState>) {
-    if (this.startOrderMessageId) {
+    if (!!this.startOrderMessageId) {
       await ctx.deleteMessage(this.startOrderMessageId);
       this.startOrderMessageId = 0;
     }
-    if (this.startJoinMessageId) {
+    if (!!this.startJoinMessageId) {
       await ctx.deleteMessage(this.startJoinMessageId);
       this.startJoinMessageId = 0;
     }
@@ -136,11 +147,11 @@ export class TelegramService extends Telegraf<Context> {
 
   @Command('start_join')
   async onStartJoin(@Ctx() ctx: SceneContext<IJoinSceneState>) {
-    if (this.startJoinMessageId) {
+    if (!!this.startJoinMessageId) {
       await ctx.deleteMessage(this.startJoinMessageId);
       this.startJoinMessageId = 0;
     }
-    if (this.startOrderMessageId) {
+    if (!!this.startOrderMessageId) {
       await ctx.deleteMessage(this.startOrderMessageId);
       this.startOrderMessageId = 0;
     }

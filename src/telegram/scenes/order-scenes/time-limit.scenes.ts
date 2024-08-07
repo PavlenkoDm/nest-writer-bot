@@ -89,7 +89,7 @@ export class TimeLimitScene extends CommonOrderClass {
     }
 
     ctx.session.__scenes.state.timeLimit = timePeriod;
-
+    await ctx.answerCbQuery();
     await this.timeLimitChoiceMarkup(ctx);
     return;
   }
@@ -181,7 +181,7 @@ export class TimeLimitScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'TIME_LIMIT_SCENE') {
       return;
     }
-
+    ctx.session.__scenes.state.timeLimit = '';
     await ctx.answerCbQuery();
     await ctx.scene.enter('TIME_LIMIT_SCENE', ctx.session.__scenes.state);
 
