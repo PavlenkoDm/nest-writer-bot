@@ -91,9 +91,10 @@ export class PersonalInfoScene extends CommonJoinClass {
     }
     ctx.session.__scenes.state = {};
     await ctx.answerCbQuery();
-    await ctx.replyWithHTML(
+    await ctx.editMessageText(
       `<b>${Emoji.sad} На жаль, ми вимушені достроково завершити анкетування.</b>
       \n${Emoji.wink} Але... Якщо захочете пройти його знову тисніть /start_join`,
+      { parse_mode: 'HTML' },
     );
     if (this.commandForbiddenMessageId) {
       await ctx.deleteMessage(this.commandForbiddenMessageId);

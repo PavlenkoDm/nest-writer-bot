@@ -141,9 +141,10 @@ export class FinalJoinScene extends CommonJoinClass {
     await ctx.telegram.sendMessage(this.chatId, message, {
       parse_mode: 'HTML',
     });
-    await ctx.replyWithHTML(
+    await ctx.editMessageText(
       `<b>${Emoji.answer} Дякуємо за надану інформацію!</b>
       \n${Emoji.time} Чекайте на зв’язок з менеджером.`,
+      { parse_mode: 'HTML' },
     );
     if (this.commandForbiddenMessageId) {
       await ctx.deleteMessage(this.commandForbiddenMessageId);

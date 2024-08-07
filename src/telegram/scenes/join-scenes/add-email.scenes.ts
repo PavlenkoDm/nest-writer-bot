@@ -134,6 +134,7 @@ export class AddEmailScene extends CommonJoinClass {
     }
     await ctx.answerCbQuery();
     await ctx.scene.enter('ADD_PHONE_SCENE', ctx.session.__scenes.state);
+
     if (this.alertMessageId) {
       await ctx.deleteMessage(this.alertMessageId);
       this.alertMessageId = 0;

@@ -23,8 +23,26 @@ export class TimePeriodScene extends CommonJoinClass {
     super('TIME_PERIOD_SCENE');
   }
 
+  private didNotChooseAnyValueMessageId: number;
   private timePeriodMessageId: number;
   protected commandForbiddenMessageId: number;
+
+  private async onDidNotChooseAnyValueMarkup(
+    ctx: Scenes.SceneContext<IJoinSceneState>,
+  ) {
+    if (this.didNotChooseAnyValueMessageId) {
+      await ctx.deleteMessage(this.didNotChooseAnyValueMessageId);
+      this.didNotChooseAnyValueMessageId = 0;
+    }
+
+    const chooseMessage = await ctx.replyWithHTML(
+      `${Emoji.reject} Ви не обрали жодного значення!`,
+    );
+
+    this.didNotChooseAnyValueMessageId = chooseMessage.message_id;
+
+    return chooseMessage;
+  }
 
   private async onTimePeriodSet(
     period: string,
@@ -180,22 +198,31 @@ export class TimePeriodScene extends CommonJoinClass {
     if (ctx.scene.current.id !== 'TIME_PERIOD_SCENE') {
       return;
     }
+
     if (
       !ctx.session.__scenes.state.timePeriod ||
       ctx.session.__scenes.state.timePeriod.length === 0
     ) {
-      await ctx.replyWithHTML(`${Emoji.reject} Ви не обрали жодного значення!`);
+      await this.onDidNotChooseAnyValueMarkup(ctx);
       await ctx.scene.enter('TIME_PERIOD_SCENE', ctx.session.__scenes.state);
+
       if (this.commandForbiddenMessageId) {
         await ctx.deleteMessage(this.commandForbiddenMessageId);
         this.commandForbiddenMessageId = 0;
       }
+
       return;
     }
+
     await ctx.scene.enter('ADD_EMAIL_SCENE', ctx.session.__scenes.state);
+
     if (this.commandForbiddenMessageId) {
       await ctx.deleteMessage(this.commandForbiddenMessageId);
       this.commandForbiddenMessageId = 0;
+    }
+    if (this.didNotChooseAnyValueMessageId) {
+      await ctx.deleteMessage(this.didNotChooseAnyValueMessageId);
+      this.didNotChooseAnyValueMessageId = 0;
     }
     return;
   }
