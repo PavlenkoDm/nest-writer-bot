@@ -42,10 +42,7 @@ export class AddPhoneScene extends CommonJoinClass {
   private async addPhoneChoiseMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    if (this.addPhoneChoiceMessageId) {
-      await ctx.deleteMessage(this.addPhoneChoiceMessageId);
-      this.addPhoneChoiceMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.addPhoneChoiceMessageId);
 
     const message = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Ви вказали такий номер телефону:</b>
@@ -68,10 +65,8 @@ export class AddPhoneScene extends CommonJoinClass {
 
   @SceneEnter()
   async onEnterAddPhoneScene(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    if (this.addPhoneStartMessageId) {
-      await ctx.deleteMessage(this.addPhoneStartMessageId);
-      this.addPhoneStartMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.addPhoneStartMessageId);
+
     await this.addPhoneStartMarkup(ctx);
     return;
   }
@@ -97,10 +92,7 @@ export class AddPhoneScene extends CommonJoinClass {
 
     dangerRegexp.lastIndex = 0;
     if (!addPhoneRegExp.test(message) || dangerRegexp.test(message)) {
-      if (this.alertMessageId) {
-        await ctx.deleteMessage(this.alertMessageId);
-        this.alertMessageId = 0;
-      }
+      await this.deleteMessage(ctx, this.alertMessageId);
 
       await this.onCreateAlertMessage(ctx);
 
@@ -136,14 +128,10 @@ export class AddPhoneScene extends CommonJoinClass {
     }
     await ctx.answerCbQuery();
     await ctx.scene.enter('PERSONAL_INFO_SCENE', ctx.session.__scenes.state);
-    if (this.alertMessageId) {
-      await ctx.deleteMessage(this.alertMessageId);
-      this.alertMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+
+    await this.deleteMessage(ctx, this.alertMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
     return;
   }
 

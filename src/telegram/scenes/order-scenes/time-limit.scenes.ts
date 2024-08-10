@@ -51,10 +51,7 @@ export class TimeLimitScene extends CommonOrderClass {
   private async timeLimitChoiceMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    if (this.timeLimitChoiceMessageId) {
-      await ctx.deleteMessage(this.timeLimitChoiceMessageId);
-      this.timeLimitChoiceMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.timeLimitChoiceMessageId);
 
     const choiceMessage = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Вибраний термін виконання:</b>
@@ -89,8 +86,10 @@ export class TimeLimitScene extends CommonOrderClass {
     }
 
     ctx.session.__scenes.state.timeLimit = timePeriod;
+
     await ctx.answerCbQuery();
     await this.timeLimitChoiceMarkup(ctx);
+
     return;
   }
 
@@ -98,11 +97,10 @@ export class TimeLimitScene extends CommonOrderClass {
   async onEnterTimeLimitScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    if (this.timeLimitStartMessageId) {
-      await ctx.deleteMessage(this.timeLimitStartMessageId);
-      this.timeLimitStartMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.timeLimitStartMessageId);
+
     await this.timeLimitStartMarkup(ctx);
+
     return;
   }
 
@@ -161,18 +159,10 @@ export class TimeLimitScene extends CommonOrderClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('FILE_LOAD_SCENE', ctx.session.__scenes.state);
 
-    if (this.timeLimitStartMessageId) {
-      await ctx.deleteMessage(this.timeLimitStartMessageId);
-      this.timeLimitStartMessageId = 0;
-    }
-    if (this.timeLimitChoiceMessageId) {
-      await ctx.deleteMessage(this.timeLimitChoiceMessageId);
-      this.timeLimitChoiceMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.timeLimitStartMessageId);
+    await this.deleteMessage(ctx, this.timeLimitChoiceMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
     return;
   }
 
@@ -181,18 +171,15 @@ export class TimeLimitScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'TIME_LIMIT_SCENE') {
       return;
     }
+
     ctx.session.__scenes.state.timeLimit = '';
+
     await ctx.answerCbQuery();
     await ctx.scene.enter('TIME_LIMIT_SCENE', ctx.session.__scenes.state);
 
-    if (this.timeLimitChoiceMessageId) {
-      await ctx.deleteMessage(this.timeLimitChoiceMessageId);
-      this.timeLimitChoiceMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.timeLimitChoiceMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
     return;
   }
 

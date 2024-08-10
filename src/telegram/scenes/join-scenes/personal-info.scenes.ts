@@ -43,10 +43,8 @@ export class PersonalInfoScene extends CommonJoinClass {
   async onEnterPersonalInfoScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    if (this.personalInfoStartMessageId) {
-      await ctx.deleteMessage(this.personalInfoStartMessageId);
-      this.personalInfoStartMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.personalInfoStartMessageId);
+
     await this.personalInfoStartMarkup(ctx);
     return;
   }
@@ -77,10 +75,9 @@ export class PersonalInfoScene extends CommonJoinClass {
     }
     await ctx.answerCbQuery();
     await ctx.scene.enter('FINAL_JOIN_SCENE', ctx.session.__scenes.state);
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
     return;
   }
 
@@ -96,11 +93,11 @@ export class PersonalInfoScene extends CommonJoinClass {
       \n${Emoji.wink} Але... Якщо захочете пройти його знову тисніть /start_join`,
       { parse_mode: 'HTML' },
     );
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
     await ctx.scene.leave();
+
     return;
   }
 

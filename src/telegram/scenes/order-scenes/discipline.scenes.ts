@@ -356,20 +356,20 @@ export class DisciplineScene extends CommonOrderClass {
     if (!ctx.session.__scenes.state.discipline) {
       ctx.session.__scenes.state.discipline = { branch, specialization };
     }
+
     ctx.session.__scenes.state.discipline.branch = branch;
     ctx.session.__scenes.state.discipline.specialization = specialization;
+
     await ctx.answerCbQuery();
     await this.disciplineChoiceMarkup(ctx);
+
     return;
   }
 
   private async disciplineChoiceMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    if (this.disciplineChoiceMessageId) {
-      await ctx.deleteMessage(this.disciplineChoiceMessageId);
-      this.disciplineChoiceMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.disciplineChoiceMessageId);
 
     const choiceMessage = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Вибрана галузь знань:</b>
@@ -401,17 +401,17 @@ export class DisciplineScene extends CommonOrderClass {
   async onEnterDisciplineScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    if (this.disciplineStartMessageId) {
-      await ctx.deleteMessage(this.disciplineStartMessageId);
-      this.disciplineStartMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.disciplineStartMessageId);
+
     if (!ctx.session.__scenes.state.discipline) {
       ctx.session.__scenes.state.discipline = {
         branch: '',
         specialization: '',
       };
     }
+
     await this.disciplineStartMarkup(ctx);
+
     return;
   }
 
@@ -2807,18 +2807,10 @@ export class DisciplineScene extends CommonOrderClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('THEME_SCENE', ctx.session.__scenes.state);
 
-    if (this.disciplineStartMessageId) {
-      await ctx.deleteMessage(this.disciplineStartMessageId);
-      this.disciplineStartMessageId = 0;
-    }
-    if (this.disciplineChoiceMessageId) {
-      await ctx.deleteMessage(this.disciplineChoiceMessageId);
-      this.disciplineChoiceMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.disciplineStartMessageId);
+    await this.deleteMessage(ctx, this.disciplineChoiceMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
     return;
   }
 
@@ -2827,19 +2819,16 @@ export class DisciplineScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'DISCIPLINE_SCENE') {
       return;
     }
+
     ctx.session.__scenes.state.discipline.branch = '';
     ctx.session.__scenes.state.discipline.specialization = '';
+
     await ctx.answerCbQuery();
     await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
 
-    if (this.disciplineChoiceMessageId) {
-      await ctx.deleteMessage(this.disciplineChoiceMessageId);
-      this.disciplineChoiceMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.disciplineChoiceMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
     return;
   }
 

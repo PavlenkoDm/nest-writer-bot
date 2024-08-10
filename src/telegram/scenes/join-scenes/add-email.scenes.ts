@@ -42,10 +42,7 @@ export class AddEmailScene extends CommonJoinClass {
   private async addEmailChoiseMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    if (this.addEmailChoiceMessageId) {
-      await ctx.deleteMessage(this.addEmailChoiceMessageId);
-      this.addEmailChoiceMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.addEmailChoiceMessageId);
 
     const message = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Ви вказали таку електронну адресу:</b>
@@ -68,10 +65,8 @@ export class AddEmailScene extends CommonJoinClass {
 
   @SceneEnter()
   async onEnterAddEmailScene(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    if (this.addEmailStartMessageId) {
-      await ctx.deleteMessage(this.addEmailStartMessageId);
-      this.addEmailStartMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.addEmailStartMessageId);
+
     await this.addEmailStartMarkup(ctx);
     return;
   }
@@ -97,10 +92,7 @@ export class AddEmailScene extends CommonJoinClass {
 
     dangerRegexp.lastIndex = 0;
     if (!addEmailRegExp.test(message) || dangerRegexp.test(message)) {
-      if (this.alertMessageId) {
-        await ctx.deleteMessage(this.alertMessageId);
-        this.alertMessageId = 0;
-      }
+      await this.deleteMessage(ctx, this.alertMessageId);
 
       await this.onCreateAlertMessage(ctx);
 
@@ -135,14 +127,9 @@ export class AddEmailScene extends CommonJoinClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('ADD_PHONE_SCENE', ctx.session.__scenes.state);
 
-    if (this.alertMessageId) {
-      await ctx.deleteMessage(this.alertMessageId);
-      this.alertMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.alertMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
     return;
   }
 

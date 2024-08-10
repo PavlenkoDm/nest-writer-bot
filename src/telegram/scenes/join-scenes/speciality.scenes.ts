@@ -43,10 +43,7 @@ export class SpecialityScene extends CommonJoinClass {
   private async specialityChoiseMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    if (this.specialityChoiceMessageId) {
-      await ctx.deleteMessage(this.specialityChoiceMessageId);
-      this.specialityChoiceMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.specialityChoiceMessageId);
 
     const message = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Додана така інформація про освіту:</b>
@@ -71,10 +68,8 @@ export class SpecialityScene extends CommonJoinClass {
   async onEnterSpecialityScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    if (this.specialityStartMessageId) {
-      await ctx.deleteMessage(this.specialityStartMessageId);
-      this.specialityStartMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.specialityStartMessageId);
+
     await this.specialityStartMarkup(ctx);
     return;
   }
@@ -103,10 +98,7 @@ export class SpecialityScene extends CommonJoinClass {
 
     dangerRegexp.lastIndex = 0;
     if (dangerRegexp.test(message)) {
-      if (this.alertMessageId) {
-        await ctx.deleteMessage(this.alertMessageId);
-        this.alertMessageId = 0;
-      }
+      await this.deleteMessage(ctx, this.alertMessageId);
 
       await this.onCreateAlertMessage(ctx);
 
@@ -140,14 +132,10 @@ export class SpecialityScene extends CommonJoinClass {
     }
     await ctx.answerCbQuery();
     await ctx.scene.enter('PHOTOFILE_LOAD_SCENE', ctx.session.__scenes.state);
-    if (this.alertMessageId) {
-      await ctx.deleteMessage(this.alertMessageId);
-      this.alertMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+
+    await this.deleteMessage(ctx, this.alertMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
     return;
   }
 

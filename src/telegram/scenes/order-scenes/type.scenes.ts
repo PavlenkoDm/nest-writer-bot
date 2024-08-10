@@ -56,10 +56,7 @@ export class TypeScene extends CommonOrderClass {
   }
 
   private async typeChoiceMarkup(ctx: Scenes.SceneContext<IOrderSceneState>) {
-    if (this.typeChoiceMessageId) {
-      await ctx.deleteMessage(this.typeChoiceMessageId);
-      this.typeChoiceMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.typeChoiceMessageId);
 
     const choiceMessage = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Вибраний тип роботи:</b>
@@ -97,10 +94,8 @@ export class TypeScene extends CommonOrderClass {
 
   @SceneEnter()
   async onEnterTypeScene(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
-    if (this.typeStartMessageId) {
-      await ctx.deleteMessage(this.typeStartMessageId);
-      this.typeStartMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.typeStartMessageId);
+
     await this.typeStartMarkup(ctx);
     return;
   }
@@ -168,18 +163,9 @@ export class TypeScene extends CommonOrderClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
 
-    if (this.typeStartMessageId) {
-      await ctx.deleteMessage(this.typeStartMessageId);
-      this.typeStartMessageId = 0;
-    }
-    if (this.typeChoiceMessageId) {
-      await ctx.deleteMessage(this.typeChoiceMessageId);
-      this.typeChoiceMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.typeStartMessageId);
+    await this.deleteMessage(ctx, this.typeChoiceMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
 
     return;
   }
@@ -189,18 +175,15 @@ export class TypeScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'TYPE_SCENE') {
       return;
     }
+
     ctx.session.__scenes.state.typeOfWork = '';
+
     await ctx.answerCbQuery();
     await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
 
-    if (this.typeChoiceMessageId) {
-      await ctx.deleteMessage(this.typeChoiceMessageId);
-      this.typeChoiceMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.typeChoiceMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
     return;
   }
 

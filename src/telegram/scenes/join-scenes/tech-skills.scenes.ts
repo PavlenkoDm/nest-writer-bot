@@ -45,10 +45,7 @@ export class TechSkillsScene extends CommonJoinClass {
   private async techSkillsChoiseMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    if (this.techSkillsChoiceMessageId) {
-      await ctx.deleteMessage(this.techSkillsChoiceMessageId);
-      this.techSkillsChoiceMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.techSkillsChoiceMessageId);
 
     const message = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Ви працюєте з такими програмами (мовами програмування, фреймворками):</b>
@@ -73,10 +70,8 @@ export class TechSkillsScene extends CommonJoinClass {
   async onEnterTechSkillsScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    if (this.techSkillsStartMessageId) {
-      await ctx.deleteMessage(this.techSkillsStartMessageId);
-      this.techSkillsStartMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.techSkillsStartMessageId);
+
     await this.techSkillsStartMarkup(ctx);
     return;
   }
@@ -102,10 +97,7 @@ export class TechSkillsScene extends CommonJoinClass {
 
     dangerRegexp.lastIndex = 0;
     if (dangerRegexp.test(message)) {
-      if (this.alertMessageId) {
-        await ctx.deleteMessage(this.alertMessageId);
-        this.alertMessageId = 0;
-      }
+      await this.deleteMessage(ctx, this.alertMessageId);
 
       await this.onCreateAlertMessage(ctx);
 
@@ -139,14 +131,10 @@ export class TechSkillsScene extends CommonJoinClass {
     }
     await ctx.answerCbQuery();
     await ctx.scene.enter('TIME_PERIOD_SCENE', ctx.session.__scenes.state);
-    if (this.alertMessageId) {
-      await ctx.deleteMessage(this.alertMessageId);
-      this.alertMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+
+    await this.deleteMessage(ctx, this.alertMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
     return;
   }
 
@@ -158,14 +146,10 @@ export class TechSkillsScene extends CommonJoinClass {
     ctx.session.__scenes.state.techSkills = '';
     await ctx.answerCbQuery();
     await ctx.scene.enter('TIME_PERIOD_SCENE', ctx.session.__scenes.state);
-    if (this.alertMessageId) {
-      await ctx.deleteMessage(this.alertMessageId);
-      this.alertMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+
+    await this.deleteMessage(ctx, this.alertMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
     return;
   }
 

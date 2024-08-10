@@ -68,10 +68,7 @@ export class FileLoadScene extends CommonOrderClass {
     ctx: Scenes.SceneContext<IOrderSceneState>,
     fileName: string,
   ) {
-    if (this.fileLoadChoiceMessageId) {
-      await ctx.deleteMessage(this.fileLoadChoiceMessageId);
-      this.fileLoadChoiceMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.fileLoadChoiceMessageId);
 
     const choiceMessage = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Завантажений файл:</b>  "<i>${fileName}</i>"`,
@@ -102,29 +99,25 @@ export class FileLoadScene extends CommonOrderClass {
     command: string,
   ) {
     if (command === 'format') {
-      if (this.incorrectFormatMessageId) {
-        await ctx.deleteMessage(this.incorrectFormatMessageId);
-        this.incorrectFormatMessageId = 0;
-      }
+      await this.deleteMessage(ctx, this.incorrectFormatMessageId);
 
       const incorrectFormatMessage = await ctx.replyWithHTML(
         `<b>${Emoji.reject} ${msg}</b>`,
       );
 
       this.incorrectFormatMessageId = incorrectFormatMessage.message_id;
+
       return incorrectFormatMessage;
     }
     if (command === 'load') {
-      if (this.loadFileFailureMessageId) {
-        await ctx.deleteMessage(this.loadFileFailureMessageId);
-        this.loadFileFailureMessageId = 0;
-      }
+      await this.deleteMessage(ctx, this.loadFileFailureMessageId);
 
       const loadFileFailureMessage = await ctx.replyWithHTML(
         `<b>${Emoji.reject} ${msg}</b>`,
       );
 
       this.loadFileFailureMessageId = loadFileFailureMessage.message_id;
+
       return loadFileFailureMessage;
     }
 
@@ -135,11 +128,10 @@ export class FileLoadScene extends CommonOrderClass {
   async onEnterFileLoadScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    if (this.fileLoadStartMessageId) {
-      await ctx.deleteMessage(this.fileLoadStartMessageId);
-      this.fileLoadStartMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.fileLoadStartMessageId);
+
     await this.fileLoadStartMarkup(ctx);
+
     return;
   }
 
@@ -184,7 +176,9 @@ export class FileLoadScene extends CommonOrderClass {
         RejectMsg.loadFileFailure,
         'load',
       );
+
       await ctx.scene.enter('FILE_LOAD_SCENE', ctx.session.__scenes.state);
+
       return;
     }
 
@@ -194,7 +188,9 @@ export class FileLoadScene extends CommonOrderClass {
         RejectMsg.incorrectFileFormat,
         'format',
       );
+
       await ctx.scene.enter('FILE_LOAD_SCENE', ctx.session.__scenes.state);
+
       return;
     }
 
@@ -209,6 +205,7 @@ export class FileLoadScene extends CommonOrderClass {
     }
 
     await this.fileLoadChoiceMarkup(ctx, fileName);
+
     return;
   }
 
@@ -217,31 +214,18 @@ export class FileLoadScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'FILE_LOAD_SCENE') {
       return;
     }
+
     ctx.session.__scenes.state.fileId = '';
 
     await ctx.answerCbQuery();
     await ctx.scene.enter('COMMENT_SCENE', ctx.session.__scenes.state);
 
-    if (this.fileLoadStartMessageId) {
-      await ctx.deleteMessage(this.fileLoadStartMessageId);
-      this.fileLoadStartMessageId = 0;
-    }
-    if (this.fileLoadChoiceMessageId) {
-      await ctx.deleteMessage(this.fileLoadChoiceMessageId);
-      this.fileLoadChoiceMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
-    if (this.incorrectFormatMessageId) {
-      await ctx.deleteMessage(this.incorrectFormatMessageId);
-      this.incorrectFormatMessageId = 0;
-    }
-    if (this.loadFileFailureMessageId) {
-      await ctx.deleteMessage(this.loadFileFailureMessageId);
-      this.loadFileFailureMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.fileLoadStartMessageId);
+    await this.deleteMessage(ctx, this.fileLoadChoiceMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, this.incorrectFormatMessageId);
+    await this.deleteMessage(ctx, this.loadFileFailureMessageId);
+
     return;
   }
 
@@ -254,26 +238,11 @@ export class FileLoadScene extends CommonOrderClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('COMMENT_SCENE', ctx.session.__scenes.state);
 
-    if (this.fileLoadStartMessageId) {
-      await ctx.deleteMessage(this.fileLoadStartMessageId);
-      this.fileLoadStartMessageId = 0;
-    }
-    if (this.fileLoadChoiceMessageId) {
-      await ctx.deleteMessage(this.fileLoadChoiceMessageId);
-      this.fileLoadChoiceMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
-    if (this.incorrectFormatMessageId) {
-      await ctx.deleteMessage(this.incorrectFormatMessageId);
-      this.incorrectFormatMessageId = 0;
-    }
-    if (this.loadFileFailureMessageId) {
-      await ctx.deleteMessage(this.loadFileFailureMessageId);
-      this.loadFileFailureMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.fileLoadStartMessageId);
+    await this.deleteMessage(ctx, this.fileLoadChoiceMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, this.incorrectFormatMessageId);
+    await this.deleteMessage(ctx, this.loadFileFailureMessageId);
 
     return;
   }
@@ -283,26 +252,17 @@ export class FileLoadScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'FILE_LOAD_SCENE') {
       return;
     }
+
     ctx.session.__scenes.state.fileId = '';
+
     await ctx.answerCbQuery();
     await ctx.scene.enter('FILE_LOAD_SCENE', ctx.session.__scenes.state);
 
-    if (this.fileLoadChoiceMessageId) {
-      await ctx.deleteMessage(this.fileLoadChoiceMessageId);
-      this.fileLoadChoiceMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
-    if (this.incorrectFormatMessageId) {
-      await ctx.deleteMessage(this.incorrectFormatMessageId);
-      this.incorrectFormatMessageId = 0;
-    }
-    if (this.loadFileFailureMessageId) {
-      await ctx.deleteMessage(this.loadFileFailureMessageId);
-      this.loadFileFailureMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.fileLoadChoiceMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, this.incorrectFormatMessageId);
+    await this.deleteMessage(ctx, this.loadFileFailureMessageId);
+
     return;
   }
 

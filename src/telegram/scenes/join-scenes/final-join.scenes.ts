@@ -78,6 +78,7 @@ export class FinalJoinScene extends CommonJoinClass {
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
     const commonMarkup = await this.commonFinalJoinMarkup(ctx);
+
     const initialFinalJoinMessage = await ctx.replyWithHTML(
       `<b>${Emoji.alert} Ваша анкета:</b>\n\n
       ${commonMarkup}`,
@@ -111,10 +112,8 @@ export class FinalJoinScene extends CommonJoinClass {
   async onEnterFinalJoinScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    if (this.finalJoinStartMessageId) {
-      await ctx.deleteMessage(this.finalJoinStartMessageId);
-      this.finalJoinStartMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.finalJoinStartMessageId);
+
     await this.initialFinalJoinStartMarkup(ctx);
     return;
   }
@@ -136,7 +135,9 @@ export class FinalJoinScene extends CommonJoinClass {
     if (ctx.scene.current.id !== 'FINAL_JOIN_SCENE') {
       return;
     }
+
     const message = await this.messageToSend(ctx);
+
     await ctx.answerCbQuery();
     await ctx.telegram.sendMessage(this.chatId, message, {
       parse_mode: 'HTML',
@@ -146,11 +147,11 @@ export class FinalJoinScene extends CommonJoinClass {
       \n${Emoji.time} Чекайте на зв’язок з менеджером.`,
       { parse_mode: 'HTML' },
     );
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
     await ctx.scene.leave();
+
     return;
   }
 
@@ -159,14 +160,15 @@ export class FinalJoinScene extends CommonJoinClass {
     if (ctx.scene.current.id !== 'FINAL_JOIN_SCENE') {
       return;
     }
+
     ctx.session.__scenes.state = {};
     ctx.session.__scenes.state.isJoinScenario = true;
+
     await ctx.answerCbQuery();
     await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
     return;
   }
 
@@ -175,7 +177,9 @@ export class FinalJoinScene extends CommonJoinClass {
     if (ctx.scene.current.id !== 'FINAL_JOIN_SCENE') {
       return;
     }
+
     ctx.session.__scenes.state = {};
+
     await ctx.answerCbQuery();
     await ctx.editMessageText(
       `<b>${Emoji.sad} На жаль, процедура приєднання до команди виконавців була відмінена.</b>
@@ -184,11 +188,11 @@ export class FinalJoinScene extends CommonJoinClass {
         parse_mode: 'HTML',
       },
     );
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
     await ctx.scene.leave();
+
     return;
   }
 

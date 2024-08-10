@@ -23,4 +23,6 @@ export enum Emoji {
   arrowTop = '⬆️',
   telephone = '☎️',
   email = '📧',
+  shoppingCart = '🛒',
+  joinTeam = '🚀',
 }

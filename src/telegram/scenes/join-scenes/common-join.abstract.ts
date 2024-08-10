@@ -52,10 +52,8 @@ export abstract class CommonJoinClass extends Scenes.BaseScene<
       ctx.text.trim().startsWith('/')
     ) {
       if (ctx.session.__scenes.state.isJoinScenario) {
-        if (this.commandForbiddenMessageId) {
-          await ctx.deleteMessage(this.commandForbiddenMessageId);
-          this.commandForbiddenMessageId = 0;
-        }
+        await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
         await this.onCommandForbiddenMessage(ctx, msg);
         await ctx.scene.enter(`${sceneName}`, ctx.session.__scenes.state);
       }
@@ -75,14 +73,31 @@ export abstract class CommonJoinClass extends Scenes.BaseScene<
       ctx.text.trim().startsWith('/')
     ) {
       if (ctx.session.__scenes.state.isJoinScenario) {
-        if (this.commandForbiddenMessageId) {
-          await ctx.deleteMessage(this.commandForbiddenMessageId);
-          this.commandForbiddenMessageId = 0;
-        }
+        await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
         await this.onCommandForbiddenMessage(ctx, msg);
       }
       return true;
     }
     return false;
+  }
+
+  protected async deleteMessage(
+    ctx: Scenes.SceneContext<IJoinSceneState>,
+    messageId: number,
+  ) {
+    try {
+      if (messageId) {
+        await ctx.deleteMessage(messageId);
+        messageId = 0;
+      }
+    } catch (error) {
+      if (error.response && error.response.error_code === 400) {
+        console.log(`Message does not exist. Initiator: ${ctx.from.username}`);
+        return;
+      }
+      console.error('Error:', error);
+      return;
+    }
   }
 }

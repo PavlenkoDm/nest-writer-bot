@@ -41,10 +41,7 @@ export class CommentScene extends CommonOrderClass {
   private async commentChoiceMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    if (this.commentChoiceMessageId) {
-      await ctx.deleteMessage(this.commentChoiceMessageId);
-      this.commentChoiceMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.commentChoiceMessageId);
 
     const choiceMessage = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Доданий коментар:</b>  <i>"${ctx.session.__scenes.state.comment}"</i>`,
@@ -71,11 +68,10 @@ export class CommentScene extends CommonOrderClass {
 
   @SceneEnter()
   async onEnterCommentScene(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
-    if (this.commentStartMessageId) {
-      await ctx.deleteMessage(this.commentStartMessageId);
-      this.commentStartMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.commentStartMessageId);
+
     await this.commentStartMarkup(ctx);
+
     return;
   }
 
@@ -100,10 +96,7 @@ export class CommentScene extends CommonOrderClass {
 
     dangerRegexp.lastIndex = 0;
     if (dangerRegexp.test(message)) {
-      if (this.alertMessageId) {
-        await ctx.deleteMessage(this.alertMessageId);
-        this.alertMessageId = 0;
-      }
+      await this.deleteMessage(ctx, this.alertMessageId);
 
       await this.onCreateAlertMessage(ctx);
 
@@ -123,6 +116,7 @@ export class CommentScene extends CommonOrderClass {
     }
 
     await this.commentChoiceMarkup(ctx);
+
     return;
   }
 
@@ -131,26 +125,17 @@ export class CommentScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'COMMENT_SCENE') {
       return;
     }
+
     ctx.session.__scenes.state.comment = '';
+
     await ctx.answerCbQuery();
     await ctx.scene.enter('FINAL_ORDER_SCENE', ctx.session.__scenes.state);
 
-    if (this.commentStartMessageId) {
-      await ctx.deleteMessage(this.commentStartMessageId);
-      this.commentStartMessageId = 0;
-    }
-    if (this.commentChoiceMessageId) {
-      await ctx.deleteMessage(this.commentChoiceMessageId);
-      this.commentChoiceMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
-    if (this.alertMessageId) {
-      await ctx.deleteMessage(this.alertMessageId);
-      this.alertMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.commentStartMessageId);
+    await this.deleteMessage(ctx, this.commentChoiceMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, this.alertMessageId);
+
     return;
   }
 
@@ -159,25 +144,15 @@ export class CommentScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'COMMENT_SCENE') {
       return;
     }
+
     await ctx.answerCbQuery();
     await ctx.scene.enter('FINAL_ORDER_SCENE', ctx.session.__scenes.state);
 
-    if (this.commentStartMessageId) {
-      await ctx.deleteMessage(this.commentStartMessageId);
-      this.commentStartMessageId = 0;
-    }
-    if (this.commentChoiceMessageId) {
-      await ctx.deleteMessage(this.commentChoiceMessageId);
-      this.commentChoiceMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
-    if (this.alertMessageId) {
-      await ctx.deleteMessage(this.alertMessageId);
-      this.alertMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.commentStartMessageId);
+    await this.deleteMessage(ctx, this.commentChoiceMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, this.alertMessageId);
+
     return;
   }
 
@@ -188,21 +163,14 @@ export class CommentScene extends CommonOrderClass {
     }
 
     ctx.session.__scenes.state.comment = '';
+
     await ctx.answerCbQuery();
     await ctx.scene.enter('COMMENT_SCENE', ctx.session.__scenes.state);
 
-    if (this.commentChoiceMessageId) {
-      await ctx.deleteMessage(this.commentChoiceMessageId);
-      this.commentChoiceMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
-    if (this.alertMessageId) {
-      await ctx.deleteMessage(this.alertMessageId);
-      this.alertMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.commentChoiceMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, this.alertMessageId);
+
     return;
   }
 

@@ -33,14 +33,17 @@ export class TelegramService extends Telegraf<Context> {
 
   private startJoinMessageId: number;
   private startOrderMessageId: number;
-  protected finalOrderMessageId: number;
+  private choosenWorkTypeMessageId: number;
 
   private setupBotCommands() {
     this.telegram.setMyCommands([
-      { command: '/start_order', description: 'Замовити роботу' },
+      {
+        command: '/start_order',
+        description: ` ${Emoji.shoppingCart} Замовити роботу`,
+      },
       {
         command: '/start_join',
-        description: 'Приєднатися до команди виконавців',
+        description: `${Emoji.joinTeam} Приєднатися до команди виконавців`,
       },
     ]);
   }
@@ -75,16 +78,38 @@ export class TelegramService extends Telegraf<Context> {
     return startOrderMessage;
   }
 
+  private async onChoosenWorkTypeMarkup(ctx: SceneContext<IOrderSceneState>) {
+    const choosenWorkTypeMessage = await ctx.replyWithHTML(
+      `<b>${Emoji.answer} Вибраний(попередньо) тип роботи:</b>
+        \n"<i>${ctx.session.__scenes.state.typeOfWork}</i>"`,
+    );
+
+    this.choosenWorkTypeMessageId = choosenWorkTypeMessage.message_id;
+
+    return choosenWorkTypeMessage;
+  }
+
+  private async deleteMessage(
+    ctx: SceneContext<MyOrderJoinContext>,
+    messageId: number,
+  ) {
+    try {
+      if (messageId) {
+        await ctx.deleteMessage(messageId);
+        messageId = 0;
+      }
+    } catch (error) {
+      if (error.response && error.response.error_code === 400) {
+        console.log(`Message does not exist. Initiator: ${ctx.from.username}`);
+        return;
+      }
+      console.error('Error:', error);
+      return;
+    }
+  }
+
   @Start()
   async onStart(@Ctx() ctx: SceneContext<MyOrderJoinContext>) {
-    if (!!this.startOrderMessageId) {
-      await ctx.deleteMessage(this.startOrderMessageId);
-      this.startOrderMessageId = 0;
-    }
-    if (!!this.startJoinMessageId) {
-      await ctx.deleteMessage(this.startJoinMessageId);
-      this.startJoinMessageId = 0;
-    }
     const startPayload = ctx.text.trim().split(' ')[1];
     if (!startPayload) {
       return;
@@ -133,28 +158,14 @@ export class TelegramService extends Telegraf<Context> {
 
   @Command('start_order')
   async onStartOrder(@Ctx() ctx: SceneContext<IOrderSceneState>) {
-    if (!!this.startOrderMessageId) {
-      await ctx.deleteMessage(this.startOrderMessageId);
-      this.startOrderMessageId = 0;
-    }
-    if (!!this.startJoinMessageId) {
-      await ctx.deleteMessage(this.startJoinMessageId);
-      this.startJoinMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.startJoinMessageId);
     await this.onStartOrderMarkup(ctx);
     return;
   }
 
   @Command('start_join')
   async onStartJoin(@Ctx() ctx: SceneContext<IJoinSceneState>) {
-    if (!!this.startJoinMessageId) {
-      await ctx.deleteMessage(this.startJoinMessageId);
-      this.startJoinMessageId = 0;
-    }
-    if (!!this.startOrderMessageId) {
-      await ctx.deleteMessage(this.startOrderMessageId);
-      this.startOrderMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.startOrderMessageId);
     await this.onStartJoinMarkup(ctx);
     return;
   }
@@ -164,6 +175,7 @@ export class TelegramService extends Telegraf<Context> {
     // console.log(ctx.text, ctx.message.from.id);
     if (ctx.text === 'admin_my_id') {
       ctx.reply(`Your Telegram ID is ${ctx.message.from.id}`);
+      ctx.deleteMessages([]);
     }
   }
 
@@ -175,33 +187,54 @@ export class TelegramService extends Telegraf<Context> {
 
       await ctx.answerCbQuery();
       await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
-      if (this.startOrderMessageId) {
-        await ctx.deleteMessage(this.startOrderMessageId);
-        this.startOrderMessageId = 0;
-      }
+
+      await this.deleteMessage(ctx, this.startOrderMessageId);
+      await this.deleteMessage(ctx, this.startJoinMessageId);
+
       return;
     }
+
     if (
       ctx.session.__scenes.state.typeOfWork &&
       !ctx.session.__scenes.state.uniqueness
     ) {
       await ctx.answerCbQuery();
-      await ctx.replyWithHTML(
-        `<b>${Emoji.answer} Вибраний(попередньо) тип роботи:</b>
-        \n"<i>${ctx.session.__scenes.state.typeOfWork}</i>"`,
+      await this.onChoosenWorkTypeMarkup(ctx);
+
+      setTimeout(
+        (async () => {
+          try {
+            if (!!this.choosenWorkTypeMessageId) {
+              await ctx.deleteMessage(this.choosenWorkTypeMessageId);
+              this.choosenWorkTypeMessageId = 0;
+            }
+          } catch (error) {
+            if (error.response && error.response.error_code === 400) {
+              console.log(
+                `Message does not exist. Initiator: ${ctx.from.username}`,
+              );
+              return;
+            }
+            console.error('Error:', error);
+            return;
+          }
+        }).bind(ctx),
+        10000,
       );
 
       await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
+
       return;
     }
+
     ctx.session.__scenes.state.isScenario = true;
+
     await ctx.answerCbQuery();
     await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
 
-    if (this.startOrderMessageId) {
-      await ctx.deleteMessage(this.startOrderMessageId);
-      this.startOrderMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.startOrderMessageId);
+    await this.deleteMessage(ctx, this.startJoinMessageId);
+
     return;
   }
 
@@ -213,14 +246,8 @@ export class TelegramService extends Telegraf<Context> {
       await ctx.answerCbQuery();
       await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
 
-      if (this.startJoinMessageId) {
-        await ctx.deleteMessage(this.startJoinMessageId);
-        this.startJoinMessageId = 0;
-      }
-      if (this.startOrderMessageId) {
-        await ctx.deleteMessage(this.startOrderMessageId);
-        this.startOrderMessageId = 0;
-      }
+      await this.deleteMessage(ctx, this.startOrderMessageId);
+      await this.deleteMessage(ctx, this.startJoinMessageId);
 
       return;
     } else {
@@ -228,14 +255,8 @@ export class TelegramService extends Telegraf<Context> {
 
       await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
 
-      if (this.startJoinMessageId) {
-        await ctx.deleteMessage(this.startJoinMessageId);
-        this.startJoinMessageId = 0;
-      }
-      if (this.startOrderMessageId) {
-        await ctx.deleteMessage(this.startOrderMessageId);
-        this.startOrderMessageId = 0;
-      }
+      await this.deleteMessage(ctx, this.startOrderMessageId);
+      await this.deleteMessage(ctx, this.startJoinMessageId);
 
       return;
     }

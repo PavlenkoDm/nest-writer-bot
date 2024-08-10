@@ -42,10 +42,7 @@ export class UniquenessScene extends CommonOrderClass {
   private async uniquenessChoiceMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    if (this.uniquenessChoiceMessageId) {
-      await ctx.deleteMessage(this.uniquenessChoiceMessageId);
-      this.uniquenessChoiceMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.uniquenessChoiceMessageId);
 
     const choiceMessage = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Вибраний відсоток унікальності:</b>  <i>${ctx.session.__scenes.state.uniqueness}%</i>`,
@@ -122,11 +119,10 @@ export class UniquenessScene extends CommonOrderClass {
   async onEnterUniquenessScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    if (this.uniquenessStartMessageId) {
-      await ctx.deleteMessage(this.uniquenessStartMessageId);
-      this.uniquenessStartMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.uniquenessStartMessageId);
+
     await this.uniquenessStartMarkup(ctx);
+
     return;
   }
 
@@ -151,10 +147,7 @@ export class UniquenessScene extends CommonOrderClass {
 
     dangerRegexp.lastIndex = 0;
     if (!this.regExpForUniq(ctx).test(message) || dangerRegexp.test(message)) {
-      if (this.alertMessageId) {
-        await ctx.deleteMessage(this.alertMessageId);
-        this.alertMessageId = 0;
-      }
+      await this.deleteMessage(ctx, this.alertMessageId);
 
       await this.onCreateAlertMessage(ctx);
 
@@ -166,6 +159,7 @@ export class UniquenessScene extends CommonOrderClass {
         return;
       }
     }
+
     const uniquenessPersent = parseInt(message, 10);
 
     if (!ctx.session.__scenes.state.uniqueness) {
@@ -175,6 +169,7 @@ export class UniquenessScene extends CommonOrderClass {
     }
 
     await this.uniquenessChoiceMarkup(ctx);
+
     return;
   }
 
@@ -187,22 +182,10 @@ export class UniquenessScene extends CommonOrderClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('TIME_LIMIT_SCENE', ctx.session.__scenes.state);
 
-    if (this.uniquenessStartMessageId) {
-      await ctx.deleteMessage(this.uniquenessStartMessageId);
-      this.uniquenessStartMessageId = 0;
-    }
-    if (this.uniquenessChoiceMessageId) {
-      await ctx.deleteMessage(this.uniquenessChoiceMessageId);
-      this.uniquenessChoiceMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
-    if (this.alertMessageId) {
-      await ctx.deleteMessage(this.alertMessageId);
-      this.alertMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.uniquenessStartMessageId);
+    await this.deleteMessage(ctx, this.uniquenessChoiceMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, this.alertMessageId);
 
     return;
   }
@@ -212,22 +195,15 @@ export class UniquenessScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'UNIQUENESS_SCENE') {
       return;
     }
+
     ctx.session.__scenes.state.uniqueness = 0;
+
     await ctx.answerCbQuery();
     await ctx.scene.enter('UNIQUENESS_SCENE', ctx.session.__scenes.state);
 
-    if (this.uniquenessChoiceMessageId) {
-      await ctx.deleteMessage(this.uniquenessChoiceMessageId);
-      this.uniquenessChoiceMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
-    if (this.alertMessageId) {
-      await ctx.deleteMessage(this.alertMessageId);
-      this.alertMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.uniquenessChoiceMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, this.alertMessageId);
 
     return;
   }
@@ -237,18 +213,3 @@ export class UniquenessScene extends CommonOrderClass {
     ctx.from.id;
   }
 }
-
-// ==============================================================================
-// if (
-//   !ctx.scene.current.id ||
-//   ctx.scene.current.id !== 'UNIQUENESS_SCENE' ||
-//   ctx.text.trim().startsWith('/')
-// ) {
-//   if (ctx.session.__scenes.state.theme) {
-//     await ctx.replyWithHTML(
-//       '<b>❌ Команди не можуть бути значенням унікальності!</b>',
-//     );
-//     await ctx.scene.enter('UNIQUENESS_SCENE', ctx.session.__scenes.state);
-//   }
-//   return;
-// }

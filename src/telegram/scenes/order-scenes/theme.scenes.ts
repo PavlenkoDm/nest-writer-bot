@@ -45,10 +45,7 @@ export class ThemeScene extends CommonOrderClass {
   }
 
   private async themeChoiceMarkup(ctx: Scenes.SceneContext<IOrderSceneState>) {
-    if (this.themeChoiceMessageId) {
-      await ctx.deleteMessage(this.themeChoiceMessageId);
-      this.themeChoiceMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.themeChoiceMessageId);
 
     const choiceMessage = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Вибрана тема роботи:</b>  <i>"${ctx.session.__scenes.state.theme}"</i>`,
@@ -75,10 +72,8 @@ export class ThemeScene extends CommonOrderClass {
 
   @SceneEnter()
   async onEnterThemeScene(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
-    if (this.themeStartMessageId) {
-      await ctx.deleteMessage(this.themeStartMessageId);
-      this.themeStartMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.themeStartMessageId);
+
     await this.themeStartMarkup(ctx);
     return;
   }
@@ -146,25 +141,14 @@ export class ThemeScene extends CommonOrderClass {
       } else {
         ctx.session.__scenes.state.uniqueness = 100;
       }
+
       await ctx.answerCbQuery();
       await ctx.scene.enter('TIME_LIMIT_SCENE', ctx.session.__scenes.state);
 
-      if (this.themeStartMessageId) {
-        await ctx.deleteMessage(this.themeStartMessageId);
-        this.themeStartMessageId = 0;
-      }
-      if (this.themeChoiceMessageId) {
-        await ctx.deleteMessage(this.themeChoiceMessageId);
-        this.themeChoiceMessageId = 0;
-      }
-      if (this.commandForbiddenMessageId) {
-        await ctx.deleteMessage(this.commandForbiddenMessageId);
-        this.commandForbiddenMessageId = 0;
-      }
-      if (this.alertMessageId) {
-        await ctx.deleteMessage(this.alertMessageId);
-        this.alertMessageId = 0;
-      }
+      await this.deleteMessage(ctx, this.themeStartMessageId);
+      await this.deleteMessage(ctx, this.themeChoiceMessageId);
+      await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+      await this.deleteMessage(ctx, this.alertMessageId);
 
       return;
     }
@@ -173,44 +157,21 @@ export class ThemeScene extends CommonOrderClass {
       await ctx.answerCbQuery();
       await ctx.scene.enter('UNIQUENESS_SCENE', ctx.session.__scenes.state);
 
-      if (this.themeStartMessageId) {
-        await ctx.deleteMessage(this.themeStartMessageId);
-        this.themeStartMessageId = 0;
-      }
-      if (this.themeChoiceMessageId) {
-        await ctx.deleteMessage(this.themeChoiceMessageId);
-        this.themeChoiceMessageId = 0;
-      }
-      if (this.commandForbiddenMessageId) {
-        await ctx.deleteMessage(this.commandForbiddenMessageId);
-        this.commandForbiddenMessageId = 0;
-      }
-      if (this.alertMessageId) {
-        await ctx.deleteMessage(this.alertMessageId);
-        this.alertMessageId = 0;
-      }
+      await this.deleteMessage(ctx, this.themeStartMessageId);
+      await this.deleteMessage(ctx, this.themeChoiceMessageId);
+      await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+      await this.deleteMessage(ctx, this.alertMessageId);
 
       return;
     }
+
     await ctx.answerCbQuery();
     await ctx.scene.enter('TIME_LIMIT_SCENE', ctx.session.__scenes.state);
 
-    if (this.themeStartMessageId) {
-      await ctx.deleteMessage(this.themeStartMessageId);
-      this.themeStartMessageId = 0;
-    }
-    if (this.themeChoiceMessageId) {
-      await ctx.deleteMessage(this.themeChoiceMessageId);
-      this.themeChoiceMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
-    if (this.alertMessageId) {
-      await ctx.deleteMessage(this.alertMessageId);
-      this.alertMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.themeStartMessageId);
+    await this.deleteMessage(ctx, this.themeChoiceMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, this.alertMessageId);
 
     return;
   }
@@ -220,22 +181,15 @@ export class ThemeScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'THEME_SCENE') {
       return;
     }
+
     ctx.session.__scenes.state.theme = '';
+
     await ctx.answerCbQuery();
     await ctx.scene.enter('THEME_SCENE', ctx.session.__scenes.state);
 
-    if (this.themeChoiceMessageId) {
-      await ctx.deleteMessage(this.themeChoiceMessageId);
-      this.themeChoiceMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
-    if (this.alertMessageId) {
-      await ctx.deleteMessage(this.alertMessageId);
-      this.alertMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.themeChoiceMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, this.alertMessageId);
 
     return;
   }

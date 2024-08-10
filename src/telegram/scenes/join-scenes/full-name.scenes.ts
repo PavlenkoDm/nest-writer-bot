@@ -39,10 +39,7 @@ export class FullNameScene extends CommonJoinClass {
   private async fullNameChoiceMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    if (this.fullNameChoiceMessageId) {
-      await ctx.deleteMessage(this.fullNameChoiceMessageId);
-      this.fullNameChoiceMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.fullNameChoiceMessageId);
 
     const choiceMessage = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Додані повне імʼя та вік:</b>
@@ -65,10 +62,8 @@ export class FullNameScene extends CommonJoinClass {
 
   @SceneEnter()
   async onEnterFullNameScene(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    if (this.fullNameStartMessageId) {
-      await ctx.deleteMessage(this.fullNameStartMessageId);
-      this.fullNameStartMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.fullNameStartMessageId);
+
     await this.fullNameStartMarkup(ctx);
     return;
   }
@@ -94,10 +89,7 @@ export class FullNameScene extends CommonJoinClass {
 
     dangerRegexp.lastIndex = 0;
     if (dangerRegexp.test(message)) {
-      if (this.alertMessageId) {
-        await ctx.deleteMessage(this.alertMessageId);
-        this.alertMessageId = 0;
-      }
+      await this.deleteMessage(ctx, this.alertMessageId);
 
       await this.onCreateAlertMessage(ctx);
 
@@ -133,22 +125,10 @@ export class FullNameScene extends CommonJoinClass {
     }
     await ctx.answerCbQuery();
     await ctx.scene.enter('SPECIALITY_SCENE', ctx.session.__scenes.state);
-    // if (this.fullNameStartMessageId) {
-    //   await ctx.deleteMessage(this.fullNameStartMessageId);
-    //   this.fullNameStartMessageId = 0;
-    // }
-    // if (this.fullNameChoiceMessageId) {
-    //   await ctx.deleteMessage(this.fullNameChoiceMessageId);
-    //   this.fullNameChoiceMessageId = 0;
-    // }
-    if (this.alertMessageId) {
-      await ctx.deleteMessage(this.alertMessageId);
-      this.alertMessageId = 0;
-    }
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+
+    await this.deleteMessage(ctx, this.alertMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
     return;
   }
 

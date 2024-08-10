@@ -30,10 +30,7 @@ export class TimePeriodScene extends CommonJoinClass {
   private async onDidNotChooseAnyValueMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    if (this.didNotChooseAnyValueMessageId) {
-      await ctx.deleteMessage(this.didNotChooseAnyValueMessageId);
-      this.didNotChooseAnyValueMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.didNotChooseAnyValueMessageId);
 
     const chooseMessage = await ctx.replyWithHTML(
       `${Emoji.reject} Ви не обрали жодного значення!`,
@@ -119,10 +116,8 @@ export class TimePeriodScene extends CommonJoinClass {
   async onEnterTimePeriodScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    if (this.timePeriodMessageId) {
-      await ctx.deleteMessage(this.timePeriodMessageId);
-      this.timePeriodMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.timePeriodMessageId);
+
     await this.createStartMurkup(ctx);
     return;
   }
@@ -206,24 +201,16 @@ export class TimePeriodScene extends CommonJoinClass {
       await this.onDidNotChooseAnyValueMarkup(ctx);
       await ctx.scene.enter('TIME_PERIOD_SCENE', ctx.session.__scenes.state);
 
-      if (this.commandForbiddenMessageId) {
-        await ctx.deleteMessage(this.commandForbiddenMessageId);
-        this.commandForbiddenMessageId = 0;
-      }
+      await this.deleteMessage(ctx, this.commandForbiddenMessageId);
 
       return;
     }
 
     await ctx.scene.enter('ADD_EMAIL_SCENE', ctx.session.__scenes.state);
 
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
-    if (this.didNotChooseAnyValueMessageId) {
-      await ctx.deleteMessage(this.didNotChooseAnyValueMessageId);
-      this.didNotChooseAnyValueMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, this.didNotChooseAnyValueMessageId);
+
     return;
   }
 

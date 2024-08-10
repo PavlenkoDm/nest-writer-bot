@@ -84,15 +84,41 @@ export class FinalOrderScene extends CommonOrderClass {
     return startMessage;
   }
 
+  private deleteMessageDelayed(
+    ctx: Scenes.SceneContext<IOrderSceneState>,
+    msgId: number,
+    delay: number,
+  ) {
+    return setTimeout(
+      (async () => {
+        try {
+          if (!!msgId) {
+            await ctx.deleteMessage(msgId);
+            msgId = 0;
+          }
+        } catch (error) {
+          if (error.response && error.response.error_code === 400) {
+            console.log(
+              `Message does not exist. Initiator: ${ctx.from.username}`,
+            );
+            return;
+          }
+          console.error('Error:', error);
+          return;
+        }
+      }).bind(ctx),
+      delay,
+    );
+  }
+
   @SceneEnter()
   async onEnterFinalOrderScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    if (this.finalOrderStartMessageId) {
-      await ctx.deleteMessage(this.finalOrderStartMessageId);
-      this.finalOrderStartMessageId = 0;
-    }
+    await this.deleteMessage(ctx, this.finalOrderStartMessageId);
+
     await this.finalOrderStartMarkup(ctx);
+
     return;
   }
 
@@ -101,7 +127,9 @@ export class FinalOrderScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'FINAL_ORDER_SCENE') {
       return;
     }
+
     let linkToFile: string;
+
     const {
       typeOfWork,
       discipline: { branch, specialization },
@@ -136,6 +164,7 @@ export class FinalOrderScene extends CommonOrderClass {
     await ctx.telegram.sendMessage(this.chatId, message, {
       parse_mode: 'HTML',
     });
+
     await ctx.answerCbQuery();
     await ctx.editMessageText(
       `<b>${Emoji.answer} Замовлення відправлено!</b>
@@ -144,11 +173,13 @@ export class FinalOrderScene extends CommonOrderClass {
         parse_mode: 'HTML',
       },
     );
+
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
+    this.deleteMessageDelayed(ctx, this.finalOrderStartMessageId, 15000);
+
     await ctx.scene.leave();
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+
     return;
   }
 
@@ -157,18 +188,16 @@ export class FinalOrderScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'FINAL_ORDER_SCENE') {
       return;
     }
+
     ctx.session.__scenes.state = {};
     ctx.session.__scenes.state.isScenario = true;
+
     await ctx.answerCbQuery();
     await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
-    if (this.finalOrderStartMessageId) {
-      await ctx.deleteMessage(this.finalOrderStartMessageId);
-      this.finalOrderStartMessageId = 0;
-    }
+
+    await this.deleteMessage(ctx, this.finalOrderStartMessageId);
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
     return;
   }
 
@@ -177,7 +206,9 @@ export class FinalOrderScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'FINAL_ORDER_SCENE') {
       return;
     }
+
     ctx.session.__scenes.state = {};
+
     await ctx.answerCbQuery();
     await ctx.editMessageText(
       `<b>${Emoji.sad} Замовлення відмінено.</b>
@@ -187,11 +218,12 @@ export class FinalOrderScene extends CommonOrderClass {
       },
     );
 
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
+    this.deleteMessageDelayed(ctx, this.finalOrderStartMessageId, 15000);
+
     await ctx.scene.leave();
-    if (this.commandForbiddenMessageId) {
-      await ctx.deleteMessage(this.commandForbiddenMessageId);
-      this.commandForbiddenMessageId = 0;
-    }
+
     return;
   }
 
