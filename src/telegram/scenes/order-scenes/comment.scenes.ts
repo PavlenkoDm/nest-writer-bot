@@ -49,7 +49,7 @@ export class CommentScene extends CommonOrderClass {
         [
           Markup.button.callback(
             `${Emoji.forward} Далі`,
-            'go-forward_to_final_order',
+            'go-forward_to_privacy_policy',
           ),
         ],
         [
@@ -129,7 +129,7 @@ export class CommentScene extends CommonOrderClass {
     ctx.session.__scenes.state.comment = '';
 
     await ctx.answerCbQuery();
-    await ctx.scene.enter('FINAL_ORDER_SCENE', ctx.session.__scenes.state);
+    await ctx.scene.enter('PRIVACY_POLICY_SCENE', ctx.session.__scenes.state);
 
     await this.deleteMessage(ctx, this.commentStartMessageId);
     await this.deleteMessage(ctx, this.commentChoiceMessageId);
@@ -139,14 +139,14 @@ export class CommentScene extends CommonOrderClass {
     return;
   }
 
-  @Action('go-forward_to_final_order')
+  @Action('go-forward_to_privacy_policy')
   async goForward(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     if (ctx.scene.current.id !== 'COMMENT_SCENE') {
       return;
     }
 
     await ctx.answerCbQuery();
-    await ctx.scene.enter('FINAL_ORDER_SCENE', ctx.session.__scenes.state);
+    await ctx.scene.enter('PRIVACY_POLICY_SCENE', ctx.session.__scenes.state);
 
     await this.deleteMessage(ctx, this.commentStartMessageId);
     await this.deleteMessage(ctx, this.commentChoiceMessageId);

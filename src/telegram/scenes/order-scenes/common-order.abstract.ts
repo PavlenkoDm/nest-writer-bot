@@ -100,4 +100,31 @@ export abstract class CommonOrderClass extends Scenes.BaseScene<
       return;
     }
   }
+
+  protected deleteMessageDelayed(
+    ctx: Scenes.SceneContext<IOrderSceneState>,
+    msgId: number,
+    delay: number,
+  ) {
+    return setTimeout(
+      (async () => {
+        try {
+          if (!!msgId) {
+            await ctx.deleteMessage(msgId);
+            msgId = 0;
+          }
+        } catch (error) {
+          if (error.response && error.response.error_code === 400) {
+            console.log(
+              `Message does not exist. Initiator: ${ctx.from.username}`,
+            );
+            return;
+          }
+          console.error('Error:', error);
+          return;
+        }
+      }).bind(ctx),
+      delay,
+    );
+  }
 }

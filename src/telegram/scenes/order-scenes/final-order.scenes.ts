@@ -20,7 +20,7 @@ export class FinalOrderScene extends CommonOrderClass {
     @Inject(ConfigService) private readonly configService: ConfigService,
   ) {
     super('FINAL_ORDER_SCENE');
-    this.chatId = configService.get('MANAGER_ID');
+    this.chatId = configService.get('ORDER_CHANNEL_ID');
   }
 
   private readonly chatId: number;
@@ -39,6 +39,7 @@ export class FinalOrderScene extends CommonOrderClass {
       theme,
       fileId,
       comment,
+      privacyPolicy,
     } = ctx.session.__scenes.state;
 
     if (fileId) {
@@ -60,7 +61,9 @@ export class FinalOrderScene extends CommonOrderClass {
       <b>${Emoji.pin} Відсоток унікальності (%):</b>  <i>${isUniqueness}</i>\n\n
       <b>${Emoji.time} Термін виконання:</b>  <i>"${timeLimit}"</i>\n\n
       <b>${Emoji.book} Додаткові матеріали:</b>  <i><a href="${isLinkToFile}">${isSavedFile}</a></i>\n\n
-      <b>${Emoji.note} Коментар:</b>  <i>${isComment}</i>
+      <b>${Emoji.mega} Коментар:</b>  <i>${isComment}</i>\n\n
+      <b>${Emoji.note} Ознайомлений з політикою конфіденційності:</b>  <i>${privacyPolicy ? 'Так' : 'Ні'}</i>\n\n
+      <b>${Emoji.note} Погоджуюсь на обробку персональних даних:</b>  <i>${privacyPolicy ? 'Так' : 'Ні'}</i>
       `,
       Markup.inlineKeyboard([
         [
@@ -82,33 +85,6 @@ export class FinalOrderScene extends CommonOrderClass {
     this.finalOrderStartMessageId = startMessage.message_id;
 
     return startMessage;
-  }
-
-  private deleteMessageDelayed(
-    ctx: Scenes.SceneContext<IOrderSceneState>,
-    msgId: number,
-    delay: number,
-  ) {
-    return setTimeout(
-      (async () => {
-        try {
-          if (!!msgId) {
-            await ctx.deleteMessage(msgId);
-            msgId = 0;
-          }
-        } catch (error) {
-          if (error.response && error.response.error_code === 400) {
-            console.log(
-              `Message does not exist. Initiator: ${ctx.from.username}`,
-            );
-            return;
-          }
-          console.error('Error:', error);
-          return;
-        }
-      }).bind(ctx),
-      delay,
-    );
   }
 
   @SceneEnter()
@@ -138,6 +114,7 @@ export class FinalOrderScene extends CommonOrderClass {
       theme,
       fileId,
       comment,
+      privacyPolicy,
     } = ctx.session.__scenes.state;
 
     if (fileId) {
@@ -159,7 +136,9 @@ export class FinalOrderScene extends CommonOrderClass {
     <b>${Emoji.pin} Відсоток унікальності (%):</b>  <i>${isUniqueness}</i>\n\n
     <b>${Emoji.time} Термін виконання:</b>  <i>"${timeLimit}"</i>\n\n
     <b>${Emoji.book} Додаткові матеріали:</b>  <i><a href="${isLinkToFile}">${isSavedFile}</a></i>\n\n
-    <b>${Emoji.note} Коментар:</b>  <i>${isComment}</i>
+    <b>${Emoji.mega} Коментар:</b>  <i>${isComment}</i>\n\n
+    <b>${Emoji.note} Ознайомлений з політикою конфіденційності:</b>  <i>${privacyPolicy ? 'Так' : 'Ні'}</i>\n\n
+    <b>${Emoji.note} Погоджуюсь на обробку персональних даних:</b>  <i>${privacyPolicy ? 'Так' : 'Ні'}</i>
     `;
     await ctx.telegram.sendMessage(this.chatId, message, {
       parse_mode: 'HTML',

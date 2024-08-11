@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   Action,
   Ctx,
@@ -11,14 +11,19 @@ import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
 import { CommonJoinClass, Forbidden } from './common-join.abstract';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 @Scene('PERSONAL_INFO_SCENE')
 export class PersonalInfoScene extends CommonJoinClass {
-  constructor() {
+  constructor(
+    @Inject(ConfigService) private readonly configService: ConfigService,
+  ) {
     super('PERSONAL_INFO_SCENE');
+    this.linkToPrivacyPolicy = configService.get('LINK_TO_PRIVACY_POLICY');
   }
 
+  private linkToPrivacyPolicy: string;
   private personalInfoStartMessageId: number;
   protected commandForbiddenMessageId: number;
 
@@ -26,7 +31,7 @@ export class PersonalInfoScene extends CommonJoinClass {
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
     const startMessage = await ctx.replyWithHTML(
-      `<b>${Emoji.question} Ви підтверджуєте, що ознайомлені з політикою конфіденційності, та надаєте згоду на обробку персональних даних?</b>
+      `<b>${Emoji.question} Ви підтверджуєте, що ознайомлені з <a href="${this.linkToPrivacyPolicy}">політикою конфіденційності</a>, та надаєте згоду на обробку персональних даних?</b>
       \n${Emoji.attention} - Увага! Натискаючи "Ні", ви завершуєте анкетування.`,
       Markup.inlineKeyboard([
         Markup.button.callback(`${Emoji.forward} Так`, `yes_i_agree`),

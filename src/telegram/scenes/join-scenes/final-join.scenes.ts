@@ -20,7 +20,7 @@ export class FinalJoinScene extends CommonJoinClass {
     @Inject(ConfigService) private readonly configService: ConfigService,
   ) {
     super('FINAL_JOIN_SCENE');
-    this.chatId = configService.get('MANAGER_ID');
+    this.chatId = configService.get('JOIN_CHANNEL_ID');
   }
   private readonly chatId: number;
   private finalJoinStartMessageId: number;

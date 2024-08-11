@@ -13,7 +13,8 @@ import { Emoji } from 'src/telegram/emoji/emoji';
 import { CommonJoinClass, Forbidden } from './common-join.abstract';
 import { dangerRegexp } from '../helpers-scenes/regexps.helper';
 
-const addEmailRegExp = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]{2,}$/;
+const addEmailRegExp =
+  /^[a-zA-Z0-9_.+-żśółąńćźŁęŻŚÓŁĄŃĆŹĘ]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]{2,}$/;
 
 @Injectable()
 @Scene('ADD_EMAIL_SCENE')

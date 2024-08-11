@@ -14,6 +14,7 @@ interface IOrder {
   timeLimit?: string;
   fileId?: string;
   comment?: string;
+  privacyPolicy?: boolean;
 }
 
 export interface IOrderSceneState extends Scenes.SceneSessionData {

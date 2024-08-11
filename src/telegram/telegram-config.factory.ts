@@ -23,6 +23,7 @@ import { PhotoFileLoadScene } from './scenes/join-scenes/photofile-load.scenes';
 import { AddPhoneScene } from './scenes/join-scenes/add-phone.scenes';
 import { PersonalInfoScene } from './scenes/join-scenes/personal-info.scenes';
 import { FinalJoinScene } from './scenes/join-scenes/final-join.scenes';
+import { PrivacyPolicyScene } from './scenes/order-scenes/privacy-policy.scenes';
 
 const localSession = new LocalSession({
   database: 'sessions.json',
@@ -37,6 +38,7 @@ const telegrafModOptions = (config: ConfigService): TelegrafModuleOptions => {
     new TimeLimitScene(),
     new FileLoadScene(),
     new CommentScene(),
+    new PrivacyPolicyScene(config),
     new FinalOrderScene(config),
   ]);
   const stageJoin = new Scenes.Stage<Scenes.SceneContext>([
@@ -48,7 +50,7 @@ const telegrafModOptions = (config: ConfigService): TelegrafModuleOptions => {
     new TimePeriodScene(),
     new AddEmailScene(),
     new AddPhoneScene(),
-    new PersonalInfoScene(),
+    new PersonalInfoScene(config),
     new FinalJoinScene(config),
   ]);
   return {

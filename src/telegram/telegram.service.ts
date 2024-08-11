@@ -66,7 +66,8 @@ export class TelegramService extends Telegraf<Context> {
   private async onStartOrderMarkup(ctx: SceneContext<IOrderSceneState>) {
     const startOrderMessage = await ctx.replyWithHTML(
       `<b>Вітаю, ${ctx.from.username}!</b>${Emoji.greeting}
-      \nЦей бот допоможе в замовленні роботи.
+      \nДякуємо, що обрали наш сервіс для замовлення роботи.
+      \nМи цінуємо вашу довіру і час, тому...
       \nТисніть   ${Emoji.pushGo} "Go"   і починаємо.`,
       Markup.inlineKeyboard([
         Markup.button.callback(`${Emoji.go} Go`, `go_order`),

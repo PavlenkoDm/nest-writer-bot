@@ -21,6 +21,7 @@ import { PhotoFileLoadScene } from './scenes/join-scenes/photofile-load.scenes';
 import { AddPhoneScene } from './scenes/join-scenes/add-phone.scenes';
 import { PersonalInfoScene } from './scenes/join-scenes/personal-info.scenes';
 import { FinalJoinScene } from './scenes/join-scenes/final-join.scenes';
+import { PrivacyPolicyScene } from './scenes/order-scenes/privacy-policy.scenes';
 
 @Module({
   imports: [TelegrafModule.forRootAsync(options())],
@@ -33,6 +34,7 @@ import { FinalJoinScene } from './scenes/join-scenes/final-join.scenes';
     TimeLimitScene,
     FileLoadScene,
     CommentScene,
+    PrivacyPolicyScene,
     FinalOrderScene,
     FullNameScene,
     SpecialityScene,
