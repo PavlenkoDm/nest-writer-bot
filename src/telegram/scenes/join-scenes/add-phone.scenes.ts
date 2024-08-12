@@ -13,7 +13,7 @@ import { Emoji } from 'src/telegram/emoji/emoji';
 import { CommonJoinClass, Forbidden } from './common-join.abstract';
 import { dangerRegexp } from '../helpers-scenes/regexps.helper';
 
-const addPhoneRegExp = /^\+\d+\s?\(\d+\)\s?\d+-\d+-\d+$/;
+const addPhoneRegExp = /^\+\d{1,3}\d{7,14}$/; // /^\+\d+\s?\(\d+\)\s?\d+-\d+-\d+$/;
 
 @Injectable()
 @Scene('ADD_PHONE_SCENE')
@@ -31,7 +31,7 @@ export class AddPhoneScene extends CommonJoinClass {
     const startMessage = await ctx.replyWithHTML(
       `<b>${Emoji.question} Вкажіть ваш номер телефону.</b>
       \n${Emoji.attention} - Увага! Формат запису: 
-      \n+38 (097) 111-22-33`,
+      \n+380970010203`,
     );
 
     this.addPhoneStartMessageId = startMessage.message_id;
