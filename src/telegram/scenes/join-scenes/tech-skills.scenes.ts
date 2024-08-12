@@ -58,6 +58,12 @@ export class TechSkillsScene extends CommonJoinClass {
             `go-forward_to_time_period`,
           ),
         ],
+        [
+          Markup.button.callback(
+            `${Emoji.skip} Пропустити`,
+            `skip_tech_skills`,
+          ),
+        ],
       ]),
     );
 
@@ -147,6 +153,7 @@ export class TechSkillsScene extends CommonJoinClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('TIME_PERIOD_SCENE', ctx.session.__scenes.state);
 
+    await this.deleteMessage(ctx, this.techSkillsChoiceMessageId);
     await this.deleteMessage(ctx, this.alertMessageId);
     await this.deleteMessage(ctx, this.commandForbiddenMessageId);
 
