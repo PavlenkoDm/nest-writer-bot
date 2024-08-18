@@ -187,20 +187,29 @@ export class TimeLimitScene extends CommonOrderClass {
   async onTextInTimeLimitScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
+    this.userMessageId = ctx.message.message_id;
+
     const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
       'TIME_LIMIT_SCENE',
       Forbidden.enterCommands,
     );
+
     if (gate) {
       if (!ctx.session.__scenes.state.timeLimit) {
         await ctx.scene.enter('TIME_LIMIT_SCENE', ctx.session.__scenes.state);
+        await this.deleteMessage(ctx, this.userMessageId);
         return;
       } else {
         await this.timeLimitChoiceMarkup(ctx);
+        await this.deleteMessage(ctx, this.userMessageId);
         return;
       }
     }
+
+    await this.deleteMessage(ctx, this.userMessageId);
+
+    return;
   }
 
   @SceneLeave()

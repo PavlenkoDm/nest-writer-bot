@@ -189,20 +189,29 @@ export class TypeScene extends CommonOrderClass {
 
   @On('text')
   async onTextInTypeScene(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    this.userMessageId = ctx.message.message_id;
+
     const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
       'TYPE_SCENE',
       Forbidden.enterCommands,
     );
+
     if (gate) {
       if (!ctx.session.__scenes.state.typeOfWork) {
         await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
+        await this.deleteMessage(ctx, this.userMessageId);
         return;
       } else {
         await this.typeChoiceMarkup(ctx);
+        await this.deleteMessage(ctx, this.userMessageId);
         return;
       }
     }
+
+    await this.deleteMessage(ctx, this.userMessageId);
+
+    return;
   }
 
   @SceneLeave()
@@ -210,34 +219,3 @@ export class TypeScene extends CommonOrderClass {
     ctx.from.id;
   }
 }
-
-//=====================================================================================
-// if (!ctx.session.__scenes.order) {
-//   ctx.session.__scenes.order = {};
-// }
-
-// @Action('send_order')
-// async onSendOrder(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
-//   const { typeOfWork } = ctx.session.__scenes.order;
-//   const message = `Замовлення від @${ctx.from.username}\nТип роботи: ${typeOfWork}`;
-//   await ctx.telegram.sendMessage(this.chatId, message);
-//   ctx.replyWithHTML('<b>Замовлення відправлено</b>');
-//   ctx.scene.leave();
-// }
-
-// export const plagiatScene = new Scenes.BaseScene('PLAGIAT_SCENE');
-
-// export const deadLineScene = new Scenes.BaseScene('DEADLINE_SCENE');
-
-// const selectScene3 = new Scenes.WizardScene('SELECT_SCENE_3', (ctx) => {
-//   ctx.reply('Выберите третий вариант:', {
-//     reply_markup: {
-//       inline_keyboard: [
-//         [{ text: 'Вариант X', callback_data: 'optionX' }],
-//         [{ text: 'Вариант Y', callback_data: 'optionY' }],
-//         [{ text: 'Завершить', callback_data: 'finish' }],
-//       ],
-//     },
-//   });
-//   return ctx.wizard.next();
-// });

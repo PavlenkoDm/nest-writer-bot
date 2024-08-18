@@ -128,17 +128,30 @@ export class UniquenessScene extends CommonOrderClass {
 
   @On('text')
   async onEnterUniqueness(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.deleteMessage(ctx, this.userMessageId);
+
+    this.userMessageId = ctx.message.message_id;
+
     const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
       'UNIQUENESS_SCENE',
       Forbidden.enterCommands,
     );
+
     if (gate) {
       if (!ctx.session.__scenes.state.uniqueness) {
         await ctx.scene.enter('UNIQUENESS_SCENE', ctx.session.__scenes.state);
+
+        await this.deleteMessage(ctx, this.userMessageId);
+        await this.deleteMessage(ctx, this.alertMessageId);
+
         return;
       } else {
         await this.uniquenessChoiceMarkup(ctx);
+
+        await this.deleteMessage(ctx, this.userMessageId);
+        await this.deleteMessage(ctx, this.alertMessageId);
+
         return;
       }
     }
@@ -148,6 +161,7 @@ export class UniquenessScene extends CommonOrderClass {
     dangerRegexp.lastIndex = 0;
     if (!this.regExpForUniq(ctx).test(message) || dangerRegexp.test(message)) {
       await this.deleteMessage(ctx, this.alertMessageId);
+      await this.deleteMessage(ctx, this.commandForbiddenMessageId);
 
       await this.onCreateAlertMessage(ctx);
 
@@ -186,6 +200,7 @@ export class UniquenessScene extends CommonOrderClass {
     await this.deleteMessage(ctx, this.uniquenessChoiceMessageId);
     await this.deleteMessage(ctx, this.commandForbiddenMessageId);
     await this.deleteMessage(ctx, this.alertMessageId);
+    await this.deleteMessage(ctx, this.userMessageId);
 
     return;
   }
@@ -204,6 +219,7 @@ export class UniquenessScene extends CommonOrderClass {
     await this.deleteMessage(ctx, this.uniquenessChoiceMessageId);
     await this.deleteMessage(ctx, this.commandForbiddenMessageId);
     await this.deleteMessage(ctx, this.alertMessageId);
+    await this.deleteMessage(ctx, this.userMessageId);
 
     return;
   }

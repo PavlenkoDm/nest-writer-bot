@@ -15,6 +15,8 @@ export abstract class CommonOrderClass extends Scenes.BaseScene<
 > {
   protected alertMessageId: number;
   protected commandForbiddenMessageId: number;
+  protected userStartMessageId: number;
+  protected userMessageId: number;
 
   protected async onCreateAlertMessage(
     ctx: Scenes.SceneContext<IOrderSceneState>,

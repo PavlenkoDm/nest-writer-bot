@@ -139,28 +139,41 @@ export class FileLoadScene extends CommonOrderClass {
   async onEnterTextInFileLoad(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
+    this.userMessageId = ctx.message.message_id;
+
     const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
       'FILE_LOAD_SCENE',
       Forbidden.enterCommands,
     );
+
     if (gate) {
       if (!ctx.session.__scenes.state.fileId) {
         await ctx.scene.enter('FILE_LOAD_SCENE', ctx.session.__scenes.state);
+        await this.deleteMessage(ctx, this.userMessageId);
         return;
       } else {
         await this.fileLoadChoiceMarkup(ctx, this.fileName);
+        await this.deleteMessage(ctx, this.userMessageId);
         return;
       }
     }
+
+    await this.deleteMessage(ctx, this.userMessageId);
+
+    return;
   }
 
   @On('document')
   async onFileLoad(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.deleteMessage(ctx, this.userMessageId);
+
     if (!ctx.scene.current.id || ctx.scene.current.id !== 'FILE_LOAD_SCENE') {
       return;
     }
     const message = ctx.message as Message.DocumentMessage;
+
+    this.userMessageId = message.message_id;
 
     const {
       file_id: fileId,
@@ -225,6 +238,7 @@ export class FileLoadScene extends CommonOrderClass {
     await this.deleteMessage(ctx, this.commandForbiddenMessageId);
     await this.deleteMessage(ctx, this.incorrectFormatMessageId);
     await this.deleteMessage(ctx, this.loadFileFailureMessageId);
+    await this.deleteMessage(ctx, this.userMessageId);
 
     return;
   }
@@ -243,6 +257,7 @@ export class FileLoadScene extends CommonOrderClass {
     await this.deleteMessage(ctx, this.commandForbiddenMessageId);
     await this.deleteMessage(ctx, this.incorrectFormatMessageId);
     await this.deleteMessage(ctx, this.loadFileFailureMessageId);
+    await this.deleteMessage(ctx, this.userMessageId);
 
     return;
   }
@@ -262,6 +277,7 @@ export class FileLoadScene extends CommonOrderClass {
     await this.deleteMessage(ctx, this.commandForbiddenMessageId);
     await this.deleteMessage(ctx, this.incorrectFormatMessageId);
     await this.deleteMessage(ctx, this.loadFileFailureMessageId);
+    await this.deleteMessage(ctx, this.userMessageId);
 
     return;
   }

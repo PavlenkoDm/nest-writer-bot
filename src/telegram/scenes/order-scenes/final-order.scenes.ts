@@ -210,14 +210,21 @@ export class FinalOrderScene extends CommonOrderClass {
   async onTextInFinalOrderScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
+    this.userMessageId = ctx.message.message_id;
+
     const gate = await this.onSceneGateFromCommand(
       ctx,
       'FINAL_ORDER_SCENE',
       Forbidden.enterCommands,
     );
     if (gate) {
+      await this.deleteMessage(ctx, this.userMessageId);
       return;
     }
+
+    await this.deleteMessage(ctx, this.userMessageId);
+
+    return;
   }
 
   @SceneLeave()

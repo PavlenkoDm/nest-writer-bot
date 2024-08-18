@@ -2836,21 +2836,28 @@ export class DisciplineScene extends CommonOrderClass {
   async onTextInDisciplineScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
+    this.userMessageId = ctx.message.message_id;
+
     const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
       'DISCIPLINE_SCENE',
       Forbidden.enterCommands,
     );
+
     if (gate) {
       const { branch, specialization } = ctx.session.__scenes.state.discipline;
       if (!branch && !specialization) {
         await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
+        await this.deleteMessage(ctx, this.userMessageId);
         return;
       } else {
         await this.disciplineChoiceMarkup(ctx);
+        await this.deleteMessage(ctx, this.userMessageId);
         return;
       }
     }
+
+    await this.deleteMessage(ctx, this.userMessageId);
   }
 
   @SceneLeave()

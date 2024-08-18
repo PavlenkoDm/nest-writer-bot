@@ -80,6 +80,10 @@ export class ThemeScene extends CommonOrderClass {
 
   @On('text')
   async onEnterTheme(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    await this.deleteMessage(ctx, this.userMessageId);
+
+    this.userMessageId = ctx.message.message_id;
+
     const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
       'THEME_SCENE',
@@ -88,9 +92,13 @@ export class ThemeScene extends CommonOrderClass {
     if (gate) {
       if (!ctx.session.__scenes.state.theme) {
         await ctx.scene.enter('THEME_SCENE', ctx.session.__scenes.state);
+        await this.deleteMessage(ctx, this.userMessageId);
+        await this.deleteMessage(ctx, this.alertMessageId);
         return;
       } else {
         await this.themeChoiceMarkup(ctx);
+        await this.deleteMessage(ctx, this.userMessageId);
+        await this.deleteMessage(ctx, this.alertMessageId);
         return;
       }
     }
@@ -99,18 +107,18 @@ export class ThemeScene extends CommonOrderClass {
 
     dangerRegexp.lastIndex = 0;
     if (dangerRegexp.test(message)) {
-      if (this.alertMessageId) {
-        await ctx.deleteMessage(this.alertMessageId);
-        this.alertMessageId = 0;
-      }
+      await this.deleteMessage(ctx, this.alertMessageId);
+      await this.deleteMessage(ctx, this.commandForbiddenMessageId);
 
       await this.onCreateAlertMessage(ctx);
 
       if (!ctx.session.__scenes.state.theme) {
         await ctx.scene.enter('THEME_SCENE', ctx.session.__scenes.state);
+        await this.deleteMessage(ctx, this.userMessageId);
         return;
       } else {
         await this.themeChoiceMarkup(ctx);
+        await this.deleteMessage(ctx, this.userMessageId);
         return;
       }
     }
@@ -122,6 +130,7 @@ export class ThemeScene extends CommonOrderClass {
     }
 
     await this.themeChoiceMarkup(ctx);
+
     return;
   }
 
@@ -149,6 +158,7 @@ export class ThemeScene extends CommonOrderClass {
       await this.deleteMessage(ctx, this.themeChoiceMessageId);
       await this.deleteMessage(ctx, this.commandForbiddenMessageId);
       await this.deleteMessage(ctx, this.alertMessageId);
+      await this.deleteMessage(ctx, this.userMessageId);
 
       return;
     }
@@ -161,6 +171,7 @@ export class ThemeScene extends CommonOrderClass {
       await this.deleteMessage(ctx, this.themeChoiceMessageId);
       await this.deleteMessage(ctx, this.commandForbiddenMessageId);
       await this.deleteMessage(ctx, this.alertMessageId);
+      await this.deleteMessage(ctx, this.userMessageId);
 
       return;
     }
@@ -172,6 +183,7 @@ export class ThemeScene extends CommonOrderClass {
     await this.deleteMessage(ctx, this.themeChoiceMessageId);
     await this.deleteMessage(ctx, this.commandForbiddenMessageId);
     await this.deleteMessage(ctx, this.alertMessageId);
+    await this.deleteMessage(ctx, this.userMessageId);
 
     return;
   }
@@ -190,6 +202,7 @@ export class ThemeScene extends CommonOrderClass {
     await this.deleteMessage(ctx, this.themeChoiceMessageId);
     await this.deleteMessage(ctx, this.commandForbiddenMessageId);
     await this.deleteMessage(ctx, this.alertMessageId);
+    await this.deleteMessage(ctx, this.userMessageId);
 
     return;
   }

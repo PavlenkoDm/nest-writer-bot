@@ -12,9 +12,9 @@ export enum WorkType {
   CaseStudyReports = 'CaseStudyReports',
 }
 
-export function onFillTypeOfWork(string: WorkType) {
+export function onFillTypeOfWork(str: WorkType) {
   let workType: string;
-  switch (string) {
+  switch (str) {
     case WorkType.Diplomas:
       workType = TypeOfWork.college_diploma;
       break;

@@ -59,14 +59,21 @@ export class PrivacyPolicyScene extends CommonOrderClass {
   async onTextInPrivacyPolicyScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
+    this.userMessageId = ctx.message.message_id;
+
     const gate = await this.onSceneGateFromCommand(
       ctx,
       'PRIVACY_POLICY_SCENE',
       Forbidden.enterCommands,
     );
     if (gate) {
+      await this.deleteMessage(ctx, this.userMessageId);
       return;
     }
+
+    await this.deleteMessage(ctx, this.userMessageId);
+
+    return;
   }
 
   @Action(`yes_agreement`)
