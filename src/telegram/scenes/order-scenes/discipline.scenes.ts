@@ -12,7 +12,7 @@ import { IOrderSceneState } from './order.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
 import { CommonOrderClass, Forbidden } from './common-order.abstract';
 
-enum Branch {
+export enum Branch {
   education = 'Освіта',
   сultureAndArt = 'Культура і мистецтво',
   humanities = 'Гуманітарні науки',
