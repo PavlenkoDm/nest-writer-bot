@@ -10,13 +10,24 @@ import {
 } from './helpers-telegram/work-type.helper';
 import { Emoji } from './emoji/emoji';
 import { IJoinSceneState } from './scenes/join-scenes/join.config';
+import {
+  ExpertiseArea,
+  onFillDisciplineBranch,
+} from './helpers-telegram/discipline.helper';
+import {
+  ExecutionTime,
+  onFillTimeLimit,
+} from './helpers-telegram/time-limit.helper';
 
 type Scenario = 'order' | 'join';
 
 interface IncomingData {
   command?: Scenario;
   workType?: WorkType;
-  expertiseArea?: string;
+  expertiseArea?: ExpertiseArea;
+  frontTheme?: string;
+  frontUniqueness?: number;
+  executionTime?: ExecutionTime;
 }
 
 export type MyOrderJoinContext = IOrderSceneState & IJoinSceneState;
@@ -140,10 +151,18 @@ export class TelegramService extends Telegraf<Context> {
 
     const orderData: IncomingData = await JSON.parse(decodedPayload);
 
-    const { command, workType, expertiseArea } = orderData;
+    const {
+      command,
+      workType,
+      expertiseArea,
+      frontTheme,
+      frontUniqueness,
+      executionTime,
+    } = orderData;
 
     if (command && command === 'order') {
       if (!workType) await this.onStartOrder(ctx);
+
       if (workType && !expertiseArea) {
         if (!ctx.session.__scenes.state) {
           ctx.session.__scenes.state = {};
@@ -151,11 +170,65 @@ export class TelegramService extends Telegraf<Context> {
         } else {
           ctx.session.__scenes.state.isScenario = true;
         }
+
         if (!ctx.session.__scenes.state.typeOfWork) {
           ctx.session.__scenes.state.typeOfWork = onFillTypeOfWork(workType);
         } else {
           ctx.session.__scenes.state.typeOfWork = onFillTypeOfWork(workType);
         }
+
+        await this.onStartOrder(ctx);
+        await this.deleteMessage(ctx, this.userStartMessageId);
+        return;
+      }
+
+      if (workType && executionTime) {
+        if (!ctx.session.__scenes.state) {
+          ctx.session.__scenes.state = {};
+          ctx.session.__scenes.state.isScenario = true;
+          ctx.session.__scenes.state.fromCalculation = true;
+        } else {
+          ctx.session.__scenes.state.isScenario = true;
+          ctx.session.__scenes.state.fromCalculation = true;
+        }
+
+        if (!ctx.session.__scenes.state.typeOfWork) {
+          ctx.session.__scenes.state.typeOfWork = onFillTypeOfWork(workType);
+        } else {
+          ctx.session.__scenes.state.typeOfWork = onFillTypeOfWork(workType);
+        }
+
+        if (!ctx.session.__scenes.state.discipline) {
+          ctx.session.__scenes.state.discipline = {};
+          ctx.session.__scenes.state.discipline.branch =
+            onFillDisciplineBranch(expertiseArea);
+        } else {
+          ctx.session.__scenes.state.discipline.branch =
+            onFillDisciplineBranch(expertiseArea);
+        }
+
+        if (frontTheme) {
+          if (!ctx.session.__scenes.state.theme) {
+            ctx.session.__scenes.state.theme = frontTheme;
+          } else {
+            ctx.session.__scenes.state.theme = frontTheme;
+          }
+        }
+
+        if (frontUniqueness) {
+          if (!ctx.session.__scenes.state.uniqueness) {
+            ctx.session.__scenes.state.uniqueness = frontUniqueness;
+          } else {
+            ctx.session.__scenes.state.uniqueness = frontUniqueness;
+          }
+        }
+
+        if (!ctx.session.__scenes.state.timeLimit) {
+          ctx.session.__scenes.state.timeLimit = onFillTimeLimit(executionTime);
+        } else {
+          ctx.session.__scenes.state.timeLimit = onFillTimeLimit(executionTime);
+        }
+
         await this.onStartOrder(ctx);
         await this.deleteMessage(ctx, this.userStartMessageId);
         return;
@@ -241,7 +314,7 @@ export class TelegramService extends Telegraf<Context> {
 
     if (
       ctx.session.__scenes.state.typeOfWork &&
-      !ctx.session.__scenes.state.uniqueness
+      !ctx.session.__scenes.state.timeLimit
     ) {
       await ctx.answerCbQuery();
       await this.onChoosenWorkTypeMarkup(ctx);
@@ -251,6 +324,19 @@ export class TelegramService extends Telegraf<Context> {
       deleteMessageDelayed(ctx, this.choosenWorkTypeMessageId, 10000);
 
       await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
+
+      return;
+    }
+
+    if (
+      ctx.session.__scenes.state.typeOfWork &&
+      ctx.session.__scenes.state.timeLimit
+    ) {
+      await ctx.answerCbQuery();
+      await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
+
+      await this.deleteMessage(ctx, this.startOrderMessageId);
+      await this.deleteMessage(ctx, this.startJoinMessageId);
 
       return;
     }

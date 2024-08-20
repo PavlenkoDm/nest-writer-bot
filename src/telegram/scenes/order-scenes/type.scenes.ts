@@ -32,6 +32,7 @@ export class TypeScene extends CommonOrderClass {
   }
   private typeStartMessageId: number;
   private typeChoiceMessageId: number;
+  private fromCalculationMessageId: number;
   protected commandForbiddenMessageId: number;
 
   private async typeStartMarkup(ctx: Scenes.SceneContext<IOrderSceneState>) {
@@ -92,8 +93,45 @@ export class TypeScene extends CommonOrderClass {
     return;
   }
 
+  private async onFromCalculationMarkup(
+    ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    await this.deleteMessage(ctx, this.fromCalculationMessageId);
+
+    const fromCalculationMessage = await ctx.replyWithHTML(
+      `<b>${Emoji.wink} Ми помітили, що ви вже ввели деякі дані на нашому сайті.</b>
+      \nЗавдяки цьому ви можете заощадити час і пропустити кілька кроків у процесі оформлення замовлення.`,
+      Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            `${Emoji.forward} Продовжити замовлення`,
+            'go-forward_to_discipline',
+          ),
+        ],
+        [
+          Markup.button.callback(
+            `${Emoji.restart} Почати спочатку`,
+            'begin_order_from_scratch',
+          ),
+        ],
+      ]),
+    );
+
+    this.fromCalculationMessageId = fromCalculationMessage.message_id;
+
+    return fromCalculationMessage;
+  }
+
   @SceneEnter()
   async onEnterTypeScene(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    const { fromCalculation, typeOfWork, timeLimit } =
+      ctx.session.__scenes.state;
+
+    if (fromCalculation && typeOfWork && timeLimit) {
+      await this.onFromCalculationMarkup(ctx);
+      return;
+    }
+
     await this.deleteMessage(ctx, this.typeStartMessageId);
 
     await this.typeStartMarkup(ctx);
@@ -166,6 +204,7 @@ export class TypeScene extends CommonOrderClass {
     await this.deleteMessage(ctx, this.typeStartMessageId);
     await this.deleteMessage(ctx, this.typeChoiceMessageId);
     await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, this.fromCalculationMessageId);
 
     return;
   }
@@ -183,6 +222,26 @@ export class TypeScene extends CommonOrderClass {
 
     await this.deleteMessage(ctx, this.typeChoiceMessageId);
     await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+
+    return;
+  }
+
+  @Action('begin_order_from_scratch')
+  async beginOrderFromScratch(
+    @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    if (ctx.scene.current.id !== 'TYPE_SCENE') {
+      return;
+    }
+
+    ctx.session.__scenes.state = {};
+    ctx.session.__scenes.state.isScenario = true;
+
+    await ctx.answerCbQuery();
+    await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
+
+    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, this.fromCalculationMessageId);
 
     return;
   }
