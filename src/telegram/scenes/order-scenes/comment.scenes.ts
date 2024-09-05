@@ -29,7 +29,7 @@ export class CommentScene extends CommonOrderClass {
     const startMessage = await ctx.replyWithHTML(
       `<b>${Emoji.question} Додайте коментар до замовлення</b> <i>(Опціональна дія)</i>`,
       Markup.inlineKeyboard([
-        [Markup.button.callback('Пропустити', 'skip_comment')],
+        [Markup.button.callback(`${Emoji.skip} Пропустити`, 'skip_comment')],
       ]),
     );
 

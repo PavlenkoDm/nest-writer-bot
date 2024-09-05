@@ -8,6 +8,8 @@ interface IBranchSpeciAlization {
 interface IOrder {
   isScenario?: boolean;
   fromCalculation?: boolean;
+  disciplineFlag?: boolean;
+  uniquenessFlag?: boolean;
   typeOfWork?: string;
   discipline?: IBranchSpeciAlization;
   theme?: string;

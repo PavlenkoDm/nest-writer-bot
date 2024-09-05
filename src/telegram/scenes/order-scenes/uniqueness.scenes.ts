@@ -115,10 +115,73 @@ export class UniquenessScene extends CommonOrderClass {
     return regExp;
   }
 
+  private checkFrontUniquenessValue(
+    workType: string,
+    incomeUniqueness: number,
+  ) {
+    let isCorrectUniqueness: boolean;
+
+    switch (workType) {
+      case TypeOfWork.coursework:
+        if (incomeUniqueness >= 40 && incomeUniqueness <= 100) {
+          isCorrectUniqueness = true;
+        } // 40
+        break;
+      case TypeOfWork.college_diploma:
+        if (incomeUniqueness >= 50 && incomeUniqueness <= 100) {
+          isCorrectUniqueness = true;
+        } // 50
+        break;
+      case 'Дипломні роботи для технікумів':
+        if (incomeUniqueness >= 50 && incomeUniqueness <= 100) {
+          isCorrectUniqueness = true;
+        } // 50
+        break;
+      case TypeOfWork.bachelor:
+        if (incomeUniqueness >= 50 && incomeUniqueness <= 100) {
+          isCorrectUniqueness = true;
+        } // 50
+        break;
+      case TypeOfWork.master:
+        if (incomeUniqueness >= 70 && incomeUniqueness <= 100) {
+          isCorrectUniqueness = true;
+        } // 70
+        break;
+      default:
+        isCorrectUniqueness = false; // 30
+        break;
+    }
+
+    return isCorrectUniqueness;
+  }
+
   @SceneEnter()
   async onEnterUniquenessScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
+    const {
+      fromCalculation,
+      timeLimit,
+      uniquenessFlag,
+      uniqueness,
+      typeOfWork,
+    } = ctx.session.__scenes.state;
+
+    if (fromCalculation && timeLimit && uniqueness && uniquenessFlag) {
+      const isCorrectUniqueness = this.checkFrontUniquenessValue(
+        typeOfWork,
+        uniqueness,
+      );
+      if (isCorrectUniqueness) {
+        await this.goForward(ctx);
+        return;
+      }
+    }
+
+    if (ctx.session.__scenes.state.uniquenessFlag) {
+      ctx.session.__scenes.state.uniquenessFlag = false;
+    }
+
     await this.deleteMessage(ctx, this.uniquenessStartMessageId);
 
     await this.uniquenessStartMarkup(ctx);

@@ -27,7 +27,7 @@ export class FinalOrderScene extends CommonOrderClass {
   private finalOrderStartMessageId: number;
   protected commandForbiddenMessageId: number;
 
-  private async finalOrderStartMarkup(
+  private async commonFinalOrderMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     let linkToFile: string;
@@ -52,8 +52,7 @@ export class FinalOrderScene extends CommonOrderClass {
     const isComment = comment ? comment : 'відсутній';
     const isSavedFile = linkToFile ? '[зберегти файл]' : 'відсутні';
 
-    const startMessage = await ctx.replyWithHTML(
-      `<b>${Emoji.alert} Ваше замовлення:</b>\n\n
+    const commonFinalOrderMessage = `
       <b>${Emoji.pin} Тип роботи:</b>  <i>"${typeOfWork}"</i>\n\n
       <b>${Emoji.pin} Галузь знань:</b>  <i>"${branch}"</i>\n\n
       <b>${Emoji.pin} Спеціалізація:</b>  <i>"${specialization}"</i>\n\n
@@ -64,6 +63,19 @@ export class FinalOrderScene extends CommonOrderClass {
       <b>${Emoji.mega} Коментар:</b>  <i>${isComment}</i>\n\n
       <b>${Emoji.note} Ознайомлений з політикою конфіденційності:</b>  <i>${privacyPolicy ? 'Так' : 'Ні'}</i>\n\n
       <b>${Emoji.note} Погоджуюсь на обробку персональних даних:</b>  <i>${privacyPolicy ? 'Так' : 'Ні'}</i>
+    `;
+
+    return commonFinalOrderMessage;
+  }
+
+  private async finalOrderStartMarkup(
+    ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    const commonMarkup = await this.commonFinalOrderMarkup(ctx);
+
+    const startMessage = await ctx.replyWithHTML(
+      `<b>${Emoji.alert} Ваше замовлення:</b>\n
+      ${commonMarkup}
       `,
       Markup.inlineKeyboard([
         [
@@ -103,42 +115,11 @@ export class FinalOrderScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'FINAL_ORDER_SCENE') {
       return;
     }
-
-    let linkToFile: string;
-
-    const {
-      typeOfWork,
-      discipline: { branch, specialization },
-      timeLimit,
-      uniqueness,
-      theme,
-      fileId,
-      comment,
-      privacyPolicy,
-    } = ctx.session.__scenes.state;
-
-    if (fileId) {
-      linkToFile = (await ctx.telegram.getFileLink(fileId)).href;
-    }
-
-    const isUniqueness = uniqueness ? uniqueness : 'не визначено';
-    const isTheme = theme ? theme : 'не визначено';
-    const isLinkToFile = linkToFile ? linkToFile : 'відсутні';
-    const isComment = comment ? comment : 'відсутній';
-    const isSavedFile = linkToFile ? '[зберегти файл]' : 'відсутні';
+    const commonMarkup = await this.commonFinalOrderMarkup(ctx);
 
     const message = `
-    <b>${Emoji.alert} Замовлення від:</b>  <i>@${ctx.from.username}</i>\n\n
-    <b>${Emoji.pin} Тип роботи:</b>  <i>"${typeOfWork}"</i>\n\n
-    <b>${Emoji.pin} Галузь знань:</b>  <i>"${branch}"</i>\n\n
-    <b>${Emoji.pin} Спеціалізація:</b>  <i>"${specialization}"</i>\n\n
-    <b>${Emoji.pin} Тема:</b>  <i>"${isTheme}"</i>\n\n
-    <b>${Emoji.pin} Відсоток унікальності (%):</b>  <i>${isUniqueness}</i>\n\n
-    <b>${Emoji.time} Термін виконання:</b>  <i>"${timeLimit}"</i>\n\n
-    <b>${Emoji.book} Додаткові матеріали:</b>  <i><a href="${isLinkToFile}">${isSavedFile}</a></i>\n\n
-    <b>${Emoji.mega} Коментар:</b>  <i>${isComment}</i>\n\n
-    <b>${Emoji.note} Ознайомлений з політикою конфіденційності:</b>  <i>${privacyPolicy ? 'Так' : 'Ні'}</i>\n\n
-    <b>${Emoji.note} Погоджуюсь на обробку персональних даних:</b>  <i>${privacyPolicy ? 'Так' : 'Ні'}</i>
+    <b>${Emoji.alert} Замовлення від:</b>  <i>@${ctx.from.username}</i>\n
+    ${commonMarkup}
     `;
     await ctx.telegram.sendMessage(this.chatId, message, {
       parse_mode: 'HTML',

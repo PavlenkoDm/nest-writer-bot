@@ -59,7 +59,7 @@ export class FinalJoinScene extends CommonJoinClass {
     const deadlines = timePeriod.join(', ');
     const privacyPolicy = personalInfo ? 'Так' : 'Ні';
 
-    const startMessage = `<b>${Emoji.pin} Повне імʼя та вік:</b>  <i>"${fullName}"</i>\n\n
+    const commonFinalJoinMessage = `<b>${Emoji.pin} Повне імʼя та вік:</b>  <i>"${fullName}"</i>\n\n
       <b>${Emoji.pin} Інформація про освіту:</b>  <i>"${speciality}"</i>\n\n
       <b>${Emoji.pin} Фото або скан-копія документа про освіту:</b>  <i><a href="${isLinkToFile}">${isSavedFile}</a></i>\n\n
       <b>${Emoji.pin} Види робіт, які я можу виконувати:</b>  <i>"${workTypeCollection}"</i>\n\n
@@ -71,7 +71,7 @@ export class FinalJoinScene extends CommonJoinClass {
       <b>${Emoji.note} Погоджуюсь на обробку персональних даних:</b>  <i>${privacyPolicy}</i>
       `;
 
-    return startMessage;
+    return commonFinalJoinMessage;
   }
 
   private async initialFinalJoinStartMarkup(

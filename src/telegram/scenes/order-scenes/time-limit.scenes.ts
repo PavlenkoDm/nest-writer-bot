@@ -97,6 +97,13 @@ export class TimeLimitScene extends CommonOrderClass {
   async onEnterTimeLimitScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
+    const { fromCalculation, timeLimit } = ctx.session.__scenes.state;
+
+    if (fromCalculation && timeLimit) {
+      await this.goForward(ctx);
+      return;
+    }
+
     await this.deleteMessage(ctx, this.timeLimitStartMessageId);
 
     await this.timeLimitStartMarkup(ctx);

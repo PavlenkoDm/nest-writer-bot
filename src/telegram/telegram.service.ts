@@ -128,6 +128,9 @@ export class TelegramService extends Telegraf<Context> {
     this.userStartMessageId = ctx.message.message_id;
 
     const startPayload = ctx.text.trim().split(' ')[1];
+
+    console.log(startPayload);
+
     if (!startPayload) {
       return;
     }
@@ -150,6 +153,8 @@ export class TelegramService extends Telegraf<Context> {
     }
 
     const orderData: IncomingData = await JSON.parse(decodedPayload);
+
+    console.log(orderData);
 
     const {
       command,
@@ -187,9 +192,11 @@ export class TelegramService extends Telegraf<Context> {
           ctx.session.__scenes.state = {};
           ctx.session.__scenes.state.isScenario = true;
           ctx.session.__scenes.state.fromCalculation = true;
+          ctx.session.__scenes.state.disciplineFlag = true;
         } else {
           ctx.session.__scenes.state.isScenario = true;
           ctx.session.__scenes.state.fromCalculation = true;
+          ctx.session.__scenes.state.disciplineFlag = true;
         }
 
         if (!ctx.session.__scenes.state.typeOfWork) {
@@ -217,8 +224,10 @@ export class TelegramService extends Telegraf<Context> {
 
         if (frontUniqueness) {
           if (!ctx.session.__scenes.state.uniqueness) {
+            ctx.session.__scenes.state.uniquenessFlag = true;
             ctx.session.__scenes.state.uniqueness = frontUniqueness;
           } else {
+            ctx.session.__scenes.state.uniquenessFlag = true;
             ctx.session.__scenes.state.uniqueness = frontUniqueness;
           }
         }

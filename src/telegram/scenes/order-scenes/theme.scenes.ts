@@ -72,6 +72,13 @@ export class ThemeScene extends CommonOrderClass {
 
   @SceneEnter()
   async onEnterThemeScene(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    const { fromCalculation, timeLimit, theme } = ctx.session.__scenes.state;
+
+    if (fromCalculation && timeLimit && theme) {
+      await this.goForward(ctx);
+      return;
+    }
+
     await this.deleteMessage(ctx, this.themeStartMessageId);
 
     await this.themeStartMarkup(ctx);

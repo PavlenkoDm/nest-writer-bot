@@ -55,7 +55,7 @@ export class FileLoadScene extends CommonOrderClass {
       \n    - .pdf,
       \n    - .txt`,
       Markup.inlineKeyboard([
-        [Markup.button.callback('Пропустити', 'skip_file_load')],
+        [Markup.button.callback(`${Emoji.skip} Пропустити`, 'skip_file_load')],
       ]),
     );
 

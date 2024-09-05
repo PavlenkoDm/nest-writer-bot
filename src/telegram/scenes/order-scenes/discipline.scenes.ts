@@ -359,6 +359,7 @@ export class DisciplineScene extends CommonOrderClass {
 
     ctx.session.__scenes.state.discipline.branch = branch;
     ctx.session.__scenes.state.discipline.specialization = specialization;
+    ctx.session.__scenes.state.disciplineFlag = false;
 
     await ctx.answerCbQuery();
     await this.disciplineChoiceMarkup(ctx);
@@ -397,10 +398,128 @@ export class DisciplineScene extends CommonOrderClass {
     return choiceMessage;
   }
 
+  private async onChosenBranch(
+    ctx: Scenes.SceneContext<IOrderSceneState>,
+    branch: string,
+  ) {
+    switch (branch) {
+      case Branch.education:
+        await this.addEducation(ctx);
+        break;
+      case Branch.сultureAndArt:
+        await this.addCultureAndArt(ctx);
+        break;
+      case Branch.humanities:
+        await this.addHumanities(ctx);
+        break;
+      case Branch.theology:
+        await this.onTheology(ctx);
+        break;
+      case Branch.socialAndBehavioralSciences:
+        await this.addSocialAndBehavioralSciences(ctx);
+        break;
+      case Branch.journalism:
+        await this.onJournalism(ctx);
+        break;
+      case Branch.managementAndAdministration:
+        await this.addManagementAndAdministration(ctx);
+        break;
+      case Branch.law:
+        await this.addLaw(ctx);
+        break;
+      case Branch.biology:
+        await this.onBiology(ctx);
+        break;
+      case Branch.naturalSciences:
+        await this.addNaturalSciences(ctx);
+        break;
+      case Branch.mathematicsAndStatistics:
+        await this.addMathematicsAndStatistics(ctx);
+        break;
+      case Branch.informationTechnology:
+        await this.addInformationTechnology(ctx);
+        break;
+      case Branch.mechanicalEngineering:
+        await this.addMechanicalEngineering(ctx);
+        break;
+      case Branch.electricalEngineering:
+        await this.addElectricalEngineering(ctx);
+        break;
+      case Branch.automationAndInstrumentation:
+        await this.addAutomationAndInstrumentation(ctx);
+        break;
+      case Branch.chemicalAndBioengineering:
+        await this.addChemicalAndBioengineering(ctx);
+        break;
+      case Branch.electronicsAndTelecommunications:
+        await this.addElectronicsAndTelecommunications(ctx);
+        break;
+      case Branch.productionAndTechnologies:
+        await this.addProductionAndTechnologies(ctx);
+        break;
+      case Branch.architectureAndConstruction:
+        await this.addArchitectureAndConstruction(ctx);
+        break;
+      case Branch.agriculturalSciencesAndFood:
+        await this.addAgriculturalSciencesAndFood(ctx);
+        break;
+      case Branch.veterinary:
+        await this.addVeterinary(ctx);
+        break;
+      case Branch.healthCare:
+        await this.addHealthCare(ctx);
+        break;
+      case Branch.socialWork:
+        await this.addSocialWork(ctx);
+        break;
+      case Branch.serviceSector:
+        await this.addServiceSector(ctx);
+        break;
+      case Branch.military:
+        await this.addMilitary(ctx);
+        break;
+      case Branch.civilSecurity:
+        await this.addCivilSecurity(ctx);
+        break;
+      case Branch.transport:
+        await this.addTransport(ctx);
+        break;
+      default:
+        break;
+    }
+
+    return;
+  }
+
   @SceneEnter()
   async onEnterDisciplineScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
+    if (
+      ctx.session.__scenes.state.fromCalculation &&
+      ctx.session.__scenes.state.disciplineFlag
+    ) {
+      const {
+        fromCalculation,
+        disciplineFlag,
+        typeOfWork,
+        timeLimit,
+        discipline: { branch, specialization },
+      } = ctx.session.__scenes.state;
+
+      if (
+        fromCalculation &&
+        disciplineFlag &&
+        typeOfWork &&
+        timeLimit &&
+        branch &&
+        !specialization
+      ) {
+        await this.onChosenBranch(ctx, branch);
+        return;
+      }
+    }
+
     await this.deleteMessage(ctx, this.disciplineStartMessageId);
 
     if (!ctx.session.__scenes.state.discipline) {
@@ -2693,6 +2812,7 @@ export class DisciplineScene extends CommonOrderClass {
 
   @Action('back_to_branch')
   async backToBranch(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    ctx.session.__scenes.state.disciplineFlag = false;
     await ctx.answerCbQuery();
     await ctx.editMessageText(
       `<b>${Emoji.question} Виберіть галузь знань:</b>`,
@@ -2804,6 +2924,7 @@ export class DisciplineScene extends CommonOrderClass {
       return;
     }
 
+    ctx.session.__scenes.state.disciplineFlag = false;
     await ctx.answerCbQuery();
     await ctx.scene.enter('THEME_SCENE', ctx.session.__scenes.state);
 
@@ -2822,6 +2943,7 @@ export class DisciplineScene extends CommonOrderClass {
 
     ctx.session.__scenes.state.discipline.branch = '';
     ctx.session.__scenes.state.discipline.specialization = '';
+    ctx.session.__scenes.state.disciplineFlag = false;
 
     await ctx.answerCbQuery();
     await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
