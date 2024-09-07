@@ -491,6 +491,30 @@ export class DisciplineScene extends CommonOrderClass {
     return;
   }
 
+  private async disciplineMarkupAfterCalculation(
+    ctx: Scenes.SceneContext<IOrderSceneState>,
+  ) {
+    const afterCalculationMessage = await ctx.replyWithHTML(
+      `<b>${Emoji.attention} Попередньо вами була вибрана галузь:</b>
+      \n"<i>${ctx.session.__scenes.state.discipline.branch}</i>"
+      \n<b>${Emoji.monocle} Наразі її потрібно доповнити спеціальністю.</b>
+      \n<i>(В деяких галузях є тільки одна спеціальність,
+      \nтому вона буде вибрана автоматично)</i>`,
+      Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            `${Emoji.forward} До вибору спеціальності`,
+            'to_choose_speciality',
+          ),
+        ],
+      ]),
+    );
+
+    this.disciplineStartMessageId = afterCalculationMessage.message_id;
+
+    return afterCalculationMessage;
+  }
+
   @SceneEnter()
   async onEnterDisciplineScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
@@ -515,7 +539,7 @@ export class DisciplineScene extends CommonOrderClass {
         branch &&
         !specialization
       ) {
-        await this.onChosenBranch(ctx, branch);
+        await this.disciplineMarkupAfterCalculation(ctx);
         return;
       }
     }
@@ -2952,6 +2976,12 @@ export class DisciplineScene extends CommonOrderClass {
     await this.deleteMessage(ctx, this.commandForbiddenMessageId);
 
     return;
+  }
+
+  @Action('to_choose_speciality')
+  async selectSpeciality(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
+    const branch = ctx.session.__scenes.state.discipline.branch;
+    await this.onChosenBranch(ctx, branch);
   }
 
   @On('text')

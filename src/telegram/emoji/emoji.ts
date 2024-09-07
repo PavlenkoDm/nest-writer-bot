@@ -26,4 +26,5 @@ export enum Emoji {
   shoppingCart = '🛒',
   joinTeam = '🚀',
   mega = '📣',
+  monocle = '🧐',
 }

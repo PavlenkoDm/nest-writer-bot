@@ -1,9 +1,9 @@
 import { ExecTime } from '../scenes/order-scenes/time-limit.scenes';
 
 export enum ExecutionTime {
-  LongTerm = 'LongTerm',
-  MediumTerm = 'MediumTerm',
-  Urgent = 'Urgent',
+  LongTerm = 'lg',
+  MediumTerm = 'md',
+  Urgent = 'ur',
 }
 
 export function onFillTimeLimit(str: ExecutionTime) {

@@ -7,6 +7,7 @@ import { IOrderSceneState } from './scenes/order-scenes/order.config';
 import {
   onFillTypeOfWork,
   WorkType,
+  WorkTypeAbbreviations,
 } from './helpers-telegram/work-type.helper';
 import { Emoji } from './emoji/emoji';
 import { IJoinSceneState } from './scenes/join-scenes/join.config';
@@ -24,10 +25,12 @@ type Scenario = 'order' | 'join';
 interface IncomingData {
   command?: Scenario;
   workType?: WorkType;
-  expertiseArea?: ExpertiseArea;
-  frontTheme?: string;
-  frontUniqueness?: number;
-  executionTime?: ExecutionTime;
+  a?: ExpertiseArea;
+  // frontTheme?: string;
+  u?: string;
+  c?: string;
+  t?: ExecutionTime;
+  w?: WorkTypeAbbreviations;
 }
 
 export type MyOrderJoinContext = IOrderSceneState & IJoinSceneState;
@@ -156,19 +159,12 @@ export class TelegramService extends Telegraf<Context> {
 
     console.log(orderData);
 
-    const {
-      command,
-      workType,
-      expertiseArea,
-      frontTheme,
-      frontUniqueness,
-      executionTime,
-    } = orderData;
+    const { command, workType, a, u, c, t, w } = orderData;
 
     if (command && command === 'order') {
       if (!workType) await this.onStartOrder(ctx);
 
-      if (workType && !expertiseArea) {
+      if (workType && !a) {
         if (!ctx.session.__scenes.state) {
           ctx.session.__scenes.state = {};
           ctx.session.__scenes.state.isScenario = true;
@@ -186,62 +182,63 @@ export class TelegramService extends Telegraf<Context> {
         await this.deleteMessage(ctx, this.userStartMessageId);
         return;
       }
+    }
 
-      if (workType && executionTime) {
-        if (!ctx.session.__scenes.state) {
-          ctx.session.__scenes.state = {};
-          ctx.session.__scenes.state.isScenario = true;
-          ctx.session.__scenes.state.fromCalculation = true;
-          ctx.session.__scenes.state.disciplineFlag = true;
-        } else {
-          ctx.session.__scenes.state.isScenario = true;
-          ctx.session.__scenes.state.fromCalculation = true;
-          ctx.session.__scenes.state.disciplineFlag = true;
-        }
-
-        if (!ctx.session.__scenes.state.typeOfWork) {
-          ctx.session.__scenes.state.typeOfWork = onFillTypeOfWork(workType);
-        } else {
-          ctx.session.__scenes.state.typeOfWork = onFillTypeOfWork(workType);
-        }
-
-        if (!ctx.session.__scenes.state.discipline) {
-          ctx.session.__scenes.state.discipline = {};
-          ctx.session.__scenes.state.discipline.branch =
-            onFillDisciplineBranch(expertiseArea);
-        } else {
-          ctx.session.__scenes.state.discipline.branch =
-            onFillDisciplineBranch(expertiseArea);
-        }
-
-        if (frontTheme) {
-          if (!ctx.session.__scenes.state.theme) {
-            ctx.session.__scenes.state.theme = frontTheme;
-          } else {
-            ctx.session.__scenes.state.theme = frontTheme;
-          }
-        }
-
-        if (frontUniqueness) {
-          if (!ctx.session.__scenes.state.uniqueness) {
-            ctx.session.__scenes.state.uniquenessFlag = true;
-            ctx.session.__scenes.state.uniqueness = frontUniqueness;
-          } else {
-            ctx.session.__scenes.state.uniquenessFlag = true;
-            ctx.session.__scenes.state.uniqueness = frontUniqueness;
-          }
-        }
-
-        if (!ctx.session.__scenes.state.timeLimit) {
-          ctx.session.__scenes.state.timeLimit = onFillTimeLimit(executionTime);
-        } else {
-          ctx.session.__scenes.state.timeLimit = onFillTimeLimit(executionTime);
-        }
-
-        await this.onStartOrder(ctx);
-        await this.deleteMessage(ctx, this.userStartMessageId);
-        return;
+    if (c && c === 'ord') {
+      if (!ctx.session.__scenes.state) {
+        ctx.session.__scenes.state = {};
+        ctx.session.__scenes.state.isScenario = true;
+        ctx.session.__scenes.state.fromCalculation = true;
+        ctx.session.__scenes.state.disciplineFlag = true;
+      } else {
+        ctx.session.__scenes.state.isScenario = true;
+        ctx.session.__scenes.state.fromCalculation = true;
+        ctx.session.__scenes.state.disciplineFlag = true;
       }
+
+      if (!ctx.session.__scenes.state.typeOfWork) {
+        ctx.session.__scenes.state.typeOfWork = onFillTypeOfWork(w);
+      } else {
+        ctx.session.__scenes.state.typeOfWork = onFillTypeOfWork(w);
+      }
+
+      if (!ctx.session.__scenes.state.discipline) {
+        ctx.session.__scenes.state.discipline = {};
+        ctx.session.__scenes.state.discipline.branch =
+          onFillDisciplineBranch(a);
+      } else {
+        ctx.session.__scenes.state.discipline.branch =
+          onFillDisciplineBranch(a);
+      }
+
+      // if (frontTheme) {
+      //   if (!ctx.session.__scenes.state.theme) {
+      //     ctx.session.__scenes.state.theme = frontTheme;
+      //   } else {
+      //     ctx.session.__scenes.state.theme = frontTheme;
+      //   }
+      // }
+
+      if (u && +u !== 0) {
+        const frontUniqueness = +u;
+        if (!ctx.session.__scenes.state.uniqueness) {
+          ctx.session.__scenes.state.uniquenessFlag = true;
+          ctx.session.__scenes.state.uniqueness = frontUniqueness;
+        } else {
+          ctx.session.__scenes.state.uniquenessFlag = true;
+          ctx.session.__scenes.state.uniqueness = frontUniqueness;
+        }
+      }
+
+      if (!ctx.session.__scenes.state.timeLimit) {
+        ctx.session.__scenes.state.timeLimit = onFillTimeLimit(t);
+      } else {
+        ctx.session.__scenes.state.timeLimit = onFillTimeLimit(t);
+      }
+
+      await this.onStartOrder(ctx);
+      await this.deleteMessage(ctx, this.userStartMessageId);
+      return;
     }
 
     if (command && command === 'join') {
