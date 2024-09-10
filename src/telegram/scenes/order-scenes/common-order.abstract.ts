@@ -95,7 +95,7 @@ export abstract class CommonOrderClass extends Scenes.BaseScene<
       }
     } catch (error) {
       if (error.response && error.response.error_code === 400) {
-        console.log(`Message does not exist. Initiator: ${ctx.from.username}`);
+        // console.log(`Message does not exist. Initiator: ${ctx.from.username}`);
         return;
       }
       console.error('Error:', error);
@@ -117,9 +117,9 @@ export abstract class CommonOrderClass extends Scenes.BaseScene<
           }
         } catch (error) {
           if (error.response && error.response.error_code === 400) {
-            console.log(
-              `Message does not exist. Initiator: ${ctx.from.username}`,
-            );
+            // console.log(
+            //   `Message does not exist. Initiator: ${ctx.from.username}`,
+            // );
             return;
           }
           console.error('Error:', error);

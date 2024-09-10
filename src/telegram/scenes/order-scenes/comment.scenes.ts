@@ -27,7 +27,13 @@ export class CommentScene extends CommonOrderClass {
 
   private async commentStartMarkup(ctx: Scenes.SceneContext<IOrderSceneState>) {
     const startMessage = await ctx.replyWithHTML(
-      `<b>${Emoji.question} Додайте коментар до замовлення</b> <i>(Опціональна дія)</i>`,
+      `<b>${Emoji.question} Додайте коментар.</b><i> (Опціональна дія)</i>
+      \nТут ви можете вказати додаткові побажання, наприклад:
+      \n - деталізувати терміни виконання;
+      \n - вказати уточнення по темі роботи;
+      \n - поставити питання щодо замовлення та інше.
+      \n${Emoji.monocle} Якщо у вас немає коментарів, ви можете пропустити цей крок.
+      `,
       Markup.inlineKeyboard([
         [Markup.button.callback(`${Emoji.skip} Пропустити`, 'skip_comment')],
       ]),

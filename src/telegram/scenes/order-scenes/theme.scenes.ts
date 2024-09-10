@@ -36,7 +36,7 @@ export class ThemeScene extends CommonOrderClass {
 
   private async themeStartMarkup(ctx: Scenes.SceneContext<IOrderSceneState>) {
     const startMessage = await ctx.replyWithHTML(
-      `<b>${Emoji.question} Введіть тему роботи</b>`,
+      `<b>${Emoji.question} Введіть тему роботи.</b>`,
     );
 
     this.themeStartMessageId = startMessage.message_id;

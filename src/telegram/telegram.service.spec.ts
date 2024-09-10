@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TelegramService } from './telegram.service';
+import { ConfigService } from '@nestjs/config';
+import { Context } from 'telegraf';
+
+jest.mock('telegraf');
 
 describe('TelegramService', () => {
   let service: TelegramService;

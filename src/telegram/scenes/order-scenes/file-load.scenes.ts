@@ -46,7 +46,7 @@ export class FileLoadScene extends CommonOrderClass {
     ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     const startMessage = await ctx.replyWithHTML(
-      `<b>${Emoji.question} Завантажте методичні матеріали по темі</b> <i> (Опціональна дія)</i>
+      `<b>${Emoji.question} Завантажте методичні матеріали по темі.</b><i> (Опціональна дія)</i>
       \n${Emoji.attention} Файли для завантаження мають бути формата:
       \n    - .doc,
       \n    - .docx,

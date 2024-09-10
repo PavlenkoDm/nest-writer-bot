@@ -498,8 +498,8 @@ export class DisciplineScene extends CommonOrderClass {
       `<b>${Emoji.attention} Попередньо вами була вибрана галузь:</b>
       \n"<i>${ctx.session.__scenes.state.discipline.branch}</i>"
       \n<b>${Emoji.monocle} Наразі її потрібно доповнити спеціальністю.</b>
-      \n<i>(В деяких галузях є тільки одна спеціальність,
-      \nтому вона буде вибрана автоматично)</i>`,
+      \n<i>( В деяких галузях є тільки одна спеціальність,
+      \nтому вона буде вибрана автоматично )</i>`,
       Markup.inlineKeyboard([
         [
           Markup.button.callback(

@@ -118,7 +118,7 @@ export class TelegramService extends Telegraf<Context> {
       }
     } catch (error) {
       if (error.response && error.response.error_code === 400) {
-        console.log(`Message does not exist. Initiator: ${ctx.from.username}`);
+        // console.log(`Message does not exist. Initiator: ${ctx.from.username}`);
         return;
       }
       console.error('Error:', error);
@@ -131,8 +131,6 @@ export class TelegramService extends Telegraf<Context> {
     this.userStartMessageId = ctx.message.message_id;
 
     const startPayload = ctx.text.trim().split(' ')[1];
-
-    console.log(startPayload);
 
     if (!startPayload) {
       return;
@@ -156,8 +154,6 @@ export class TelegramService extends Telegraf<Context> {
     }
 
     const orderData: IncomingData = await JSON.parse(decodedPayload);
-
-    console.log(orderData);
 
     const { command, workType, a, u, c, t, w } = orderData;
 

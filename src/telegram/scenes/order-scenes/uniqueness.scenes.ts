@@ -28,10 +28,20 @@ export class UniquenessScene extends CommonOrderClass {
 
   private async uniquenessStartMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
+    isUniquenessFlag: boolean,
   ) {
+    const explainMessage = isUniquenessFlag
+      ? `( Зверніть увагу! Попередньо на нашому сайті було вказано некоректний відсоток унікальності для цього типу роботи, або він взагалі не був обраний. Будь ласка, введіть потрібний відсоток унікальності відповідно до діапазону, вказаного вище )`
+      : '';
+
+    if (isUniquenessFlag) {
+      ctx.session.__scenes.state.uniqueness = 0;
+    }
+
     const startMessage = await ctx.replyWithHTML(
-      `<b>${Emoji.question} Введіть бажаний відсоток унікальності роботи</b>
-      \n<i>${Emoji.attention} Це має бути число від ${this.showUniquenessPersent(ctx)} до 100</i>`,
+      `<b>${Emoji.question} Введіть бажаний відсоток унікальності роботи.</b>
+      \n${Emoji.attention} Це має бути число від ${this.showUniquenessPersent(ctx)} до 100.
+      \n<i>${explainMessage}</i>`,
     );
 
     this.uniquenessStartMessageId = startMessage.message_id;
@@ -43,6 +53,10 @@ export class UniquenessScene extends CommonOrderClass {
     ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     await this.deleteMessage(ctx, this.uniquenessChoiceMessageId);
+
+    if (ctx.session.__scenes.state.uniquenessFlag) {
+      ctx.session.__scenes.state.uniquenessFlag = false;
+    }
 
     const choiceMessage = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Вибраний відсоток унікальності:</b>  <i>${ctx.session.__scenes.state.uniqueness}%</i>`,
@@ -178,13 +192,16 @@ export class UniquenessScene extends CommonOrderClass {
       }
     }
 
-    if (ctx.session.__scenes.state.uniquenessFlag) {
+    if (!ctx.session.__scenes.state.uniquenessFlag) {
       ctx.session.__scenes.state.uniquenessFlag = false;
     }
 
     await this.deleteMessage(ctx, this.uniquenessStartMessageId);
 
-    await this.uniquenessStartMarkup(ctx);
+    await this.uniquenessStartMarkup(
+      ctx,
+      ctx.session.__scenes.state.uniquenessFlag,
+    );
 
     return;
   }

@@ -99,10 +99,8 @@ export class TypeScene extends CommonOrderClass {
     await this.deleteMessage(ctx, this.fromCalculationMessageId);
 
     const fromCalculationMessage = await ctx.replyWithHTML(
-      `<b>${Emoji.wink} Ми помітили, що ви вже ввели
-      \nдеякі дані на нашому сайті.
-      \nЗавдяки цьому ви можете заощадити час і пропустити
-      \nкілька кроків у процесі оформлення замовлення.</b>`,
+      `<b>${Emoji.wink} Ми помітили, що ви вже ввели деякі дані на нашому сайті.
+      \nЗавдяки цьому ви можете заощадити час і пропустити кілька кроків у процесі оформлення замовлення.</b>`,
       Markup.inlineKeyboard([
         [
           Markup.button.callback(
