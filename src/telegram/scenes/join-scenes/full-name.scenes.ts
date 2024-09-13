@@ -123,6 +123,18 @@ export class FullNameScene extends CommonJoinClass {
     ) {
       return;
     }
+
+    // await ctx.editMessageReplyMarkup({
+    //   inline_keyboard: [
+    //     [
+    //       Markup.button.callback(
+    //         `${Emoji.forward} Далі`,
+    //         `${Date.now().toString()}`,
+    //       ),
+    //     ],
+    //   ],
+    // });
+
     await ctx.answerCbQuery();
     await ctx.scene.enter('SPECIALITY_SCENE', ctx.session.__scenes.state);
 

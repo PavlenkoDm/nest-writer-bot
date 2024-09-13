@@ -359,6 +359,7 @@ export class TelegramService extends Telegraf<Context> {
     if (!ctx.session.__scenes.state) {
       ctx.session.__scenes.state = {};
       ctx.session.__scenes.state.isJoinScenario = true;
+
       await ctx.answerCbQuery();
       await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
 
@@ -368,6 +369,7 @@ export class TelegramService extends Telegraf<Context> {
       return;
     } else {
       ctx.session.__scenes.state.isJoinScenario = true;
+      // ctx.session.__scenes.state.date = dt;
 
       await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
 
