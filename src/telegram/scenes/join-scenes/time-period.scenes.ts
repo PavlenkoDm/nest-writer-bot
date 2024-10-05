@@ -11,7 +11,7 @@ import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
 import { CallbackQuery } from 'telegraf/typings/core/types/typegram';
-import { ExecTime } from '../order-scenes/time-limit.scenes';
+import { ExecTime } from '../common-enums.scenes/time-limit.enum';
 import { CommonJoinClass, Forbidden } from './common-join.abstract';
 
 const regExpForButton = /settimeperiod-(?![\d\s\n^])[^\n]+/;

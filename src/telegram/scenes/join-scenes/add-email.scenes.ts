@@ -14,7 +14,7 @@ import { CommonJoinClass, Forbidden } from './common-join.abstract';
 import { dangerRegexp } from '../helpers-scenes/regexps.helper';
 
 const addEmailRegExp =
-  /^[a-zA-Z0-9_.+-żśółąńćźŁęŻŚÓŁĄŃĆŹĘ]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]{2,}$/;
+  /^(?:"[a-zA-Z0-9żśółąńćźŁęŻŚÓŁĄŃĆŹĘ_.+-]+"|[a-zA-Z0-9żśółąńćźŁęŻŚÓŁĄŃĆŹĘ]+(?:\.[a-zA-Z0-9żśółąńćźŁęŻŚÓŁĄŃĆŹĘ]+)*)@[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?$/;
 
 @Injectable()
 @Scene('ADD_EMAIL_SCENE')

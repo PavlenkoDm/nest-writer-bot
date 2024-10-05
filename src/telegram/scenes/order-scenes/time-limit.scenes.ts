@@ -11,12 +11,7 @@ import { Markup, Scenes } from 'telegraf';
 import { IOrderSceneState } from './order.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
 import { CommonOrderClass, Forbidden } from './common-order.abstract';
-
-export enum ExecTime {
-  longTerm = 'Довготривалий: від 14 днів і довше',
-  mediumTerm = 'Середньотривалий: 4-14 днів',
-  urgent = 'Терміновий: 1-3 дні',
-}
+import { ExecTime } from '../common-enums.scenes/time-limit.enum';
 
 // const regExpForTimeLimit = /^[1-9]\d{0,2}$/;
 

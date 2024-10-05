@@ -12,6 +12,7 @@ import { IJoinSceneState } from './join.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
 import { CommonJoinClass, Forbidden } from './common-join.abstract';
 import { dangerRegexp } from '../helpers-scenes/regexps.helper';
+import { StringLength } from '../common-enums.scenes/strlength.enum';
 
 @Injectable()
 @Scene('TECH_SKILLS_SCENE')
@@ -99,7 +100,9 @@ export class TechSkillsScene extends CommonJoinClass {
       }
     }
 
-    const message = ctx.text.trim();
+    const msg = ctx.text.trim();
+
+    const message = this.modifyMessageLength(msg, StringLength.medium);
 
     dangerRegexp.lastIndex = 0;
     if (dangerRegexp.test(message)) {

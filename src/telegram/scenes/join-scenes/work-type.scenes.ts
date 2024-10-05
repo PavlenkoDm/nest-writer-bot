@@ -10,7 +10,7 @@ import {
 import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
-import { TypeOfWork } from '../order-scenes/type.scenes';
+import { TypeOfWork } from '../common-enums.scenes/work-type.enum';
 import { CallbackQuery } from 'telegraf/typings/core/types/typegram';
 import { CommonJoinClass, Forbidden } from './common-join.abstract';
 

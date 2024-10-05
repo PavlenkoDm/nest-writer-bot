@@ -1,4 +1,4 @@
-import { ExecTime } from '../scenes/order-scenes/time-limit.scenes';
+import { ExecTime } from '../scenes/common-enums.scenes/time-limit.enum';
 
 export enum ExecutionTime {
   LongTerm = 'lg',

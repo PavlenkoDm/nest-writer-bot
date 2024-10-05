@@ -4,6 +4,7 @@ import { Emoji } from 'src/telegram/emoji/emoji';
 
 export enum Alert {
   notCorrect = 'Ви ввели некоректне значення!',
+  messageOverLength = '( перевищення дозволеної кількості символів )',
 }
 
 export enum Forbidden {
@@ -128,5 +129,16 @@ export abstract class CommonOrderClass extends Scenes.BaseScene<
       }).bind(ctx),
       delay,
     );
+  }
+
+  protected modifyMessageLength(msg: string, length: number) {
+    if (msg.length > length) {
+      return (
+        msg.slice(0, length - 1) +
+        `... ${Emoji.alert}${Alert.messageOverLength}${Emoji.alert}`
+      );
+    } else {
+      return msg;
+    }
   }
 }

@@ -9,10 +9,11 @@ import {
 } from 'nestjs-telegraf';
 import { Markup, Scenes } from 'telegraf';
 import { IOrderSceneState } from './order.config';
-import { TypeOfWork } from './type.scenes';
+import { TypeOfWork } from '../common-enums.scenes/work-type.enum';
 import { Emoji } from 'src/telegram/emoji/emoji';
 import { CommonOrderClass, Forbidden } from './common-order.abstract';
 import { dangerRegexp } from '../helpers-scenes/regexps.helper';
+import { StringLength } from '../common-enums.scenes/strlength.enum';
 
 const needUniqueness = [
   TypeOfWork.coursework,
@@ -110,7 +111,9 @@ export class ThemeScene extends CommonOrderClass {
       }
     }
 
-    const message = ctx.text.trim();
+    const msg = ctx.text.trim();
+
+    const message = this.modifyMessageLength(msg, StringLength.medium);
 
     dangerRegexp.lastIndex = 0;
     if (dangerRegexp.test(message)) {

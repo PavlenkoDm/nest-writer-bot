@@ -1,4 +1,4 @@
-import { TypeOfWork } from '../scenes/order-scenes/type.scenes';
+import { TypeOfWork } from '../scenes/common-enums.scenes/work-type.enum';
 
 export enum WorkType {
   Diplomas = 'Diplomas',
