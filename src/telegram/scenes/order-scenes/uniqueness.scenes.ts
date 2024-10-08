@@ -9,7 +9,7 @@ import {
 } from 'nestjs-telegraf';
 import { Markup, Scenes } from 'telegraf';
 import { IOrderSceneState } from './order.config';
-import { TypeOfWork } from './type.scenes';
+import { TypeOfWork } from '../common-enums.scenes/work-type.enum';
 import { Emoji } from 'src/telegram/emoji/emoji';
 import { CommonOrderClass, Forbidden } from './common-order.abstract';
 import { dangerRegexp } from '../helpers-scenes/regexps.helper';
