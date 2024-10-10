@@ -1,30 +1,3 @@
 {
-  "sessions": [
-    {
-      "id": "489801890:489801890",
-      "data": {
-        "__scenes": {
-          "current": "UNIQUENESS_SCENE",
-          "state": {
-            "isScenario": true,
-            "typeOfWork": "Курсові роботи та проєкти",
-            "discipline": {
-              "branch": "Хімічна та біоінженерія",
-              "specialization": "Хімічні технології та інженерія"
-            },
-            "disciplineFlag": false,
-            "theme": "ний",
-            "uniquenessFlag": false,
-            "uniqueness": 90
-          }
-        }
-      }
-    },
-    {
-      "id": "5775947067:5775947067",
-      "data": {
-        "__scenes": {}
-      }
-    }
-  ]
+  "sessions": []
 }
