@@ -248,6 +248,7 @@ export class TelegramService extends Telegraf<Context> {
   async onStartOrder(@Ctx() ctx: SceneContext<IOrderSceneState>) {
     this.userMessageId = ctx.message.message_id;
     await this.deleteMessage(ctx, this.startJoinMessageId);
+    await this.deleteMessage(ctx, this.startOrderMessageId);
     await this.onStartOrderMarkup(ctx);
     await this.deleteMessage(ctx, this.userMessageId);
     await this.deleteMessage(ctx, this.userStartMessageId);
@@ -258,6 +259,7 @@ export class TelegramService extends Telegraf<Context> {
   async onStartJoin(@Ctx() ctx: SceneContext<IJoinSceneState>) {
     this.userMessageId = ctx.message.message_id;
     await this.deleteMessage(ctx, this.startOrderMessageId);
+    await this.deleteMessage(ctx, this.startJoinMessageId);
     await this.onStartJoinMarkup(ctx);
     await this.deleteMessage(ctx, this.userMessageId);
     await this.deleteMessage(ctx, this.userStartMessageId);
