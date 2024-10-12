@@ -6,6 +6,7 @@ interface IBranchSpeciAlization {
 }
 
 interface IOrder {
+  userTelegramId?: string;
   isScenario?: boolean;
   fromCalculation?: boolean;
   disciplineFlag?: boolean;

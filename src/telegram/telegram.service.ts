@@ -19,6 +19,7 @@ import {
   ExecutionTime,
   onFillTimeLimit,
 } from './helpers-telegram/time-limit.helper';
+import { mapGetter, mapSetter, toDeleteMapKey } from './utils/map.utils';
 
 type Scenario = 'order' | 'join';
 
@@ -35,6 +36,14 @@ interface IncomingData {
 
 export type MyOrderJoinContext = IOrderSceneState & IJoinSceneState;
 
+enum Message {
+  userMessageId = 'userMessageId',
+  userStartMessageId = 'userStartMessageId',
+  startJoinMessageId = 'startJoinMessageId',
+  startOrderMessageId = 'startOrderMessageId',
+  choosenWorkTypeMessageId = 'choosenWorkTypeMessageId',
+}
+
 @Injectable()
 @Update()
 export class TelegramService extends Telegraf<Context> {
@@ -46,11 +55,12 @@ export class TelegramService extends Telegraf<Context> {
     this.setupBotCommands();
   }
 
-  private userMessageId: number;
-  private userStartMessageId: number;
-  private startJoinMessageId: number;
-  private startOrderMessageId: number;
-  private choosenWorkTypeMessageId: number;
+  private msgIdMap: Map<string, number> = new Map();
+  // private userMessageId: number;
+  // private userStartMessageId: number;
+  // private startJoinMessageId: number;
+  // private startOrderMessageId: number;
+  // private choosenWorkTypeMessageId: number;
 
   private setupBotCommands() {
     this.telegram.setMyCommands([
@@ -75,7 +85,9 @@ export class TelegramService extends Telegraf<Context> {
       ]),
     );
 
-    this.startJoinMessageId = startJoinMessage.message_id;
+    const startJoinMessageId = `${Message.startJoinMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+
+    mapSetter(this.msgIdMap, startJoinMessageId, startJoinMessage.message_id);
 
     return startJoinMessage;
   }
@@ -91,7 +103,9 @@ export class TelegramService extends Telegraf<Context> {
       ]),
     );
 
-    this.startOrderMessageId = startOrderMessage.message_id;
+    const startOrderMessageId = `${Message.startOrderMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+
+    mapSetter(this.msgIdMap, startOrderMessageId, startOrderMessage.message_id);
 
     return startOrderMessage;
   }
@@ -102,19 +116,30 @@ export class TelegramService extends Telegraf<Context> {
         \n"<i>${ctx.session.__scenes.state.typeOfWork}</i>"`,
     );
 
-    this.choosenWorkTypeMessageId = choosenWorkTypeMessage.message_id;
+    const choosenWorkTypeMessageId = `${Message.choosenWorkTypeMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+
+    mapSetter(
+      this.msgIdMap,
+      choosenWorkTypeMessageId,
+      choosenWorkTypeMessage.message_id,
+    );
 
     return choosenWorkTypeMessage;
   }
 
   private async deleteMessage(
     ctx: SceneContext<MyOrderJoinContext>,
-    messageId: number,
+    mapName: Map<string, number>,
+    msgIdMapKey: string,
+    msgIdMapValue: number,
   ) {
     try {
-      if (messageId) {
-        await ctx.deleteMessage(messageId);
-        messageId = 0;
+      if (!!msgIdMapValue) {
+        await ctx.deleteMessage(msgIdMapValue);
+        toDeleteMapKey(mapName, msgIdMapKey);
+      } else {
+        toDeleteMapKey(mapName, msgIdMapKey);
+        return;
       }
     } catch (error) {
       if (error.response && error.response.error_code === 400) {
@@ -128,7 +153,18 @@ export class TelegramService extends Telegraf<Context> {
 
   @Start()
   async onStart(@Ctx() ctx: SceneContext<MyOrderJoinContext>) {
-    this.userStartMessageId = ctx.message.message_id;
+    if (!ctx.session.__scenes.state) {
+      ctx.session.__scenes.state = {};
+      ctx.session.__scenes.state.userTelegramId = ctx.from.id.toString();
+    } else {
+      ctx.session.__scenes.state.userTelegramId = ctx.from.id.toString();
+    }
+
+    const userStartMessageId = `${Message.userStartMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+    const startOrderMessageId = `${Message.startOrderMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+    const startJoinMessageId = `${Message.startJoinMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+
+    mapSetter(this.msgIdMap, userStartMessageId, ctx.message.message_id);
 
     const startPayload = ctx.text.trim().split(' ')[1];
 
@@ -140,16 +176,29 @@ export class TelegramService extends Telegraf<Context> {
       'utf-8',
     );
     if (!decodedPayload) {
-      if (!ctx.session.__scenes.state) {
-        ctx.session.__scenes.state = {};
-        ctx.session.__scenes.state.isScenario = true;
-      } else {
-        ctx.session.__scenes.state.isScenario = true;
-      }
+      ctx.session.__scenes.state.isScenario = true;
+
       await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
-      await this.deleteMessage(ctx, this.userStartMessageId);
-      await this.deleteMessage(ctx, this.startOrderMessageId);
-      await this.deleteMessage(ctx, this.startJoinMessageId);
+
+      await this.deleteMessage(
+        ctx,
+        this.msgIdMap,
+        userStartMessageId,
+        mapGetter(this.msgIdMap, userStartMessageId),
+      );
+      await this.deleteMessage(
+        ctx,
+        this.msgIdMap,
+        startOrderMessageId,
+        mapGetter(this.msgIdMap, startOrderMessageId),
+      );
+      await this.deleteMessage(
+        ctx,
+        this.msgIdMap,
+        startJoinMessageId,
+        mapGetter(this.msgIdMap, startJoinMessageId),
+      );
+
       return;
     }
 
@@ -161,12 +210,7 @@ export class TelegramService extends Telegraf<Context> {
       if (!workType) await this.onStartOrder(ctx);
 
       if (workType && !a) {
-        if (!ctx.session.__scenes.state) {
-          ctx.session.__scenes.state = {};
-          ctx.session.__scenes.state.isScenario = true;
-        } else {
-          ctx.session.__scenes.state.isScenario = true;
-        }
+        ctx.session.__scenes.state.isScenario = true;
 
         if (!ctx.session.__scenes.state.typeOfWork) {
           ctx.session.__scenes.state.typeOfWork = onFillTypeOfWork(workType);
@@ -175,22 +219,22 @@ export class TelegramService extends Telegraf<Context> {
         }
 
         await this.onStartOrder(ctx);
-        await this.deleteMessage(ctx, this.userStartMessageId);
+
+        await this.deleteMessage(
+          ctx,
+          this.msgIdMap,
+          userStartMessageId,
+          mapGetter(this.msgIdMap, userStartMessageId),
+        );
+
         return;
       }
     }
 
     if (c && c === 'ord') {
-      if (!ctx.session.__scenes.state) {
-        ctx.session.__scenes.state = {};
-        ctx.session.__scenes.state.isScenario = true;
-        ctx.session.__scenes.state.fromCalculation = true;
-        ctx.session.__scenes.state.disciplineFlag = true;
-      } else {
-        ctx.session.__scenes.state.isScenario = true;
-        ctx.session.__scenes.state.fromCalculation = true;
-        ctx.session.__scenes.state.disciplineFlag = true;
-      }
+      ctx.session.__scenes.state.isScenario = true;
+      ctx.session.__scenes.state.fromCalculation = true;
+      ctx.session.__scenes.state.disciplineFlag = true;
 
       if (!ctx.session.__scenes.state.typeOfWork) {
         ctx.session.__scenes.state.typeOfWork = onFillTypeOfWork(w);
@@ -233,36 +277,122 @@ export class TelegramService extends Telegraf<Context> {
       }
 
       await this.onStartOrder(ctx);
-      await this.deleteMessage(ctx, this.userStartMessageId);
+
+      await this.deleteMessage(
+        ctx,
+        this.msgIdMap,
+        userStartMessageId,
+        mapGetter(this.msgIdMap, userStartMessageId),
+      );
+
       return;
     }
 
     if (command && command === 'join') {
       await this.onStartJoin(ctx);
-      await this.deleteMessage(ctx, this.userStartMessageId);
+
+      await this.deleteMessage(
+        ctx,
+        this.msgIdMap,
+        userStartMessageId,
+        mapGetter(this.msgIdMap, userStartMessageId),
+      );
+
       return;
     }
   }
 
   @Command('start_order')
   async onStartOrder(@Ctx() ctx: SceneContext<IOrderSceneState>) {
-    this.userMessageId = ctx.message.message_id;
-    await this.deleteMessage(ctx, this.startJoinMessageId);
-    await this.deleteMessage(ctx, this.startOrderMessageId);
+    if (!ctx.session.__scenes.state) {
+      ctx.session.__scenes.state = {};
+      ctx.session.__scenes.state.userTelegramId = ctx.from.id.toString();
+    } else {
+      ctx.session.__scenes.state.userTelegramId = ctx.from.id.toString();
+    }
+
+    const userMessageId = `userMessageId${ctx.session.__scenes.state.userTelegramId}`;
+    const startJoinMessageId = `startJoinMessageId${ctx.session.__scenes.state.userTelegramId}`;
+    const startOrderMessageId = `startOrderMessageId${ctx.session.__scenes.state.userTelegramId}`;
+    const userStartMessageId = `userStartMessageId${ctx.session.__scenes.state.userTelegramId}`;
+
+    mapSetter(this.msgIdMap, userMessageId, ctx.message.message_id);
+
+    await this.deleteMessage(
+      ctx,
+      this.msgIdMap,
+      startJoinMessageId,
+      mapGetter(this.msgIdMap, startJoinMessageId),
+    );
+    await this.deleteMessage(
+      ctx,
+      this.msgIdMap,
+      startOrderMessageId,
+      mapGetter(this.msgIdMap, startOrderMessageId),
+    );
+
     await this.onStartOrderMarkup(ctx);
-    await this.deleteMessage(ctx, this.userMessageId);
-    await this.deleteMessage(ctx, this.userStartMessageId);
+
+    await this.deleteMessage(
+      ctx,
+      this.msgIdMap,
+      userMessageId,
+      mapGetter(this.msgIdMap, userMessageId),
+    );
+    await this.deleteMessage(
+      ctx,
+      this.msgIdMap,
+      userStartMessageId,
+      mapGetter(this.msgIdMap, userStartMessageId),
+    );
+
     return;
   }
 
   @Command('start_join')
   async onStartJoin(@Ctx() ctx: SceneContext<IJoinSceneState>) {
-    this.userMessageId = ctx.message.message_id;
-    await this.deleteMessage(ctx, this.startOrderMessageId);
-    await this.deleteMessage(ctx, this.startJoinMessageId);
+    if (!ctx.session.__scenes.state) {
+      ctx.session.__scenes.state = {};
+      ctx.session.__scenes.state.userTelegramId = ctx.from.id.toString();
+    } else {
+      ctx.session.__scenes.state.userTelegramId = ctx.from.id.toString();
+    }
+
+    const userMessageId = `${Message.userMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+    const startJoinMessageId = `${Message.startJoinMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+    const startOrderMessageId = `${Message.startOrderMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+    const userStartMessageId = `${Message.userStartMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+
+    mapSetter(this.msgIdMap, userMessageId, ctx.message.message_id);
+
+    await this.deleteMessage(
+      ctx,
+      this.msgIdMap,
+      startJoinMessageId,
+      mapGetter(this.msgIdMap, startJoinMessageId),
+    );
+    await this.deleteMessage(
+      ctx,
+      this.msgIdMap,
+      startOrderMessageId,
+      mapGetter(this.msgIdMap, startOrderMessageId),
+    );
+
     await this.onStartJoinMarkup(ctx);
-    await this.deleteMessage(ctx, this.userMessageId);
-    await this.deleteMessage(ctx, this.userStartMessageId);
+
+    await this.deleteMessage(
+      ctx,
+      this.msgIdMap,
+      userMessageId,
+      mapGetter(this.msgIdMap, userMessageId),
+    );
+    await this.deleteMessage(
+      ctx,
+      this.msgIdMap,
+      userStartMessageId,
+      mapGetter(this.msgIdMap, userStartMessageId),
+    );
+
     return;
   }
 
@@ -278,15 +408,20 @@ export class TelegramService extends Telegraf<Context> {
   async onGoOrder(@Ctx() ctx: SceneContext<IOrderSceneState>) {
     function deleteMessageDelayed(
       ctx: SceneContext<IOrderSceneState>,
-      msgId: number,
+      mapName: Map<string, number>,
+      msgIdMapKey: string,
+      msgIdMapValue: number,
       delay: number,
     ) {
       return setTimeout(
         (async () => {
           try {
-            if (!!msgId) {
-              await ctx.deleteMessage(msgId);
-              msgId = 0;
+            if (!!msgIdMapValue) {
+              await ctx.deleteMessage(msgIdMapValue);
+              toDeleteMapKey(mapName, msgIdMapKey);
+            } else {
+              toDeleteMapKey(mapName, msgIdMapKey);
+              return;
             }
           } catch (error) {
             if (error.response && error.response.error_code === 400) {
@@ -306,12 +441,26 @@ export class TelegramService extends Telegraf<Context> {
     if (!ctx.session.__scenes.state) {
       ctx.session.__scenes.state = {};
       ctx.session.__scenes.state.isScenario = true;
+      ctx.session.__scenes.state.userTelegramId = ctx.from.id.toString();
 
       await ctx.answerCbQuery();
       await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
 
-      await this.deleteMessage(ctx, this.startOrderMessageId);
-      await this.deleteMessage(ctx, this.startJoinMessageId);
+      const startOrderMessageId = `${Message.startOrderMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+      const startJoinMessageId = `${Message.startJoinMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+
+      await this.deleteMessage(
+        ctx,
+        this.msgIdMap,
+        startOrderMessageId,
+        mapGetter(this.msgIdMap, startOrderMessageId),
+      );
+      await this.deleteMessage(
+        ctx,
+        this.msgIdMap,
+        startJoinMessageId,
+        mapGetter(this.msgIdMap, startJoinMessageId),
+      );
 
       return;
     }
@@ -323,9 +472,31 @@ export class TelegramService extends Telegraf<Context> {
       await ctx.answerCbQuery();
       await this.onChoosenWorkTypeMarkup(ctx);
 
-      deleteMessageDelayed(ctx, this.startOrderMessageId, 1000);
-      deleteMessageDelayed(ctx, this.startJoinMessageId, 1000);
-      deleteMessageDelayed(ctx, this.choosenWorkTypeMessageId, 10000);
+      const startOrderMessageId = `${Message.startOrderMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+      const startJoinMessageId = `${Message.startJoinMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+      const choosenWorkTypeMessageId = `${Message.choosenWorkTypeMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+
+      deleteMessageDelayed(
+        ctx,
+        this.msgIdMap,
+        startOrderMessageId,
+        mapGetter(this.msgIdMap, startOrderMessageId),
+        1000,
+      );
+      deleteMessageDelayed(
+        ctx,
+        this.msgIdMap,
+        startJoinMessageId,
+        mapGetter(this.msgIdMap, startJoinMessageId),
+        1000,
+      );
+      deleteMessageDelayed(
+        ctx,
+        this.msgIdMap,
+        choosenWorkTypeMessageId,
+        mapGetter(this.msgIdMap, choosenWorkTypeMessageId),
+        10000,
+      );
 
       await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
 
@@ -339,19 +510,46 @@ export class TelegramService extends Telegraf<Context> {
       await ctx.answerCbQuery();
       await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
 
-      await this.deleteMessage(ctx, this.startOrderMessageId);
-      await this.deleteMessage(ctx, this.startJoinMessageId);
+      const startOrderMessageId = `${Message.startOrderMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+      const startJoinMessageId = `${Message.startJoinMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+
+      await this.deleteMessage(
+        ctx,
+        this.msgIdMap,
+        startOrderMessageId,
+        mapGetter(this.msgIdMap, startOrderMessageId),
+      );
+      await this.deleteMessage(
+        ctx,
+        this.msgIdMap,
+        startJoinMessageId,
+        mapGetter(this.msgIdMap, startJoinMessageId),
+      );
 
       return;
     }
 
     ctx.session.__scenes.state.isScenario = true;
+    ctx.session.__scenes.state.userTelegramId = ctx.from.id.toString();
 
     await ctx.answerCbQuery();
     await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.startOrderMessageId);
-    await this.deleteMessage(ctx, this.startJoinMessageId);
+    const startOrderMessageId = `${Message.startOrderMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+    const startJoinMessageId = `${Message.startJoinMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+
+    await this.deleteMessage(
+      ctx,
+      this.msgIdMap,
+      startOrderMessageId,
+      mapGetter(this.msgIdMap, startOrderMessageId),
+    );
+    await this.deleteMessage(
+      ctx,
+      this.msgIdMap,
+      startJoinMessageId,
+      mapGetter(this.msgIdMap, startJoinMessageId),
+    );
 
     return;
   }
@@ -361,24 +559,31 @@ export class TelegramService extends Telegraf<Context> {
     if (!ctx.session.__scenes.state) {
       ctx.session.__scenes.state = {};
       ctx.session.__scenes.state.isJoinScenario = true;
-
-      await ctx.answerCbQuery();
-      await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
-
-      await this.deleteMessage(ctx, this.startOrderMessageId);
-      await this.deleteMessage(ctx, this.startJoinMessageId);
-
-      return;
+      ctx.session.__scenes.state.userTelegramId = ctx.from.id.toString();
     } else {
       ctx.session.__scenes.state.isJoinScenario = true;
-      // ctx.session.__scenes.state.date = dt;
-
-      await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
-
-      await this.deleteMessage(ctx, this.startOrderMessageId);
-      await this.deleteMessage(ctx, this.startJoinMessageId);
-
-      return;
+      ctx.session.__scenes.state.userTelegramId = ctx.from.id.toString();
     }
+
+    await ctx.answerCbQuery();
+    await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
+
+    const startOrderMessageId = `${Message.startOrderMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+    const startJoinMessageId = `${Message.startJoinMessageId}${ctx.session.__scenes.state.userTelegramId}`;
+
+    await this.deleteMessage(
+      ctx,
+      this.msgIdMap,
+      startOrderMessageId,
+      mapGetter(this.msgIdMap, startOrderMessageId),
+    );
+    await this.deleteMessage(
+      ctx,
+      this.msgIdMap,
+      startJoinMessageId,
+      mapGetter(this.msgIdMap, startJoinMessageId),
+    );
+
+    return;
   }
 }

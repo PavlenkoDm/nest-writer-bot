@@ -1,6 +1,7 @@
 import { Scenes } from 'telegraf';
 
 interface IJoin {
+  userTelegramId?: string;
   isJoinScenario?: boolean;
   fullName?: string;
   speciality?: string;
