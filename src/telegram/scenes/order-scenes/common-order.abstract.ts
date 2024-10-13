@@ -1,6 +1,11 @@
 import { Scenes } from 'telegraf';
 import { IOrderSceneState } from './order.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
+import {
+  mapGetter,
+  mapSetter,
+  toDeleteMapKey,
+} from 'src/telegram/utils/map.utils';
 
 export enum Alert {
   notCorrect = 'Ви ввели некоректне значення!',
@@ -11,13 +16,38 @@ export enum Forbidden {
   enterCommands = 'Заборонено вводити команди до закінчення замовлення!',
 }
 
+export enum OrderMsg {
+  alertMessageId = 'alertMessageId',
+  commandForbiddenMessageId = 'commandForbiddenMessageId',
+  userStartMessageId = 'userStartMessageId',
+  userMessageId = 'userMessageId',
+}
+
 export abstract class CommonOrderClass extends Scenes.BaseScene<
   Scenes.SceneContext<IOrderSceneState>
 > {
-  protected alertMessageId: number;
-  protected commandForbiddenMessageId: number;
-  protected userStartMessageId: number;
-  protected userMessageId: number;
+  protected orderMsgIdMap: Map<string, number> = new Map<string, number>();
+
+  // protected alertMessageId: number;
+  // protected commandForbiddenMessageId: number;
+  // protected userStartMessageId: number;
+  // protected userMessageId: number;
+
+  protected setterForOrderMap(
+    ctx: Scenes.SceneContext<IOrderSceneState>,
+    msgIdVarName: string,
+    msgIdForMapValue: number,
+  ) {
+    const messageIdMapKey = `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`;
+    return mapSetter(this.orderMsgIdMap, messageIdMapKey, msgIdForMapValue);
+  }
+  protected getterForOrderMap(
+    ctx: Scenes.SceneContext<IOrderSceneState>,
+    msgIdVarName: string,
+  ) {
+    const messageIdMapKey = `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`;
+    return mapGetter(this.orderMsgIdMap, messageIdMapKey);
+  }
 
   protected async onCreateAlertMessage(
     ctx: Scenes.SceneContext<IOrderSceneState>,
@@ -26,7 +56,7 @@ export abstract class CommonOrderClass extends Scenes.BaseScene<
       `<b>${Emoji.reject} ${Alert.notCorrect}</b>`,
     );
 
-    this.alertMessageId = alertMsg.message_id;
+    this.setterForOrderMap(ctx, OrderMsg.alertMessageId, alertMsg.message_id);
 
     return alertMsg;
   }
@@ -39,7 +69,11 @@ export abstract class CommonOrderClass extends Scenes.BaseScene<
       `<b>${Emoji.reject} ${msg}</b>`,
     );
 
-    this.commandForbiddenMessageId = forbiddenMsg.message_id;
+    this.setterForOrderMap(
+      ctx,
+      OrderMsg.commandForbiddenMessageId,
+      forbiddenMsg.message_id,
+    );
 
     return forbiddenMsg;
   }
@@ -55,7 +89,7 @@ export abstract class CommonOrderClass extends Scenes.BaseScene<
       ctx.text.trim().startsWith('/')
     ) {
       if (ctx.session.__scenes.state.isScenario) {
-        await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+        await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
 
         await this.onCommandForbiddenMessage(ctx, msg);
         await ctx.scene.enter(`${sceneName}`, ctx.session.__scenes.state);
@@ -76,7 +110,7 @@ export abstract class CommonOrderClass extends Scenes.BaseScene<
       ctx.text.trim().startsWith('/')
     ) {
       if (ctx.session.__scenes.state.isScenario) {
-        await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+        await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
 
         await this.onCommandForbiddenMessage(ctx, msg);
       }
@@ -87,12 +121,25 @@ export abstract class CommonOrderClass extends Scenes.BaseScene<
 
   protected async deleteMessage(
     ctx: Scenes.SceneContext<IOrderSceneState>,
-    messageId: number,
+    msgIdVarName: string,
   ) {
     try {
-      if (messageId) {
-        await ctx.deleteMessage(messageId);
-        messageId = 0;
+      const msgIdMapValue = mapGetter(
+        this.orderMsgIdMap,
+        `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`,
+      );
+      if (!!msgIdMapValue) {
+        await ctx.deleteMessage(msgIdMapValue);
+        toDeleteMapKey(
+          this.orderMsgIdMap,
+          `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`,
+        );
+      } else {
+        toDeleteMapKey(
+          this.orderMsgIdMap,
+          `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`,
+        );
+        return;
       }
     } catch (error) {
       if (error.response && error.response.error_code === 400) {
@@ -106,15 +153,28 @@ export abstract class CommonOrderClass extends Scenes.BaseScene<
 
   protected deleteMessageDelayed(
     ctx: Scenes.SceneContext<IOrderSceneState>,
-    msgId: number,
+    msgIdVarName: string,
     delay: number,
   ) {
     return setTimeout(
       (async () => {
+        const msgIdMapValue = mapGetter(
+          this.orderMsgIdMap,
+          `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`,
+        );
         try {
-          if (!!msgId) {
-            await ctx.deleteMessage(msgId);
-            msgId = 0;
+          if (!!msgIdMapValue) {
+            await ctx.deleteMessage(msgIdMapValue);
+            toDeleteMapKey(
+              this.orderMsgIdMap,
+              `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`,
+            );
+          } else {
+            toDeleteMapKey(
+              this.orderMsgIdMap,
+              `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`,
+            );
+            return;
           }
         } catch (error) {
           if (error.response && error.response.error_code === 400) {

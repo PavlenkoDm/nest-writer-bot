@@ -10,10 +10,14 @@ import {
 import { Markup, Scenes } from 'telegraf';
 import { IOrderSceneState } from './order.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
-import { CommonOrderClass, Forbidden } from './common-order.abstract';
+import { CommonOrderClass, Forbidden, OrderMsg } from './common-order.abstract';
 import { ExecTime } from '../common-enums.scenes/time-limit.enum';
 
 // const regExpForTimeLimit = /^[1-9]\d{0,2}$/;
+enum OrderTLMsg {
+  timeLimitStartMessageId = 'timeLimitStartMessageId',
+  timeLimitChoiceMessageId = 'timeLimitChoiceMessageId',
+}
 
 @Injectable()
 @Scene('TIME_LIMIT_SCENE')
@@ -21,10 +25,6 @@ export class TimeLimitScene extends CommonOrderClass {
   constructor() {
     super('TIME_LIMIT_SCENE');
   }
-
-  private timeLimitStartMessageId: number;
-  private timeLimitChoiceMessageId: number;
-  protected commandForbiddenMessageId: number;
 
   private async timeLimitStartMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
@@ -38,7 +38,11 @@ export class TimeLimitScene extends CommonOrderClass {
       ]),
     );
 
-    this.timeLimitStartMessageId = startMessage.message_id;
+    this.setterForOrderMap(
+      ctx,
+      OrderTLMsg.timeLimitStartMessageId,
+      startMessage.message_id,
+    );
 
     return startMessage;
   }
@@ -46,7 +50,7 @@ export class TimeLimitScene extends CommonOrderClass {
   private async timeLimitChoiceMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.timeLimitChoiceMessageId);
+    await this.deleteMessage(ctx, OrderTLMsg.timeLimitChoiceMessageId);
 
     const choiceMessage = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Вибраний термін виконання:</b>
@@ -67,7 +71,11 @@ export class TimeLimitScene extends CommonOrderClass {
       ]),
     );
 
-    this.timeLimitChoiceMessageId = choiceMessage.message_id;
+    this.setterForOrderMap(
+      ctx,
+      OrderTLMsg.timeLimitChoiceMessageId,
+      choiceMessage.message_id,
+    );
 
     return choiceMessage;
   }
@@ -99,7 +107,7 @@ export class TimeLimitScene extends CommonOrderClass {
       return;
     }
 
-    await this.deleteMessage(ctx, this.timeLimitStartMessageId);
+    await this.deleteMessage(ctx, OrderTLMsg.timeLimitStartMessageId);
 
     await this.timeLimitStartMarkup(ctx);
 
@@ -161,9 +169,9 @@ export class TimeLimitScene extends CommonOrderClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('FILE_LOAD_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.timeLimitStartMessageId);
-    await this.deleteMessage(ctx, this.timeLimitChoiceMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, OrderTLMsg.timeLimitStartMessageId);
+    await this.deleteMessage(ctx, OrderTLMsg.timeLimitChoiceMessageId);
+    await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
 
     return;
   }
@@ -179,8 +187,8 @@ export class TimeLimitScene extends CommonOrderClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('TIME_LIMIT_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.timeLimitChoiceMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, OrderTLMsg.timeLimitChoiceMessageId);
+    await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
 
     return;
   }
@@ -189,7 +197,7 @@ export class TimeLimitScene extends CommonOrderClass {
   async onTextInTimeLimitScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    this.userMessageId = ctx.message.message_id;
+    this.setterForOrderMap(ctx, OrderMsg.userMessageId, ctx.message.message_id);
 
     const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
@@ -200,16 +208,16 @@ export class TimeLimitScene extends CommonOrderClass {
     if (gate) {
       if (!ctx.session.__scenes.state.timeLimit) {
         await ctx.scene.enter('TIME_LIMIT_SCENE', ctx.session.__scenes.state);
-        await this.deleteMessage(ctx, this.userMessageId);
+        await this.deleteMessage(ctx, OrderMsg.userMessageId);
         return;
       } else {
         await this.timeLimitChoiceMarkup(ctx);
-        await this.deleteMessage(ctx, this.userMessageId);
+        await this.deleteMessage(ctx, OrderMsg.userMessageId);
         return;
       }
     }
 
-    await this.deleteMessage(ctx, this.userMessageId);
+    await this.deleteMessage(ctx, OrderMsg.userMessageId);
 
     return;
   }

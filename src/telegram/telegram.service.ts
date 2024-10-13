@@ -53,9 +53,10 @@ export class TelegramService extends Telegraf<Context> {
   ) {
     super(configService.get('BOT_TOKEN'));
     this.setupBotCommands();
+    this.msgIdMap = new Map<string, number>();
   }
 
-  private msgIdMap: Map<string, number> = new Map();
+  private msgIdMap: Map<string, number>;
   // private userMessageId: number;
   // private userStartMessageId: number;
   // private startJoinMessageId: number;

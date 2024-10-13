@@ -11,8 +11,13 @@ import { Markup, Scenes } from 'telegraf';
 import { IOrderSceneState } from './order.config';
 import { TypeOfWork } from '../common-enums.scenes/work-type.enum';
 import { Emoji } from 'src/telegram/emoji/emoji';
-import { CommonOrderClass, Forbidden } from './common-order.abstract';
+import { CommonOrderClass, Forbidden, OrderMsg } from './common-order.abstract';
 import { dangerRegexp } from '../helpers-scenes/regexps.helper';
+
+enum OrderUniqMsg {
+  uniquenessStartMessageId = 'uniquenessStartMessageId',
+  uniquenessChoiceMessageId = 'uniquenessChoiceMessageId',
+}
 
 @Injectable()
 @Scene('UNIQUENESS_SCENE')
@@ -20,11 +25,6 @@ export class UniquenessScene extends CommonOrderClass {
   constructor() {
     super('UNIQUENESS_SCENE');
   }
-
-  private uniquenessStartMessageId: number;
-  private uniquenessChoiceMessageId: number;
-  protected commandForbiddenMessageId: number;
-  protected alertMessageId: number;
 
   private async uniquenessStartMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
@@ -44,7 +44,11 @@ export class UniquenessScene extends CommonOrderClass {
       \n<i>${explainMessage}</i>`,
     );
 
-    this.uniquenessStartMessageId = startMessage.message_id;
+    this.setterForOrderMap(
+      ctx,
+      OrderUniqMsg.uniquenessStartMessageId,
+      startMessage.message_id,
+    );
 
     return startMessage;
   }
@@ -52,7 +56,7 @@ export class UniquenessScene extends CommonOrderClass {
   private async uniquenessChoiceMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.uniquenessChoiceMessageId);
+    await this.deleteMessage(ctx, OrderUniqMsg.uniquenessChoiceMessageId);
 
     if (ctx.session.__scenes.state.uniquenessFlag) {
       ctx.session.__scenes.state.uniquenessFlag = false;
@@ -76,7 +80,11 @@ export class UniquenessScene extends CommonOrderClass {
       ]),
     );
 
-    this.uniquenessChoiceMessageId = choiceMessage.message_id;
+    this.setterForOrderMap(
+      ctx,
+      OrderUniqMsg.uniquenessChoiceMessageId,
+      choiceMessage.message_id,
+    );
 
     return choiceMessage;
   }
@@ -196,7 +204,7 @@ export class UniquenessScene extends CommonOrderClass {
       ctx.session.__scenes.state.uniquenessFlag = false;
     }
 
-    await this.deleteMessage(ctx, this.uniquenessStartMessageId);
+    await this.deleteMessage(ctx, OrderUniqMsg.uniquenessStartMessageId);
 
     await this.uniquenessStartMarkup(
       ctx,
@@ -208,9 +216,9 @@ export class UniquenessScene extends CommonOrderClass {
 
   @On('text')
   async onEnterUniqueness(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
-    await this.deleteMessage(ctx, this.userMessageId);
+    await this.deleteMessage(ctx, OrderMsg.userMessageId);
 
-    this.userMessageId = ctx.message.message_id;
+    this.setterForOrderMap(ctx, OrderMsg.userMessageId, ctx.message.message_id);
 
     const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
@@ -222,15 +230,15 @@ export class UniquenessScene extends CommonOrderClass {
       if (!ctx.session.__scenes.state.uniqueness) {
         await ctx.scene.enter('UNIQUENESS_SCENE', ctx.session.__scenes.state);
 
-        await this.deleteMessage(ctx, this.userMessageId);
-        await this.deleteMessage(ctx, this.alertMessageId);
+        await this.deleteMessage(ctx, OrderMsg.userMessageId);
+        await this.deleteMessage(ctx, OrderMsg.alertMessageId);
 
         return;
       } else {
         await this.uniquenessChoiceMarkup(ctx);
 
-        await this.deleteMessage(ctx, this.userMessageId);
-        await this.deleteMessage(ctx, this.alertMessageId);
+        await this.deleteMessage(ctx, OrderMsg.userMessageId);
+        await this.deleteMessage(ctx, OrderMsg.alertMessageId);
 
         return;
       }
@@ -240,8 +248,8 @@ export class UniquenessScene extends CommonOrderClass {
 
     dangerRegexp.lastIndex = 0;
     if (!this.regExpForUniq(ctx).test(message) || dangerRegexp.test(message)) {
-      await this.deleteMessage(ctx, this.alertMessageId);
-      await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+      await this.deleteMessage(ctx, OrderMsg.alertMessageId);
+      await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
 
       await this.onCreateAlertMessage(ctx);
 
@@ -276,11 +284,11 @@ export class UniquenessScene extends CommonOrderClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('TIME_LIMIT_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.uniquenessStartMessageId);
-    await this.deleteMessage(ctx, this.uniquenessChoiceMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
-    await this.deleteMessage(ctx, this.alertMessageId);
-    await this.deleteMessage(ctx, this.userMessageId);
+    await this.deleteMessage(ctx, OrderUniqMsg.uniquenessStartMessageId);
+    await this.deleteMessage(ctx, OrderUniqMsg.uniquenessChoiceMessageId);
+    await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, OrderMsg.alertMessageId);
+    await this.deleteMessage(ctx, OrderMsg.userMessageId);
 
     return;
   }
@@ -296,10 +304,10 @@ export class UniquenessScene extends CommonOrderClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('UNIQUENESS_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.uniquenessChoiceMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
-    await this.deleteMessage(ctx, this.alertMessageId);
-    await this.deleteMessage(ctx, this.userMessageId);
+    await this.deleteMessage(ctx, OrderUniqMsg.uniquenessChoiceMessageId);
+    await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, OrderMsg.alertMessageId);
+    await this.deleteMessage(ctx, OrderMsg.userMessageId);
 
     return;
   }

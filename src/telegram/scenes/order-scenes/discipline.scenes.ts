@@ -10,7 +10,7 @@ import {
 import { Markup, Scenes } from 'telegraf';
 import { IOrderSceneState } from './order.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
-import { CommonOrderClass, Forbidden } from './common-order.abstract';
+import { CommonOrderClass, Forbidden, OrderMsg } from './common-order.abstract';
 
 export enum Branch {
   education = 'Освіта',
@@ -237,15 +237,17 @@ enum Transport {
   transportTechnologies = 'Транспортні технології (за видами)',
 }
 
+enum OrderDiscMsg {
+  disciplineStartMessageId = 'disciplineStartMessageId',
+  disciplineChoiceMessageId = 'disciplineChoiceMessageId',
+}
+
 @Injectable()
 @Scene('DISCIPLINE_SCENE')
 export class DisciplineScene extends CommonOrderClass {
   constructor() {
     super('DISCIPLINE_SCENE');
   }
-  private disciplineStartMessageId: number;
-  private disciplineChoiceMessageId: number;
-  protected commandForbiddenMessageId: number;
 
   private async disciplineStartMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
@@ -343,7 +345,11 @@ export class DisciplineScene extends CommonOrderClass {
       ]),
     );
 
-    this.disciplineStartMessageId = startMessage.message_id;
+    this.setterForOrderMap(
+      ctx,
+      OrderDiscMsg.disciplineStartMessageId,
+      startMessage.message_id,
+    );
 
     return startMessage;
   }
@@ -370,7 +376,7 @@ export class DisciplineScene extends CommonOrderClass {
   private async disciplineChoiceMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.disciplineChoiceMessageId);
+    await this.deleteMessage(ctx, OrderDiscMsg.disciplineChoiceMessageId);
 
     const choiceMessage = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Вибрана галузь знань:</b>
@@ -393,7 +399,11 @@ export class DisciplineScene extends CommonOrderClass {
       ]),
     );
 
-    this.disciplineChoiceMessageId = choiceMessage.message_id;
+    this.setterForOrderMap(
+      ctx,
+      OrderDiscMsg.disciplineChoiceMessageId,
+      choiceMessage.message_id,
+    );
 
     return choiceMessage;
   }
@@ -510,7 +520,11 @@ export class DisciplineScene extends CommonOrderClass {
       ]),
     );
 
-    this.disciplineStartMessageId = afterCalculationMessage.message_id;
+    this.setterForOrderMap(
+      ctx,
+      OrderDiscMsg.disciplineStartMessageId,
+      afterCalculationMessage.message_id,
+    );
 
     return afterCalculationMessage;
   }
@@ -544,7 +558,7 @@ export class DisciplineScene extends CommonOrderClass {
       }
     }
 
-    await this.deleteMessage(ctx, this.disciplineStartMessageId);
+    await this.deleteMessage(ctx, OrderDiscMsg.disciplineStartMessageId);
 
     if (!ctx.session.__scenes.state.discipline) {
       ctx.session.__scenes.state.discipline = {
@@ -2952,9 +2966,9 @@ export class DisciplineScene extends CommonOrderClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('THEME_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.disciplineStartMessageId);
-    await this.deleteMessage(ctx, this.disciplineChoiceMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, OrderDiscMsg.disciplineStartMessageId);
+    await this.deleteMessage(ctx, OrderDiscMsg.disciplineChoiceMessageId);
+    await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
 
     return;
   }
@@ -2972,8 +2986,8 @@ export class DisciplineScene extends CommonOrderClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.disciplineChoiceMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, OrderDiscMsg.disciplineChoiceMessageId);
+    await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
 
     return;
   }
@@ -2988,7 +3002,7 @@ export class DisciplineScene extends CommonOrderClass {
   async onTextInDisciplineScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    this.userMessageId = ctx.message.message_id;
+    this.setterForOrderMap(ctx, OrderMsg.userMessageId, ctx.message.message_id);
 
     const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
@@ -3000,16 +3014,17 @@ export class DisciplineScene extends CommonOrderClass {
       const { branch, specialization } = ctx.session.__scenes.state.discipline;
       if (!branch && !specialization) {
         await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
-        await this.deleteMessage(ctx, this.userMessageId);
+        await this.deleteMessage(ctx, OrderMsg.userMessageId);
         return;
       } else {
         await this.disciplineChoiceMarkup(ctx);
-        await this.deleteMessage(ctx, this.userMessageId);
+        await this.deleteMessage(ctx, OrderMsg.userMessageId);
         return;
       }
     }
 
-    await this.deleteMessage(ctx, this.userMessageId);
+    await this.deleteMessage(ctx, OrderMsg.userMessageId);
+    return;
   }
 
   @SceneLeave()

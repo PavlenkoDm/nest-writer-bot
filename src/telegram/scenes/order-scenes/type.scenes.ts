@@ -10,8 +10,14 @@ import {
 import { Markup, Scenes } from 'telegraf';
 import { IOrderSceneState } from './order.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
-import { CommonOrderClass, Forbidden } from './common-order.abstract';
+import { CommonOrderClass, Forbidden, OrderMsg } from './common-order.abstract';
 import { TypeOfWork } from '../common-enums.scenes/work-type.enum';
+
+enum OrderTypeMsg {
+  typeStartMessageId = 'typeStartMessageId',
+  typeChoiceMessageId = 'typeChoiceMessageId',
+  fromCalculationMessageId = 'fromCalculationMessageId',
+}
 
 @Injectable()
 @Scene('TYPE_SCENE')
@@ -19,10 +25,6 @@ export class TypeScene extends CommonOrderClass {
   constructor() {
     super('TYPE_SCENE');
   }
-  private typeStartMessageId: number;
-  private typeChoiceMessageId: number;
-  private fromCalculationMessageId: number;
-  protected commandForbiddenMessageId: number;
 
   private async typeStartMarkup(ctx: Scenes.SceneContext<IOrderSceneState>) {
     const startMessage = await ctx.replyWithHTML(
@@ -40,13 +42,17 @@ export class TypeScene extends CommonOrderClass {
       ]),
     );
 
-    this.typeStartMessageId = startMessage.message_id;
+    this.setterForOrderMap(
+      ctx,
+      OrderTypeMsg.typeStartMessageId,
+      startMessage.message_id,
+    );
 
     return startMessage;
   }
 
   private async typeChoiceMarkup(ctx: Scenes.SceneContext<IOrderSceneState>) {
-    await this.deleteMessage(ctx, this.typeChoiceMessageId);
+    await this.deleteMessage(ctx, OrderTypeMsg.typeChoiceMessageId);
 
     const choiceMessage = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Вибраний тип роботи:</b>
@@ -67,7 +73,11 @@ export class TypeScene extends CommonOrderClass {
       ]),
     );
 
-    this.typeChoiceMessageId = choiceMessage.message_id;
+    this.setterForOrderMap(
+      ctx,
+      OrderTypeMsg.typeChoiceMessageId,
+      choiceMessage.message_id,
+    );
 
     return choiceMessage;
   }
@@ -85,7 +95,7 @@ export class TypeScene extends CommonOrderClass {
   private async onFromCalculationMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.fromCalculationMessageId);
+    await this.deleteMessage(ctx, OrderTypeMsg.fromCalculationMessageId);
 
     const fromCalculationMessage = await ctx.replyWithHTML(
       `<b>${Emoji.wink} Ми помітили, що ви вже ввели деякі дані на нашому сайті.
@@ -106,7 +116,11 @@ export class TypeScene extends CommonOrderClass {
       ]),
     );
 
-    this.fromCalculationMessageId = fromCalculationMessage.message_id;
+    this.setterForOrderMap(
+      ctx,
+      OrderTypeMsg.fromCalculationMessageId,
+      fromCalculationMessage.message_id,
+    );
 
     return fromCalculationMessage;
   }
@@ -121,7 +135,7 @@ export class TypeScene extends CommonOrderClass {
       return;
     }
 
-    await this.deleteMessage(ctx, this.typeStartMessageId);
+    await this.deleteMessage(ctx, OrderTypeMsg.typeStartMessageId);
 
     await this.typeStartMarkup(ctx);
     return;
@@ -190,10 +204,10 @@ export class TypeScene extends CommonOrderClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('DISCIPLINE_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.typeStartMessageId);
-    await this.deleteMessage(ctx, this.typeChoiceMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
-    await this.deleteMessage(ctx, this.fromCalculationMessageId);
+    await this.deleteMessage(ctx, OrderTypeMsg.fromCalculationMessageId);
+    await this.deleteMessage(ctx, OrderTypeMsg.typeStartMessageId);
+    await this.deleteMessage(ctx, OrderTypeMsg.typeChoiceMessageId);
+    await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
 
     return;
   }
@@ -209,8 +223,8 @@ export class TypeScene extends CommonOrderClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.typeChoiceMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, OrderTypeMsg.typeChoiceMessageId);
+    await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
 
     return;
   }
@@ -225,19 +239,20 @@ export class TypeScene extends CommonOrderClass {
 
     ctx.session.__scenes.state = {};
     ctx.session.__scenes.state.isScenario = true;
+    ctx.session.__scenes.state.userTelegramId = ctx.from.id.toString();
 
     await ctx.answerCbQuery();
     await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
-    await this.deleteMessage(ctx, this.fromCalculationMessageId);
+    await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, OrderTypeMsg.fromCalculationMessageId);
 
     return;
   }
 
   @On('text')
   async onTextInTypeScene(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
-    this.userMessageId = ctx.message.message_id;
+    this.setterForOrderMap(ctx, OrderMsg.userMessageId, ctx.message.message_id);
 
     const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
@@ -248,16 +263,16 @@ export class TypeScene extends CommonOrderClass {
     if (gate) {
       if (!ctx.session.__scenes.state.typeOfWork) {
         await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
-        await this.deleteMessage(ctx, this.userMessageId);
+        await this.deleteMessage(ctx, OrderMsg.userMessageId);
         return;
       } else {
         await this.typeChoiceMarkup(ctx);
-        await this.deleteMessage(ctx, this.userMessageId);
+        await this.deleteMessage(ctx, OrderMsg.userMessageId);
         return;
       }
     }
 
-    await this.deleteMessage(ctx, this.userMessageId);
+    await this.deleteMessage(ctx, OrderMsg.userMessageId);
 
     return;
   }
