@@ -10,9 +10,14 @@ import {
 import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
-import { CommonJoinClass, Forbidden } from './common-join.abstract';
+import { CommonJoinClass, Forbidden, JoinMsg } from './common-join.abstract';
 import { dangerRegexp } from '../helpers-scenes/regexps.helper';
 import { StringLength } from '../common-enums.scenes/strlength.enum';
+
+enum JoinSpecialityMsg {
+  specialityStartMessageId = 'specialityStartMessageId',
+  specialityChoiceMessageId = 'specialityChoiceMessageId',
+}
 
 @Injectable()
 @Scene('SPECIALITY_SCENE')
@@ -20,10 +25,6 @@ export class SpecialityScene extends CommonJoinClass {
   constructor() {
     super('SPECIALITY_SCENE');
   }
-  private specialityStartMessageId: number;
-  private specialityChoiceMessageId: number;
-  protected alertMessageId: number;
-  protected commandForbiddenMessageId: number;
 
   private async specialityStartMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
@@ -37,14 +38,19 @@ export class SpecialityScene extends CommonJoinClass {
       \n<i> ( Наприклад:  Інженерія програмного забезпечення,  Київський національний університет імені Тараса Шевченка,  2020,  магістр )</i>`,
     );
 
-    this.specialityStartMessageId = startMessage.message_id;
+    this.setterForJoinMap(
+      ctx,
+      JoinSpecialityMsg.specialityStartMessageId,
+      startMessage.message_id,
+    );
 
     return startMessage;
   }
+
   private async specialityChoiseMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.specialityChoiceMessageId);
+    await this.deleteMessage(ctx, JoinSpecialityMsg.specialityChoiceMessageId);
 
     const message = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Додана така інформація про освіту:</b>
@@ -60,7 +66,11 @@ export class SpecialityScene extends CommonJoinClass {
       ]),
     );
 
-    this.specialityChoiceMessageId = message.message_id;
+    this.setterForJoinMap(
+      ctx,
+      JoinSpecialityMsg.specialityChoiceMessageId,
+      message.message_id,
+    );
 
     return message;
   }
@@ -69,7 +79,7 @@ export class SpecialityScene extends CommonJoinClass {
   async onEnterSpecialityScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.specialityStartMessageId);
+    await this.deleteMessage(ctx, JoinSpecialityMsg.specialityStartMessageId);
 
     await this.specialityStartMarkup(ctx);
     return;
@@ -101,7 +111,7 @@ export class SpecialityScene extends CommonJoinClass {
 
     dangerRegexp.lastIndex = 0;
     if (dangerRegexp.test(message)) {
-      await this.deleteMessage(ctx, this.alertMessageId);
+      await this.deleteMessage(ctx, JoinMsg.alertMessageId);
 
       await this.onCreateAlertMessage(ctx);
 
@@ -136,8 +146,8 @@ export class SpecialityScene extends CommonJoinClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('PHOTOFILE_LOAD_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.alertMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, JoinMsg.alertMessageId);
+    await this.deleteMessage(ctx, JoinMsg.commandForbiddenMessageId);
 
     return;
   }

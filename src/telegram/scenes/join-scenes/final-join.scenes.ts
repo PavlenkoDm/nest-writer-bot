@@ -11,7 +11,11 @@ import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
 import { ConfigService } from '@nestjs/config';
-import { CommonJoinClass, Forbidden } from './common-join.abstract';
+import { CommonJoinClass, Forbidden, JoinMsg } from './common-join.abstract';
+
+enum JoinFinalJMsg {
+  finalJoinStartMessageId = 'finalJoinStartMessageId',
+}
 
 @Injectable()
 @Scene('FINAL_JOIN_SCENE')
@@ -23,8 +27,6 @@ export class FinalJoinScene extends CommonJoinClass {
     this.chatId = configService.get('JOIN_CHANNEL_ID');
   }
   private readonly chatId: number;
-  private finalJoinStartMessageId: number;
-  protected commandForbiddenMessageId: number;
 
   private async commonFinalJoinMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
@@ -94,7 +96,11 @@ export class FinalJoinScene extends CommonJoinClass {
       ]),
     );
 
-    this.finalJoinStartMessageId = initialFinalJoinMessage.message_id;
+    this.setterForJoinMap(
+      ctx,
+      JoinFinalJMsg.finalJoinStartMessageId,
+      initialFinalJoinMessage.message_id,
+    );
 
     return initialFinalJoinMessage;
   }
@@ -112,9 +118,10 @@ export class FinalJoinScene extends CommonJoinClass {
   async onEnterFinalJoinScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.finalJoinStartMessageId);
+    await this.deleteMessage(ctx, JoinFinalJMsg.finalJoinStartMessageId);
 
     await this.initialFinalJoinStartMarkup(ctx);
+
     return;
   }
 
@@ -148,7 +155,7 @@ export class FinalJoinScene extends CommonJoinClass {
       { parse_mode: 'HTML' },
     );
 
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, JoinMsg.commandForbiddenMessageId);
 
     await ctx.scene.leave();
 
@@ -167,7 +174,7 @@ export class FinalJoinScene extends CommonJoinClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('FULL_NAME_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, JoinMsg.commandForbiddenMessageId);
 
     return;
   }
@@ -189,7 +196,7 @@ export class FinalJoinScene extends CommonJoinClass {
       },
     );
 
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, JoinMsg.commandForbiddenMessageId);
 
     await ctx.scene.leave();
 

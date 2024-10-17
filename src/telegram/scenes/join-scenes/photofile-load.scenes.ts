@@ -11,7 +11,7 @@ import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
 import { Message } from 'telegraf/typings/core/types/typegram';
 import { Emoji } from 'src/telegram/emoji/emoji';
-import { CommonJoinClass, Forbidden } from './common-join.abstract';
+import { CommonJoinClass, Forbidden, JoinMsg } from './common-join.abstract';
 
 const allowedMimeTypes = ['application/pdf', 'image/jpeg'];
 
@@ -21,20 +21,20 @@ enum RejectMsg {
   loadPhotoFailure = 'Фото не завантажено!',
 }
 
+enum JoinPhotoFMsg {
+  photofileLoadStartMessageId = 'photofileLoadStartMessageId',
+  photofileLoadChoiceMessageId = 'photofileLoadChoiceMessageId',
+  incorrectFormatMessageId = 'incorrectFormatMessageId',
+  loadFileFailureMessageId = 'loadFileFailureMessageId',
+  loadPhotoFailureMessageId = 'loadPhotoFailureMessageId',
+}
+
 @Injectable()
 @Scene('PHOTOFILE_LOAD_SCENE')
 export class PhotoFileLoadScene extends CommonJoinClass {
   constructor() {
     super('PHOTOFILE_LOAD_SCENE');
   }
-  private loadedFileName: string;
-  private loadedPhotoId: string;
-  private photofileLoadStartMessageId: number;
-  private photofileLoadChoiceMessageId: number;
-  private incorrectFormatMessageId: number;
-  private loadFileFailureMessageId: number;
-  private loadPhotoFailureMessageId: number;
-  protected commandForbiddenMessageId: number;
 
   private async photofileLoadStartMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
@@ -46,16 +46,21 @@ export class PhotoFileLoadScene extends CommonJoinClass {
       \n    - .jpg`,
     );
 
-    this.photofileLoadStartMessageId = startMessage.message_id;
+    this.setterForJoinMap(
+      ctx,
+      JoinPhotoFMsg.photofileLoadStartMessageId,
+      startMessage.message_id,
+    );
 
     return startMessage;
   }
+
   private async photofileLoadChoiseMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
     fileName: string,
     photoId: string,
   ) {
-    await this.deleteMessage(ctx, this.photofileLoadChoiceMessageId);
+    await this.deleteMessage(ctx, JoinPhotoFMsg.photofileLoadChoiceMessageId);
 
     if (fileName) {
       const fileChoiceMessage = await ctx.replyWithHTML(
@@ -70,11 +75,15 @@ export class PhotoFileLoadScene extends CommonJoinClass {
           ],
         ]),
       );
-
-      this.photofileLoadChoiceMessageId = fileChoiceMessage.message_id;
+      this.setterForJoinMap(
+        ctx,
+        JoinPhotoFMsg.photofileLoadChoiceMessageId,
+        fileChoiceMessage.message_id,
+      );
 
       return fileChoiceMessage;
     }
+
     if (photoId) {
       const photoChoiceMessage = await ctx.replyWithPhoto(photoId, {
         caption: `${Emoji.answer} Ви завантажили таке фото... ${Emoji.arrowTop}
@@ -91,7 +100,11 @@ export class PhotoFileLoadScene extends CommonJoinClass {
         },
       });
 
-      this.photofileLoadChoiceMessageId = photoChoiceMessage.message_id;
+      this.setterForJoinMap(
+        ctx,
+        JoinPhotoFMsg.photofileLoadChoiceMessageId,
+        photoChoiceMessage.message_id,
+      );
 
       return photoChoiceMessage;
     }
@@ -104,37 +117,47 @@ export class PhotoFileLoadScene extends CommonJoinClass {
     command: string,
   ) {
     if (command === 'format') {
-      await this.deleteMessage(ctx, this.incorrectFormatMessageId);
+      await this.deleteMessage(ctx, JoinPhotoFMsg.incorrectFormatMessageId);
 
       const incorrectFormatMessage = await ctx.replyWithHTML(
         `<b>${Emoji.reject} ${msg}</b>`,
       );
 
-      this.incorrectFormatMessageId = incorrectFormatMessage.message_id;
+      this.setterForJoinMap(
+        ctx,
+        JoinPhotoFMsg.incorrectFormatMessageId,
+        incorrectFormatMessage.message_id,
+      );
 
       return incorrectFormatMessage;
     }
 
     if (command === 'load') {
-      await this.deleteMessage(ctx, this.loadFileFailureMessageId);
+      await this.deleteMessage(ctx, JoinPhotoFMsg.loadFileFailureMessageId);
 
       const loadFileFailureMessage = await ctx.replyWithHTML(
         `<b>${Emoji.reject} ${msg}</b>`,
       );
-
-      this.loadFileFailureMessageId = loadFileFailureMessage.message_id;
+      this.setterForJoinMap(
+        ctx,
+        JoinPhotoFMsg.loadFileFailureMessageId,
+        loadFileFailureMessage.message_id,
+      );
 
       return loadFileFailureMessage;
     }
 
     if (command === 'load-photo') {
-      await this.deleteMessage(ctx, this.loadPhotoFailureMessageId);
+      await this.deleteMessage(ctx, JoinPhotoFMsg.loadPhotoFailureMessageId);
 
       const loadPhotoFailureMessage = await ctx.replyWithHTML(
         `<b>${Emoji.reject} ${msg}</b>`,
       );
-
-      this.loadPhotoFailureMessageId = loadPhotoFailureMessage.message_id;
+      this.setterForJoinMap(
+        ctx,
+        JoinPhotoFMsg.loadPhotoFailureMessageId,
+        loadPhotoFailureMessage.message_id,
+      );
 
       return loadPhotoFailureMessage;
     }
@@ -146,9 +169,10 @@ export class PhotoFileLoadScene extends CommonJoinClass {
   async onEnterPhotoFileLoadScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.photofileLoadStartMessageId);
+    await this.deleteMessage(ctx, JoinPhotoFMsg.photofileLoadStartMessageId);
 
     await this.photofileLoadStartMarkup(ctx);
+
     return;
   }
 
@@ -163,10 +187,18 @@ export class PhotoFileLoadScene extends CommonJoinClass {
     );
     if (gate) {
       if (ctx.session.__scenes.state.documentFileId) {
-        await this.photofileLoadChoiseMarkup(ctx, this.loadedFileName, '');
+        await this.photofileLoadChoiseMarkup(
+          ctx,
+          ctx.session.__scenes.state.loadedFileName,
+          '',
+        );
         return;
       } else if (ctx.session.__scenes.state.documentPhotoId) {
-        await this.photofileLoadChoiseMarkup(ctx, '', this.loadedPhotoId);
+        await this.photofileLoadChoiseMarkup(
+          ctx,
+          '',
+          ctx.session.__scenes.state.loadedPhotoId,
+        );
         return;
       } else {
         await ctx.scene.enter(
@@ -178,7 +210,7 @@ export class PhotoFileLoadScene extends CommonJoinClass {
     }
   }
 
-  @On('document')
+  @On('document') // to complete
   async onFileLoad(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
     if (
       !ctx.scene.current.id ||
@@ -202,6 +234,7 @@ export class PhotoFileLoadScene extends CommonJoinClass {
         'load',
       );
       await ctx.scene.enter('PHOTOFILE_LOAD_SCENE', ctx.session.__scenes.state);
+
       return;
     }
 
@@ -225,14 +258,18 @@ export class PhotoFileLoadScene extends CommonJoinClass {
       ctx.session.__scenes.state.documentPhotoId = '';
     }
 
-    this.loadedFileName = fileName;
+    if (!ctx.session.__scenes.state.loadedFileName) {
+      ctx.session.__scenes.state.loadedFileName = fileName;
+    } else {
+      ctx.session.__scenes.state.loadedFileName = fileName;
+    }
 
     await this.photofileLoadChoiseMarkup(ctx, fileName, '');
 
     return;
   }
 
-  @On('photo')
+  @On('photo') // to complete
   async onPhotoLoad(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
     if (
       !ctx.scene.current.id ||
@@ -255,6 +292,7 @@ export class PhotoFileLoadScene extends CommonJoinClass {
         'load-photo',
       );
       await ctx.scene.enter('PHOTOFILE_LOAD_SCENE', ctx.session.__scenes.state);
+
       return;
     }
 
@@ -268,7 +306,11 @@ export class PhotoFileLoadScene extends CommonJoinClass {
       ctx.session.__scenes.state.documentFileId = '';
     }
 
-    this.loadedPhotoId = smallestPhotoId;
+    if (!ctx.session.__scenes.state.loadedPhotoId) {
+      ctx.session.__scenes.state.loadedPhotoId = smallestPhotoId;
+    } else {
+      ctx.session.__scenes.state.loadedPhotoId = smallestPhotoId;
+    }
 
     await this.photofileLoadChoiseMarkup(ctx, '', smallestPhotoId);
 
@@ -291,12 +333,17 @@ export class PhotoFileLoadScene extends CommonJoinClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('WORK_TYPE_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.incorrectFormatMessageId);
-    await this.deleteMessage(ctx, this.loadPhotoFailureMessageId);
-    await this.deleteMessage(ctx, this.loadFileFailureMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, JoinPhotoFMsg.incorrectFormatMessageId);
+    await this.deleteMessage(ctx, JoinPhotoFMsg.loadPhotoFailureMessageId);
+    await this.deleteMessage(ctx, JoinPhotoFMsg.loadFileFailureMessageId);
+    await this.deleteMessage(ctx, JoinMsg.commandForbiddenMessageId);
 
     return;
+  }
+
+  @SceneLeave()
+  onSceneLeave(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
+    ctx.from.id;
   }
 
   // @Action('skip_photofile_load')
@@ -309,9 +356,4 @@ export class PhotoFileLoadScene extends CommonJoinClass {
   //   await ctx.answerCbQuery();
   //   await ctx.scene.enter('WORK_TYPE_SCENE', ctx.session.__scenes.state);
   // }
-
-  @SceneLeave()
-  onSceneLeave(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    ctx.from.id;
-  }
 }

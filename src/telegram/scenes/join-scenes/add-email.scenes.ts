@@ -10,11 +10,16 @@ import {
 import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
-import { CommonJoinClass, Forbidden } from './common-join.abstract';
+import { CommonJoinClass, Forbidden, JoinMsg } from './common-join.abstract';
 import { dangerRegexp } from '../helpers-scenes/regexps.helper';
 
 const addEmailRegExp =
   /^(?:"[a-zA-Z0-9żśółąńćźŁęŻŚÓŁĄŃĆŹĘ_.+-]+"|[a-zA-Z0-9żśółąńćźŁęŻŚÓŁĄŃĆŹĘ]+(?:\.[a-zA-Z0-9żśółąńćźŁęŻŚÓŁĄŃĆŹĘ]+)*)@[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?$/;
+
+enum JoinAddEmailMsg {
+  addEmailStartMessageId = 'addEmailStartMessageId',
+  addEmailChoiceMessageId = 'addEmailChoiceMessageId',
+}
 
 @Injectable()
 @Scene('ADD_EMAIL_SCENE')
@@ -23,11 +28,6 @@ export class AddEmailScene extends CommonJoinClass {
     super('ADD_EMAIL_SCENE');
   }
 
-  private addEmailStartMessageId: number;
-  private addEmailChoiceMessageId: number;
-  protected alertMessageId: number;
-  protected commandForbiddenMessageId: number;
-
   private async addEmailStartMarkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
     const startMessage = await ctx.replyWithHTML(
       `<b>${Emoji.question} Вкажіть вашу електронну адресу.</b>
@@ -35,7 +35,11 @@ export class AddEmailScene extends CommonJoinClass {
       \nmymail@example.com`,
     );
 
-    this.addEmailStartMessageId = startMessage.message_id;
+    this.setterForJoinMap(
+      ctx,
+      JoinAddEmailMsg.addEmailStartMessageId,
+      startMessage.message_id,
+    );
 
     return startMessage;
   }
@@ -43,7 +47,7 @@ export class AddEmailScene extends CommonJoinClass {
   private async addEmailChoiseMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.addEmailChoiceMessageId);
+    await this.deleteMessage(ctx, JoinAddEmailMsg.addEmailChoiceMessageId);
 
     const message = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Ви вказали таку електронну адресу:</b>
@@ -59,14 +63,18 @@ export class AddEmailScene extends CommonJoinClass {
       ]),
     );
 
-    this.addEmailChoiceMessageId = message.message_id;
+    this.setterForJoinMap(
+      ctx,
+      JoinAddEmailMsg.addEmailChoiceMessageId,
+      message.message_id,
+    );
 
     return message;
   }
 
   @SceneEnter()
   async onEnterAddEmailScene(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    await this.deleteMessage(ctx, this.addEmailStartMessageId);
+    await this.deleteMessage(ctx, JoinAddEmailMsg.addEmailStartMessageId);
 
     await this.addEmailStartMarkup(ctx);
     return;
@@ -93,7 +101,7 @@ export class AddEmailScene extends CommonJoinClass {
 
     dangerRegexp.lastIndex = 0;
     if (!addEmailRegExp.test(message) || dangerRegexp.test(message)) {
-      await this.deleteMessage(ctx, this.alertMessageId);
+      await this.deleteMessage(ctx, JoinMsg.alertMessageId);
 
       await this.onCreateAlertMessage(ctx);
 
@@ -128,8 +136,8 @@ export class AddEmailScene extends CommonJoinClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('ADD_PHONE_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.alertMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, JoinMsg.alertMessageId);
+    await this.deleteMessage(ctx, JoinMsg.commandForbiddenMessageId);
 
     return;
   }

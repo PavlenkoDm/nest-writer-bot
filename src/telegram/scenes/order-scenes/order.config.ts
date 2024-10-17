@@ -19,6 +19,7 @@ interface IOrder {
   fileId?: string;
   comment?: string;
   privacyPolicy?: boolean;
+  fileName?: string;
 }
 
 export interface IOrderSceneState extends Scenes.SceneSessionData {

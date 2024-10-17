@@ -12,9 +12,14 @@ import { IJoinSceneState } from './join.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
 import { CallbackQuery } from 'telegraf/typings/core/types/typegram';
 import { ExecTime } from '../common-enums.scenes/time-limit.enum';
-import { CommonJoinClass, Forbidden } from './common-join.abstract';
+import { CommonJoinClass, Forbidden, JoinMsg } from './common-join.abstract';
 
 const regExpForButton = /settimeperiod-(?![\d\s\n^])[^\n]+/;
+
+enum JoinTimePMsg {
+  didNotChooseAnyValueMessageId = 'didNotChooseAnyValueMessageId',
+  timePeriodMessageId = 'timePeriodMessageId',
+}
 
 @Injectable()
 @Scene('TIME_PERIOD_SCENE')
@@ -23,20 +28,20 @@ export class TimePeriodScene extends CommonJoinClass {
     super('TIME_PERIOD_SCENE');
   }
 
-  private didNotChooseAnyValueMessageId: number;
-  private timePeriodMessageId: number;
-  protected commandForbiddenMessageId: number;
-
   private async onDidNotChooseAnyValueMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.didNotChooseAnyValueMessageId);
+    await this.deleteMessage(ctx, JoinTimePMsg.didNotChooseAnyValueMessageId);
 
     const chooseMessage = await ctx.replyWithHTML(
       `${Emoji.reject} Ви не обрали жодного значення!`,
     );
 
-    this.didNotChooseAnyValueMessageId = chooseMessage.message_id;
+    this.setterForJoinMap(
+      ctx,
+      JoinTimePMsg.didNotChooseAnyValueMessageId,
+      chooseMessage.message_id,
+    );
 
     return chooseMessage;
   }
@@ -108,7 +113,13 @@ export class TimePeriodScene extends CommonJoinClass {
         },
       },
     );
-    this.timePeriodMessageId = startMessage.message_id;
+
+    this.setterForJoinMap(
+      ctx,
+      JoinTimePMsg.timePeriodMessageId,
+      startMessage.message_id,
+    );
+
     return startMessage;
   }
 
@@ -116,9 +127,10 @@ export class TimePeriodScene extends CommonJoinClass {
   async onEnterTimePeriodScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.timePeriodMessageId);
+    await this.deleteMessage(ctx, JoinTimePMsg.timePeriodMessageId);
 
     await this.createStartMurkup(ctx);
+
     return;
   }
 
@@ -201,15 +213,15 @@ export class TimePeriodScene extends CommonJoinClass {
       await this.onDidNotChooseAnyValueMarkup(ctx);
       await ctx.scene.enter('TIME_PERIOD_SCENE', ctx.session.__scenes.state);
 
-      await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+      await this.deleteMessage(ctx, JoinMsg.commandForbiddenMessageId);
 
       return;
     }
 
     await ctx.scene.enter('ADD_EMAIL_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
-    await this.deleteMessage(ctx, this.didNotChooseAnyValueMessageId);
+    await this.deleteMessage(ctx, JoinMsg.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, JoinTimePMsg.didNotChooseAnyValueMessageId);
 
     return;
   }

@@ -10,8 +10,12 @@ import {
 import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
-import { CommonJoinClass, Forbidden } from './common-join.abstract';
+import { CommonJoinClass, Forbidden, JoinMsg } from './common-join.abstract';
 import { ConfigService } from '@nestjs/config';
+
+enum JoinPersonalIMsg {
+  personalInfoStartMessageId = 'personalInfoStartMessageId',
+}
 
 @Injectable()
 @Scene('PERSONAL_INFO_SCENE')
@@ -24,8 +28,6 @@ export class PersonalInfoScene extends CommonJoinClass {
   }
 
   private linkToPrivacyPolicy: string;
-  private personalInfoStartMessageId: number;
-  protected commandForbiddenMessageId: number;
 
   private async personalInfoStartMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
@@ -39,7 +41,11 @@ export class PersonalInfoScene extends CommonJoinClass {
       ]),
     );
 
-    this.personalInfoStartMessageId = startMessage.message_id;
+    this.setterForJoinMap(
+      ctx,
+      JoinPersonalIMsg.personalInfoStartMessageId,
+      startMessage.message_id,
+    );
 
     return startMessage;
   }
@@ -48,7 +54,7 @@ export class PersonalInfoScene extends CommonJoinClass {
   async onEnterPersonalInfoScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.personalInfoStartMessageId);
+    await this.deleteMessage(ctx, JoinPersonalIMsg.personalInfoStartMessageId);
 
     await this.personalInfoStartMarkup(ctx);
     return;
@@ -81,7 +87,7 @@ export class PersonalInfoScene extends CommonJoinClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('FINAL_JOIN_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, JoinMsg.commandForbiddenMessageId);
 
     return;
   }
@@ -99,7 +105,7 @@ export class PersonalInfoScene extends CommonJoinClass {
       { parse_mode: 'HTML' },
     );
 
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, JoinMsg.commandForbiddenMessageId);
 
     await ctx.scene.leave();
 

@@ -10,10 +10,15 @@ import {
 import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
-import { CommonJoinClass, Forbidden } from './common-join.abstract';
+import { CommonJoinClass, Forbidden, JoinMsg } from './common-join.abstract';
 import { dangerRegexp } from '../helpers-scenes/regexps.helper';
 
 const addPhoneRegExp = /^\+\d{1,3}\d{7,14}$/; // /^\+\d+\s?\(\d+\)\s?\d+-\d+-\d+$/;
+
+enum JoinAddPhoneMsg {
+  addPhoneStartMessageId = 'addPhoneStartMessageId',
+  addPhoneChoiceMessageId = 'addPhoneChoiceMessageId',
+}
 
 @Injectable()
 @Scene('ADD_PHONE_SCENE')
@@ -22,11 +27,6 @@ export class AddPhoneScene extends CommonJoinClass {
     super('ADD_PHONE_SCENE');
   }
 
-  private addPhoneStartMessageId: number;
-  private addPhoneChoiceMessageId: number;
-  protected alertMessageId: number;
-  protected commandForbiddenMessageId: number;
-
   private async addPhoneStartMarkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
     const startMessage = await ctx.replyWithHTML(
       `<b>${Emoji.question} Вкажіть ваш номер телефону.</b>
@@ -34,7 +34,11 @@ export class AddPhoneScene extends CommonJoinClass {
       \n+380970010203`,
     );
 
-    this.addPhoneStartMessageId = startMessage.message_id;
+    this.setterForJoinMap(
+      ctx,
+      JoinAddPhoneMsg.addPhoneStartMessageId,
+      startMessage.message_id,
+    );
 
     return startMessage;
   }
@@ -42,7 +46,7 @@ export class AddPhoneScene extends CommonJoinClass {
   private async addPhoneChoiseMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.addPhoneChoiceMessageId);
+    await this.deleteMessage(ctx, JoinAddPhoneMsg.addPhoneChoiceMessageId);
 
     const message = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Ви вказали такий номер телефону:</b>
@@ -58,14 +62,18 @@ export class AddPhoneScene extends CommonJoinClass {
       ]),
     );
 
-    this.addPhoneChoiceMessageId = message.message_id;
+    this.setterForJoinMap(
+      ctx,
+      JoinAddPhoneMsg.addPhoneChoiceMessageId,
+      message.message_id,
+    );
 
     return message;
   }
 
   @SceneEnter()
   async onEnterAddPhoneScene(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    await this.deleteMessage(ctx, this.addPhoneStartMessageId);
+    await this.deleteMessage(ctx, JoinAddPhoneMsg.addPhoneStartMessageId);
 
     await this.addPhoneStartMarkup(ctx);
     return;
@@ -92,7 +100,7 @@ export class AddPhoneScene extends CommonJoinClass {
 
     dangerRegexp.lastIndex = 0;
     if (!addPhoneRegExp.test(message) || dangerRegexp.test(message)) {
-      await this.deleteMessage(ctx, this.alertMessageId);
+      await this.deleteMessage(ctx, JoinMsg.alertMessageId);
 
       await this.onCreateAlertMessage(ctx);
 
@@ -129,8 +137,8 @@ export class AddPhoneScene extends CommonJoinClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('PERSONAL_INFO_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.alertMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, JoinMsg.alertMessageId);
+    await this.deleteMessage(ctx, JoinMsg.commandForbiddenMessageId);
 
     return;
   }

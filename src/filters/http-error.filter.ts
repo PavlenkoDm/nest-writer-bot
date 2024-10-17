@@ -27,12 +27,16 @@ export class HttpErrorFilter implements ExceptionFilter {
     if (status === HttpStatus.BAD_REQUEST) {
       this.logger.warn('400 Bad Request error from Telegram, keep working...');
       return;
+    } else {
+      this.logger.warn(
+        `Error: ${response.status}, message: ${response.statusMessage}`,
+      );
     }
 
     // For other errors
-    response.status(status).json({
-      statusCode: status,
-      message: errorResponse,
-    });
+    // response.status(status).json({
+    //   statusCode: status,
+    //   message: errorResponse,
+    // });
   }
 }

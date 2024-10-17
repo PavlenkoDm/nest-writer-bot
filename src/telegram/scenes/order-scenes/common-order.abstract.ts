@@ -28,11 +28,6 @@ export abstract class CommonOrderClass extends Scenes.BaseScene<
 > {
   protected orderMsgIdMap: Map<string, number> = new Map<string, number>();
 
-  // protected alertMessageId: number;
-  // protected commandForbiddenMessageId: number;
-  // protected userStartMessageId: number;
-  // protected userMessageId: number;
-
   protected setterForOrderMap(
     ctx: Scenes.SceneContext<IOrderSceneState>,
     msgIdVarName: string,
@@ -154,25 +149,26 @@ export abstract class CommonOrderClass extends Scenes.BaseScene<
   protected deleteMessageDelayed(
     ctx: Scenes.SceneContext<IOrderSceneState>,
     msgIdVarName: string,
+    userTelegramId: string,
     delay: number,
   ) {
     return setTimeout(
       (async () => {
         const msgIdMapValue = mapGetter(
           this.orderMsgIdMap,
-          `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`,
+          `${msgIdVarName}${userTelegramId}`,
         );
         try {
           if (!!msgIdMapValue) {
             await ctx.deleteMessage(msgIdMapValue);
             toDeleteMapKey(
               this.orderMsgIdMap,
-              `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`,
+              `${msgIdVarName}${userTelegramId}`,
             );
           } else {
             toDeleteMapKey(
               this.orderMsgIdMap,
-              `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`,
+              `${msgIdVarName}${userTelegramId}`,
             );
             return;
           }

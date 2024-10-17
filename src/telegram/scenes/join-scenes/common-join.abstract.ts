@@ -1,6 +1,11 @@
 import { Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
+import {
+  mapGetter,
+  mapSetter,
+  toDeleteMapKey,
+} from 'src/telegram/utils/map.utils';
 
 export enum Alert {
   notCorrect = 'Ви ввели некоректне значення!',
@@ -11,11 +16,34 @@ export enum Forbidden {
   untilJoin = 'Заборонено вводити команди до закінчення анкетування!',
 }
 
+export enum JoinMsg {
+  alertMessageId = 'alertMessageId',
+  commandForbiddenMessageId = 'commandForbiddenMessageId',
+}
+
 export abstract class CommonJoinClass extends Scenes.BaseScene<
   Scenes.SceneContext<IJoinSceneState>
 > {
-  protected alertMessageId: number;
-  protected commandForbiddenMessageId: number;
+  protected joinMsgIdMap: Map<string, number> = new Map<string, number>();
+
+  protected setterForJoinMap(
+    ctx: Scenes.SceneContext<IJoinSceneState>,
+    msgIdVarName: string,
+    msgIdForMapValue: number,
+  ) {
+    const messageIdMapKey = `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`;
+    return mapSetter(this.joinMsgIdMap, messageIdMapKey, msgIdForMapValue);
+  }
+  protected getterForOrderMap(
+    ctx: Scenes.SceneContext<IJoinSceneState>,
+    msgIdVarName: string,
+  ) {
+    const messageIdMapKey = `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`;
+    return mapGetter(this.joinMsgIdMap, messageIdMapKey);
+  }
+
+  // protected alertMessageId: number;
+  // protected commandForbiddenMessageId: number;
 
   protected async onCreateAlertMessage(
     ctx: Scenes.SceneContext<IJoinSceneState>,
@@ -24,7 +52,7 @@ export abstract class CommonJoinClass extends Scenes.BaseScene<
       `<b>${Emoji.reject} ${Alert.notCorrect}</b>`,
     );
 
-    this.alertMessageId = alertMsg.message_id;
+    this.setterForJoinMap(ctx, JoinMsg.alertMessageId, alertMsg.message_id);
 
     return alertMsg;
   }
@@ -37,7 +65,11 @@ export abstract class CommonJoinClass extends Scenes.BaseScene<
       `<b>${Emoji.reject} ${msg}</b>`,
     );
 
-    this.commandForbiddenMessageId = forbiddenMsg.message_id;
+    this.setterForJoinMap(
+      ctx,
+      JoinMsg.commandForbiddenMessageId,
+      forbiddenMsg.message_id,
+    );
 
     return forbiddenMsg;
   }
@@ -53,7 +85,7 @@ export abstract class CommonJoinClass extends Scenes.BaseScene<
       ctx.text.trim().startsWith('/')
     ) {
       if (ctx.session.__scenes.state.isJoinScenario) {
-        await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+        await this.deleteMessage(ctx, JoinMsg.commandForbiddenMessageId);
 
         await this.onCommandForbiddenMessage(ctx, msg);
         await ctx.scene.enter(`${sceneName}`, ctx.session.__scenes.state);
@@ -74,7 +106,7 @@ export abstract class CommonJoinClass extends Scenes.BaseScene<
       ctx.text.trim().startsWith('/')
     ) {
       if (ctx.session.__scenes.state.isJoinScenario) {
-        await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+        await this.deleteMessage(ctx, JoinMsg.commandForbiddenMessageId);
 
         await this.onCommandForbiddenMessage(ctx, msg);
       }
@@ -83,14 +115,46 @@ export abstract class CommonJoinClass extends Scenes.BaseScene<
     return false;
   }
 
+  // protected async deleteMessage(
+  //   ctx: Scenes.SceneContext<IJoinSceneState>,
+  //   messageId: number,
+  // ) {
+  //   try {
+  //     if (messageId) {
+  //       await ctx.deleteMessage(messageId);
+  //       messageId = 0;
+  //     }
+  //   } catch (error) {
+  //     if (error.response && error.response.error_code === 400) {
+  //       // console.log(`Message does not exist. Initiator: ${ctx.from.username}`);
+  //       return;
+  //     }
+  //     console.error('Error:', error);
+  //     return;
+  //   }
+  // }
+
   protected async deleteMessage(
     ctx: Scenes.SceneContext<IJoinSceneState>,
-    messageId: number,
+    msgIdVarName: string,
   ) {
     try {
-      if (messageId) {
-        await ctx.deleteMessage(messageId);
-        messageId = 0;
+      const msgIdMapValue = mapGetter(
+        this.joinMsgIdMap,
+        `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`,
+      );
+      if (!!msgIdMapValue) {
+        await ctx.deleteMessage(msgIdMapValue);
+        toDeleteMapKey(
+          this.joinMsgIdMap,
+          `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`,
+        );
+      } else {
+        toDeleteMapKey(
+          this.joinMsgIdMap,
+          `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`,
+        );
+        return;
       }
     } catch (error) {
       if (error.response && error.response.error_code === 400) {

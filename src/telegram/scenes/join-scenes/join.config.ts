@@ -1,6 +1,8 @@
 import { Scenes } from 'telegraf';
 
 interface IJoin {
+  loadedPhotoId?: string;
+  loadedFileName?: string;
   userTelegramId?: string;
   isJoinScenario?: boolean;
   fullName?: string;

@@ -11,8 +11,13 @@ import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
 import { dangerRegexp } from '../helpers-scenes/regexps.helper';
-import { CommonJoinClass, Forbidden } from './common-join.abstract';
+import { CommonJoinClass, Forbidden, JoinMsg } from './common-join.abstract';
 import { StringLength } from '../common-enums.scenes/strlength.enum';
+
+enum JoinFullNameMsg {
+  fullNameStartMessageId = 'fullNameStartMessageId',
+  fullNameChoiceMessageId = 'fullNameChoiceMessageId',
+}
 
 @Injectable()
 @Scene('FULL_NAME_SCENE')
@@ -21,18 +26,17 @@ export class FullNameScene extends CommonJoinClass {
     super('FULL_NAME_SCENE');
   }
 
-  private fullNameStartMessageId: number;
-  private fullNameChoiceMessageId: number;
-  protected alertMessageId: number;
-  protected commandForbiddenMessageId: number;
-
   private async fullNameStartMarkup(ctx: Scenes.SceneContext<IJoinSceneState>) {
     const startMessage = await ctx.replyWithHTML(
       `<b>${Emoji.question} Введіть ваше повне імʼя та вік.</b>
       \n<i> ( Наприклад:  Іванов  Іван  Іванович,  25 )</i>`,
     );
 
-    this.fullNameStartMessageId = startMessage.message_id;
+    this.setterForJoinMap(
+      ctx,
+      JoinFullNameMsg.fullNameStartMessageId,
+      startMessage.message_id,
+    );
 
     return startMessage;
   }
@@ -40,7 +44,7 @@ export class FullNameScene extends CommonJoinClass {
   private async fullNameChoiceMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.fullNameChoiceMessageId);
+    await this.deleteMessage(ctx, JoinFullNameMsg.fullNameChoiceMessageId);
 
     const choiceMessage = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Додані повне імʼя та вік:</b>
@@ -56,14 +60,18 @@ export class FullNameScene extends CommonJoinClass {
       ]),
     );
 
-    this.fullNameChoiceMessageId = choiceMessage.message_id;
+    this.setterForJoinMap(
+      ctx,
+      JoinFullNameMsg.fullNameChoiceMessageId,
+      choiceMessage.message_id,
+    );
 
     return choiceMessage;
   }
 
   @SceneEnter()
   async onEnterFullNameScene(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    await this.deleteMessage(ctx, this.fullNameStartMessageId);
+    await this.deleteMessage(ctx, JoinFullNameMsg.fullNameStartMessageId);
 
     await this.fullNameStartMarkup(ctx);
     return;
@@ -92,7 +100,7 @@ export class FullNameScene extends CommonJoinClass {
 
     dangerRegexp.lastIndex = 0;
     if (dangerRegexp.test(message)) {
-      await this.deleteMessage(ctx, this.alertMessageId);
+      await this.deleteMessage(ctx, JoinMsg.alertMessageId);
 
       await this.onCreateAlertMessage(ctx);
 
@@ -141,8 +149,8 @@ export class FullNameScene extends CommonJoinClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('SPECIALITY_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.alertMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, JoinMsg.alertMessageId);
+    await this.deleteMessage(ctx, JoinMsg.commandForbiddenMessageId);
 
     return;
   }

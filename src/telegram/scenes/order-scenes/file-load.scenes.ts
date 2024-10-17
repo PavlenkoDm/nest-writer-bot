@@ -11,7 +11,7 @@ import { Markup, Scenes } from 'telegraf';
 import { IOrderSceneState } from './order.config';
 import { Message } from 'telegraf/typings/core/types/typegram';
 import { Emoji } from 'src/telegram/emoji/emoji';
-import { CommonOrderClass, Forbidden } from './common-order.abstract';
+import { CommonOrderClass, Forbidden, OrderMsg } from './common-order.abstract';
 
 const allowedMimeTypes = [
   'application/msword',
@@ -27,20 +27,19 @@ enum RejectMsg {
   incorrectFileFormat = 'Невірний формат файла!',
 }
 
+enum OrderFLMsg {
+  fileLoadStartMessageId = 'fileLoadStartMessageId',
+  fileLoadChoiceMessageId = 'fileLoadChoiceMessageId',
+  incorrectFormatMessageId = 'incorrectFormatMessageId',
+  loadFileFailureMessageId = 'loadFileFailureMessageId',
+}
+
 @Injectable()
 @Scene('FILE_LOAD_SCENE')
 export class FileLoadScene extends CommonOrderClass {
   constructor() {
     super('FILE_LOAD_SCENE');
   }
-
-  private fileLoadStartMessageId: number;
-  private fileLoadChoiceMessageId: number;
-  private incorrectFormatMessageId: number;
-  private loadFileFailureMessageId: number;
-  protected commandForbiddenMessageId: number;
-
-  private fileName: string;
 
   private async fileLoadStartMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
@@ -59,7 +58,11 @@ export class FileLoadScene extends CommonOrderClass {
       ]),
     );
 
-    this.fileLoadStartMessageId = startMessage.message_id;
+    this.setterForOrderMap(
+      ctx,
+      OrderFLMsg.fileLoadStartMessageId,
+      startMessage.message_id,
+    );
 
     return startMessage;
   }
@@ -68,7 +71,7 @@ export class FileLoadScene extends CommonOrderClass {
     ctx: Scenes.SceneContext<IOrderSceneState>,
     fileName: string,
   ) {
-    await this.deleteMessage(ctx, this.fileLoadChoiceMessageId);
+    await this.deleteMessage(ctx, OrderFLMsg.fileLoadChoiceMessageId);
 
     const choiceMessage = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Завантажений файл:</b>  "<i>${fileName}</i>"`,
@@ -88,7 +91,11 @@ export class FileLoadScene extends CommonOrderClass {
       ]),
     );
 
-    this.fileLoadChoiceMessageId = choiceMessage.message_id;
+    this.setterForOrderMap(
+      ctx,
+      OrderFLMsg.fileLoadChoiceMessageId,
+      choiceMessage.message_id,
+    );
 
     return choiceMessage;
   }
@@ -99,24 +106,32 @@ export class FileLoadScene extends CommonOrderClass {
     command: string,
   ) {
     if (command === 'format') {
-      await this.deleteMessage(ctx, this.incorrectFormatMessageId);
+      await this.deleteMessage(ctx, OrderFLMsg.incorrectFormatMessageId);
 
       const incorrectFormatMessage = await ctx.replyWithHTML(
         `<b>${Emoji.reject} ${msg}</b>`,
       );
 
-      this.incorrectFormatMessageId = incorrectFormatMessage.message_id;
+      this.setterForOrderMap(
+        ctx,
+        OrderFLMsg.incorrectFormatMessageId,
+        incorrectFormatMessage.message_id,
+      );
 
       return incorrectFormatMessage;
     }
     if (command === 'load') {
-      await this.deleteMessage(ctx, this.loadFileFailureMessageId);
+      await this.deleteMessage(ctx, OrderFLMsg.loadFileFailureMessageId);
 
       const loadFileFailureMessage = await ctx.replyWithHTML(
         `<b>${Emoji.reject} ${msg}</b>`,
       );
 
-      this.loadFileFailureMessageId = loadFileFailureMessage.message_id;
+      this.setterForOrderMap(
+        ctx,
+        OrderFLMsg.loadFileFailureMessageId,
+        loadFileFailureMessage.message_id,
+      );
 
       return loadFileFailureMessage;
     }
@@ -128,7 +143,7 @@ export class FileLoadScene extends CommonOrderClass {
   async onEnterFileLoadScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.fileLoadStartMessageId);
+    await this.deleteMessage(ctx, OrderFLMsg.fileLoadStartMessageId);
 
     await this.fileLoadStartMarkup(ctx);
 
@@ -139,7 +154,7 @@ export class FileLoadScene extends CommonOrderClass {
   async onEnterTextInFileLoad(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    this.userMessageId = ctx.message.message_id;
+    this.setterForOrderMap(ctx, OrderMsg.userMessageId, ctx.message.message_id);
 
     const gate = await this.onSceneGateWithoutEnterScene(
       ctx,
@@ -150,30 +165,33 @@ export class FileLoadScene extends CommonOrderClass {
     if (gate) {
       if (!ctx.session.__scenes.state.fileId) {
         await ctx.scene.enter('FILE_LOAD_SCENE', ctx.session.__scenes.state);
-        await this.deleteMessage(ctx, this.userMessageId);
+        await this.deleteMessage(ctx, OrderMsg.userMessageId);
         return;
       } else {
-        await this.fileLoadChoiceMarkup(ctx, this.fileName);
-        await this.deleteMessage(ctx, this.userMessageId);
+        await this.fileLoadChoiceMarkup(
+          ctx,
+          ctx.session.__scenes.state.fileName,
+        );
+        await this.deleteMessage(ctx, OrderMsg.userMessageId);
         return;
       }
     }
 
-    await this.deleteMessage(ctx, this.userMessageId);
+    await this.deleteMessage(ctx, OrderMsg.userMessageId);
 
     return;
   }
 
   @On('document')
   async onFileLoad(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
-    await this.deleteMessage(ctx, this.userMessageId);
+    await this.deleteMessage(ctx, OrderMsg.userMessageId);
 
     if (!ctx.scene.current.id || ctx.scene.current.id !== 'FILE_LOAD_SCENE') {
       return;
     }
     const message = ctx.message as Message.DocumentMessage;
 
-    this.userMessageId = message.message_id;
+    this.setterForOrderMap(ctx, OrderMsg.userMessageId, message.message_id);
 
     const {
       file_id: fileId,
@@ -214,7 +232,7 @@ export class FileLoadScene extends CommonOrderClass {
     }
 
     if (fileName) {
-      this.fileName = fileName;
+      ctx.session.__scenes.state.fileName = fileName;
     }
 
     await this.fileLoadChoiceMarkup(ctx, fileName);
@@ -233,12 +251,12 @@ export class FileLoadScene extends CommonOrderClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('COMMENT_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.fileLoadStartMessageId);
-    await this.deleteMessage(ctx, this.fileLoadChoiceMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
-    await this.deleteMessage(ctx, this.incorrectFormatMessageId);
-    await this.deleteMessage(ctx, this.loadFileFailureMessageId);
-    await this.deleteMessage(ctx, this.userMessageId);
+    await this.deleteMessage(ctx, OrderFLMsg.fileLoadStartMessageId);
+    await this.deleteMessage(ctx, OrderFLMsg.fileLoadChoiceMessageId);
+    await this.deleteMessage(ctx, OrderFLMsg.incorrectFormatMessageId);
+    await this.deleteMessage(ctx, OrderFLMsg.loadFileFailureMessageId);
+    await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, OrderMsg.userMessageId);
 
     return;
   }
@@ -252,12 +270,12 @@ export class FileLoadScene extends CommonOrderClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('COMMENT_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.fileLoadStartMessageId);
-    await this.deleteMessage(ctx, this.fileLoadChoiceMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
-    await this.deleteMessage(ctx, this.incorrectFormatMessageId);
-    await this.deleteMessage(ctx, this.loadFileFailureMessageId);
-    await this.deleteMessage(ctx, this.userMessageId);
+    await this.deleteMessage(ctx, OrderFLMsg.fileLoadStartMessageId);
+    await this.deleteMessage(ctx, OrderFLMsg.fileLoadChoiceMessageId);
+    await this.deleteMessage(ctx, OrderFLMsg.incorrectFormatMessageId);
+    await this.deleteMessage(ctx, OrderFLMsg.loadFileFailureMessageId);
+    await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, OrderMsg.userMessageId);
 
     return;
   }
@@ -273,11 +291,11 @@ export class FileLoadScene extends CommonOrderClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('FILE_LOAD_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.fileLoadChoiceMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
-    await this.deleteMessage(ctx, this.incorrectFormatMessageId);
-    await this.deleteMessage(ctx, this.loadFileFailureMessageId);
-    await this.deleteMessage(ctx, this.userMessageId);
+    await this.deleteMessage(ctx, OrderFLMsg.fileLoadChoiceMessageId);
+    await this.deleteMessage(ctx, OrderFLMsg.incorrectFormatMessageId);
+    await this.deleteMessage(ctx, OrderFLMsg.loadFileFailureMessageId);
+    await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, OrderMsg.userMessageId);
 
     return;
   }

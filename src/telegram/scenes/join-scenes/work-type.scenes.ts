@@ -12,9 +12,14 @@ import { IJoinSceneState } from './join.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
 import { TypeOfWork } from '../common-enums.scenes/work-type.enum';
 import { CallbackQuery } from 'telegraf/typings/core/types/typegram';
-import { CommonJoinClass, Forbidden } from './common-join.abstract';
+import { CommonJoinClass, Forbidden, JoinMsg } from './common-join.abstract';
 
 const regExpForButton = /selworktype-(?![\d\s\n^])[^\n]+/;
+
+enum JoinWorkTypeMsg {
+  didNotChooseAnyValueMessageId = 'didNotChooseAnyValueMessageId',
+  workTypeStartMessageId = 'workTypeStartMessageId',
+}
 
 @Injectable()
 @Scene('WORK_TYPE_SCENE')
@@ -22,10 +27,6 @@ export class WorkTypeScene extends CommonJoinClass {
   constructor() {
     super('WORK_TYPE_SCENE');
   }
-
-  private didNotChooseAnyValueMessageId: number;
-  private workTypeStartMessageId: number;
-  protected commandForbiddenMessageId: number;
 
   private async onWorkTypeSet(
     workType: string,
@@ -129,27 +130,40 @@ export class WorkTypeScene extends CommonJoinClass {
         },
       },
     );
-    this.workTypeStartMessageId = startMessage.message_id;
+
+    this.setterForJoinMap(
+      ctx,
+      JoinWorkTypeMsg.workTypeStartMessageId,
+      startMessage.message_id,
+    );
+
     return startMessage;
   }
 
   private async onDidNotChooseAnyValueMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.didNotChooseAnyValueMessageId);
+    await this.deleteMessage(
+      ctx,
+      JoinWorkTypeMsg.didNotChooseAnyValueMessageId,
+    );
 
     const chooseMessage = await ctx.replyWithHTML(
       `${Emoji.reject} Ви не обрали жодного значення!`,
     );
 
-    this.didNotChooseAnyValueMessageId = chooseMessage.message_id;
+    this.setterForJoinMap(
+      ctx,
+      JoinWorkTypeMsg.didNotChooseAnyValueMessageId,
+      chooseMessage.message_id,
+    );
 
     return chooseMessage;
   }
 
   @SceneEnter()
   async onEnterWorkTypeScene(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
-    await this.deleteMessage(ctx, this.workTypeStartMessageId);
+    await this.deleteMessage(ctx, JoinWorkTypeMsg.workTypeStartMessageId);
 
     await this.createStartMurkup(ctx);
     return;
@@ -268,15 +282,18 @@ export class WorkTypeScene extends CommonJoinClass {
       await this.onDidNotChooseAnyValueMarkup(ctx);
       await ctx.scene.enter('WORK_TYPE_SCENE', ctx.session.__scenes.state);
 
-      await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+      await this.deleteMessage(ctx, JoinMsg.commandForbiddenMessageId);
 
       return;
     }
 
     await ctx.scene.enter('TECH_SKILLS_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
-    await this.deleteMessage(ctx, this.didNotChooseAnyValueMessageId);
+    await this.deleteMessage(ctx, JoinMsg.commandForbiddenMessageId);
+    await this.deleteMessage(
+      ctx,
+      JoinWorkTypeMsg.didNotChooseAnyValueMessageId,
+    );
 
     return;
   }

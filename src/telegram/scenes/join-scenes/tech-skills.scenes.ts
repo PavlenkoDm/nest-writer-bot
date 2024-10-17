@@ -10,9 +10,14 @@ import {
 import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
-import { CommonJoinClass, Forbidden } from './common-join.abstract';
+import { CommonJoinClass, Forbidden, JoinMsg } from './common-join.abstract';
 import { dangerRegexp } from '../helpers-scenes/regexps.helper';
 import { StringLength } from '../common-enums.scenes/strlength.enum';
+
+enum JoinTechSkMsg {
+  techSkillsStartMessageId = 'techSkillsStartMessageId',
+  techSkillsChoiceMessageId = 'techSkillsChoiceMessageId',
+}
 
 @Injectable()
 @Scene('TECH_SKILLS_SCENE')
@@ -20,11 +25,6 @@ export class TechSkillsScene extends CommonJoinClass {
   constructor() {
     super('TECH_SKILLS_SCENE');
   }
-
-  private techSkillsStartMessageId: number;
-  private techSkillsChoiceMessageId: number;
-  protected alertMessageId: number;
-  protected commandForbiddenMessageId: number;
 
   private async techSkillsStartMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
@@ -38,7 +38,11 @@ export class TechSkillsScene extends CommonJoinClass {
       ]),
     );
 
-    this.techSkillsStartMessageId = startMessage.message_id;
+    this.setterForJoinMap(
+      ctx,
+      JoinTechSkMsg.techSkillsStartMessageId,
+      startMessage.message_id,
+    );
 
     return startMessage;
   }
@@ -46,7 +50,7 @@ export class TechSkillsScene extends CommonJoinClass {
   private async techSkillsChoiseMarkup(
     ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.techSkillsChoiceMessageId);
+    await this.deleteMessage(ctx, JoinTechSkMsg.techSkillsChoiceMessageId);
 
     const message = await ctx.replyWithHTML(
       `<b>${Emoji.answer} Ви працюєте з такими програмами (мовами програмування, фреймворками):</b>
@@ -68,7 +72,11 @@ export class TechSkillsScene extends CommonJoinClass {
       ]),
     );
 
-    this.techSkillsChoiceMessageId = message.message_id;
+    this.setterForJoinMap(
+      ctx,
+      JoinTechSkMsg.techSkillsChoiceMessageId,
+      message.message_id,
+    );
 
     return message;
   }
@@ -77,7 +85,7 @@ export class TechSkillsScene extends CommonJoinClass {
   async onEnterTechSkillsScene(
     @Ctx() ctx: Scenes.SceneContext<IJoinSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.techSkillsStartMessageId);
+    await this.deleteMessage(ctx, JoinTechSkMsg.techSkillsStartMessageId);
 
     await this.techSkillsStartMarkup(ctx);
     return;
@@ -106,7 +114,7 @@ export class TechSkillsScene extends CommonJoinClass {
 
     dangerRegexp.lastIndex = 0;
     if (dangerRegexp.test(message)) {
-      await this.deleteMessage(ctx, this.alertMessageId);
+      await this.deleteMessage(ctx, JoinMsg.alertMessageId);
 
       await this.onCreateAlertMessage(ctx);
 
@@ -141,8 +149,8 @@ export class TechSkillsScene extends CommonJoinClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('TIME_PERIOD_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.alertMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, JoinMsg.alertMessageId);
+    await this.deleteMessage(ctx, JoinMsg.commandForbiddenMessageId);
 
     return;
   }
@@ -156,9 +164,9 @@ export class TechSkillsScene extends CommonJoinClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('TIME_PERIOD_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.techSkillsChoiceMessageId);
-    await this.deleteMessage(ctx, this.alertMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, JoinTechSkMsg.techSkillsChoiceMessageId);
+    await this.deleteMessage(ctx, JoinMsg.alertMessageId);
+    await this.deleteMessage(ctx, JoinMsg.commandForbiddenMessageId);
 
     return;
   }

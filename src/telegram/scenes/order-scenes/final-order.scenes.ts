@@ -11,7 +11,11 @@ import { Markup, Scenes } from 'telegraf';
 import { IOrderSceneState } from './order.config';
 import { ConfigService } from '@nestjs/config';
 import { Emoji } from 'src/telegram/emoji/emoji';
-import { CommonOrderClass, Forbidden } from './common-order.abstract';
+import { CommonOrderClass, Forbidden, OrderMsg } from './common-order.abstract';
+
+enum OrderFinalMsg {
+  finalOrderStartMessageId = 'finalOrderStartMessageId',
+}
 
 @Injectable()
 @Scene('FINAL_ORDER_SCENE')
@@ -24,8 +28,6 @@ export class FinalOrderScene extends CommonOrderClass {
   }
 
   private readonly chatId: number;
-  private finalOrderStartMessageId: number;
-  protected commandForbiddenMessageId: number;
 
   private async commonFinalOrderMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
@@ -94,7 +96,11 @@ export class FinalOrderScene extends CommonOrderClass {
       ]),
     );
 
-    this.finalOrderStartMessageId = startMessage.message_id;
+    this.setterForOrderMap(
+      ctx,
+      OrderFinalMsg.finalOrderStartMessageId,
+      startMessage.message_id,
+    );
 
     return startMessage;
   }
@@ -103,7 +109,7 @@ export class FinalOrderScene extends CommonOrderClass {
   async onEnterFinalOrderScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.finalOrderStartMessageId);
+    await this.deleteMessage(ctx, OrderFinalMsg.finalOrderStartMessageId);
 
     await this.finalOrderStartMarkup(ctx);
 
@@ -134,9 +140,16 @@ export class FinalOrderScene extends CommonOrderClass {
       },
     );
 
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    const telegramUserId: string = ctx.session.__scenes.state.userTelegramId;
 
-    this.deleteMessageDelayed(ctx, this.finalOrderStartMessageId, 15000);
+    await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
+
+    this.deleteMessageDelayed(
+      ctx,
+      OrderFinalMsg.finalOrderStartMessageId,
+      telegramUserId,
+      10000,
+    );
 
     await ctx.scene.leave();
 
@@ -155,8 +168,8 @@ export class FinalOrderScene extends CommonOrderClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('TYPE_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.finalOrderStartMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, OrderFinalMsg.finalOrderStartMessageId);
+    await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
 
     return;
   }
@@ -166,6 +179,8 @@ export class FinalOrderScene extends CommonOrderClass {
     if (ctx.scene.current.id !== 'FINAL_ORDER_SCENE') {
       return;
     }
+
+    const telegramUserId: string = ctx.session.__scenes.state.userTelegramId;
 
     ctx.session.__scenes.state = {};
 
@@ -178,9 +193,14 @@ export class FinalOrderScene extends CommonOrderClass {
       },
     );
 
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
 
-    this.deleteMessageDelayed(ctx, this.finalOrderStartMessageId, 15000);
+    this.deleteMessageDelayed(
+      ctx,
+      OrderFinalMsg.finalOrderStartMessageId,
+      telegramUserId,
+      10000,
+    );
 
     await ctx.scene.leave();
 
@@ -191,7 +211,7 @@ export class FinalOrderScene extends CommonOrderClass {
   async onTextInFinalOrderScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    this.userMessageId = ctx.message.message_id;
+    this.setterForOrderMap(ctx, OrderMsg.userMessageId, ctx.message.message_id);
 
     const gate = await this.onSceneGateFromCommand(
       ctx,
@@ -199,11 +219,11 @@ export class FinalOrderScene extends CommonOrderClass {
       Forbidden.enterCommands,
     );
     if (gate) {
-      await this.deleteMessage(ctx, this.userMessageId);
+      await this.deleteMessage(ctx, OrderMsg.userMessageId);
       return;
     }
 
-    await this.deleteMessage(ctx, this.userMessageId);
+    await this.deleteMessage(ctx, OrderMsg.userMessageId);
 
     return;
   }

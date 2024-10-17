@@ -10,8 +10,12 @@ import {
 import { Markup, Scenes } from 'telegraf';
 import { IOrderSceneState } from './order.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
-import { CommonOrderClass, Forbidden } from './common-order.abstract';
+import { CommonOrderClass, Forbidden, OrderMsg } from './common-order.abstract';
 import { ConfigService } from '@nestjs/config';
+
+enum OrderPPMsg {
+  privacyPolicyStartMessageId = 'privacyPolicyStartMessageId',
+}
 
 @Injectable()
 @Scene('PRIVACY_POLICY_SCENE')
@@ -24,8 +28,6 @@ export class PrivacyPolicyScene extends CommonOrderClass {
   }
 
   private linkToPrivacyPolicy: string;
-  private privacyPolicyStartMessageId: number;
-  protected commandForbiddenMessageId: number;
 
   private async privacyPolicyStartMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
@@ -39,7 +41,11 @@ export class PrivacyPolicyScene extends CommonOrderClass {
       ]),
     );
 
-    this.privacyPolicyStartMessageId = startMessage.message_id;
+    this.setterForOrderMap(
+      ctx,
+      OrderPPMsg.privacyPolicyStartMessageId,
+      startMessage.message_id,
+    );
 
     return startMessage;
   }
@@ -48,7 +54,7 @@ export class PrivacyPolicyScene extends CommonOrderClass {
   async onEnterPrivacyPolicyScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    await this.deleteMessage(ctx, this.privacyPolicyStartMessageId);
+    await this.deleteMessage(ctx, OrderPPMsg.privacyPolicyStartMessageId);
 
     await this.privacyPolicyStartMarkup(ctx);
 
@@ -59,7 +65,7 @@ export class PrivacyPolicyScene extends CommonOrderClass {
   async onTextInPrivacyPolicyScene(
     @Ctx() ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
-    this.userMessageId = ctx.message.message_id;
+    this.setterForOrderMap(ctx, OrderMsg.userMessageId, ctx.message.message_id);
 
     const gate = await this.onSceneGateFromCommand(
       ctx,
@@ -67,11 +73,11 @@ export class PrivacyPolicyScene extends CommonOrderClass {
       Forbidden.enterCommands,
     );
     if (gate) {
-      await this.deleteMessage(ctx, this.userMessageId);
+      await this.deleteMessage(ctx, OrderMsg.userMessageId);
       return;
     }
 
-    await this.deleteMessage(ctx, this.userMessageId);
+    await this.deleteMessage(ctx, OrderMsg.userMessageId);
 
     return;
   }
@@ -89,8 +95,8 @@ export class PrivacyPolicyScene extends CommonOrderClass {
     await ctx.answerCbQuery();
     await ctx.scene.enter('FINAL_ORDER_SCENE', ctx.session.__scenes.state);
 
-    await this.deleteMessage(ctx, this.privacyPolicyStartMessageId);
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
+    await this.deleteMessage(ctx, OrderPPMsg.privacyPolicyStartMessageId);
+    await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
 
     return;
   }
@@ -101,6 +107,8 @@ export class PrivacyPolicyScene extends CommonOrderClass {
       return;
     }
 
+    const telegramUserId: string = ctx.session.__scenes.state.userTelegramId;
+
     ctx.session.__scenes.state = {};
 
     await ctx.answerCbQuery();
@@ -110,8 +118,13 @@ export class PrivacyPolicyScene extends CommonOrderClass {
       { parse_mode: 'HTML' },
     );
 
-    await this.deleteMessage(ctx, this.commandForbiddenMessageId);
-    this.deleteMessageDelayed(ctx, this.privacyPolicyStartMessageId, 15000);
+    await this.deleteMessage(ctx, OrderMsg.commandForbiddenMessageId);
+    this.deleteMessageDelayed(
+      ctx,
+      OrderPPMsg.privacyPolicyStartMessageId,
+      telegramUserId,
+      10000,
+    );
 
     await ctx.scene.leave();
 
