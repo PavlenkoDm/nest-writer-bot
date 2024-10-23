@@ -5,3 +5,5 @@
 ./dist
 README.md
 .prettierrc
+.env
+sessions.json

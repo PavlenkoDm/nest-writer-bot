@@ -29,14 +29,9 @@ export class HttpErrorFilter implements ExceptionFilter {
       return;
     } else {
       this.logger.warn(
-        `Error: ${response.status}, message: ${response.statusMessage}`,
+        `HTTP Error: ${response.status}, message: ${response.statusMessage}`,
       );
+      return;
     }
-
-    // For other errors
-    // response.status(status).json({
-    //   statusCode: status,
-    //   message: errorResponse,
-    // });
   }
 }
