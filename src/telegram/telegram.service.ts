@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Action, Command, Ctx, On, Start, Update } from 'nestjs-telegraf';
 import { Context, Markup, Telegraf } from 'telegraf';
@@ -20,6 +20,8 @@ import {
   onFillTimeLimit,
 } from './helpers-telegram/time-limit.helper';
 import { mapGetter, mapSetter, toDeleteMapKey } from './utils/map.utils';
+import { saveMapData } from './utils/map-file-saver-loader.utils';
+import { telegramServiceMap } from 'src/main';
 
 type Scenario = 'order' | 'join';
 
@@ -44,24 +46,23 @@ enum Message {
   choosenWorkTypeMessageId = 'choosenWorkTypeMessageId',
 }
 
+export enum FileNameTelegramService {
+  telegramServiceMapData = 'telegramServiceMapData',
+}
+
 @Injectable()
 @Update()
-export class TelegramService extends Telegraf<Context> {
+export class TelegramService
+  extends Telegraf<Context>
+  implements OnModuleDestroy
+{
   constructor(
     private readonly configService: ConfigService,
     // @InjectBot() private readonly bot: Telegraf<Context>,
   ) {
     super(configService.get('BOT_TOKEN'));
     this.setupBotCommands();
-    this.msgIdMap = new Map<string, number>();
   }
-
-  private msgIdMap: Map<string, number>;
-  // private userMessageId: number;
-  // private userStartMessageId: number;
-  // private startJoinMessageId: number;
-  // private startOrderMessageId: number;
-  // private choosenWorkTypeMessageId: number;
 
   private setupBotCommands() {
     this.telegram.setMyCommands([
@@ -87,8 +88,11 @@ export class TelegramService extends Telegraf<Context> {
     );
 
     const startJoinMessageId = `${Message.startJoinMessageId}${ctx.session.__scenes.state.userTelegramId}`;
-
-    mapSetter(this.msgIdMap, startJoinMessageId, startJoinMessage.message_id);
+    mapSetter(
+      telegramServiceMap,
+      startJoinMessageId,
+      startJoinMessage.message_id,
+    );
 
     return startJoinMessage;
   }
@@ -105,8 +109,11 @@ export class TelegramService extends Telegraf<Context> {
     );
 
     const startOrderMessageId = `${Message.startOrderMessageId}${ctx.session.__scenes.state.userTelegramId}`;
-
-    mapSetter(this.msgIdMap, startOrderMessageId, startOrderMessage.message_id);
+    mapSetter(
+      telegramServiceMap,
+      startOrderMessageId,
+      startOrderMessage.message_id,
+    );
 
     return startOrderMessage;
   }
@@ -118,9 +125,8 @@ export class TelegramService extends Telegraf<Context> {
     );
 
     const choosenWorkTypeMessageId = `${Message.choosenWorkTypeMessageId}${ctx.session.__scenes.state.userTelegramId}`;
-
     mapSetter(
-      this.msgIdMap,
+      telegramServiceMap,
       choosenWorkTypeMessageId,
       choosenWorkTypeMessage.message_id,
     );
@@ -165,7 +171,7 @@ export class TelegramService extends Telegraf<Context> {
     const startOrderMessageId = `${Message.startOrderMessageId}${ctx.session.__scenes.state.userTelegramId}`;
     const startJoinMessageId = `${Message.startJoinMessageId}${ctx.session.__scenes.state.userTelegramId}`;
 
-    mapSetter(this.msgIdMap, userStartMessageId, ctx.message.message_id);
+    mapSetter(telegramServiceMap, userStartMessageId, ctx.message.message_id);
 
     const startPayload = ctx.text.trim().split(' ')[1];
 
@@ -183,21 +189,21 @@ export class TelegramService extends Telegraf<Context> {
 
       await this.deleteMessage(
         ctx,
-        this.msgIdMap,
+        telegramServiceMap,
         userStartMessageId,
-        mapGetter(this.msgIdMap, userStartMessageId),
+        mapGetter(telegramServiceMap, userStartMessageId),
       );
       await this.deleteMessage(
         ctx,
-        this.msgIdMap,
+        telegramServiceMap,
         startOrderMessageId,
-        mapGetter(this.msgIdMap, startOrderMessageId),
+        mapGetter(telegramServiceMap, startOrderMessageId),
       );
       await this.deleteMessage(
         ctx,
-        this.msgIdMap,
+        telegramServiceMap,
         startJoinMessageId,
-        mapGetter(this.msgIdMap, startJoinMessageId),
+        mapGetter(telegramServiceMap, startJoinMessageId),
       );
 
       return;
@@ -223,9 +229,9 @@ export class TelegramService extends Telegraf<Context> {
 
         await this.deleteMessage(
           ctx,
-          this.msgIdMap,
+          telegramServiceMap,
           userStartMessageId,
-          mapGetter(this.msgIdMap, userStartMessageId),
+          mapGetter(telegramServiceMap, userStartMessageId),
         );
 
         return;
@@ -252,14 +258,6 @@ export class TelegramService extends Telegraf<Context> {
           onFillDisciplineBranch(a);
       }
 
-      // if (frontTheme) {
-      //   if (!ctx.session.__scenes.state.theme) {
-      //     ctx.session.__scenes.state.theme = frontTheme;
-      //   } else {
-      //     ctx.session.__scenes.state.theme = frontTheme;
-      //   }
-      // }
-
       if (u && +u !== 0) {
         const frontUniqueness = +u;
         if (!ctx.session.__scenes.state.uniqueness) {
@@ -281,9 +279,9 @@ export class TelegramService extends Telegraf<Context> {
 
       await this.deleteMessage(
         ctx,
-        this.msgIdMap,
+        telegramServiceMap,
         userStartMessageId,
-        mapGetter(this.msgIdMap, userStartMessageId),
+        mapGetter(telegramServiceMap, userStartMessageId),
       );
 
       return;
@@ -294,9 +292,9 @@ export class TelegramService extends Telegraf<Context> {
 
       await this.deleteMessage(
         ctx,
-        this.msgIdMap,
+        telegramServiceMap,
         userStartMessageId,
-        mapGetter(this.msgIdMap, userStartMessageId),
+        mapGetter(telegramServiceMap, userStartMessageId),
       );
 
       return;
@@ -317,34 +315,34 @@ export class TelegramService extends Telegraf<Context> {
     const startOrderMessageId = `startOrderMessageId${ctx.session.__scenes.state.userTelegramId}`;
     const userStartMessageId = `userStartMessageId${ctx.session.__scenes.state.userTelegramId}`;
 
-    mapSetter(this.msgIdMap, userMessageId, ctx.message.message_id);
+    mapSetter(telegramServiceMap, userMessageId, ctx.message.message_id);
 
     await this.deleteMessage(
       ctx,
-      this.msgIdMap,
+      telegramServiceMap,
       startJoinMessageId,
-      mapGetter(this.msgIdMap, startJoinMessageId),
+      mapGetter(telegramServiceMap, startJoinMessageId),
     );
     await this.deleteMessage(
       ctx,
-      this.msgIdMap,
+      telegramServiceMap,
       startOrderMessageId,
-      mapGetter(this.msgIdMap, startOrderMessageId),
+      mapGetter(telegramServiceMap, startOrderMessageId),
     );
 
     await this.onStartOrderMarkup(ctx);
 
     await this.deleteMessage(
       ctx,
-      this.msgIdMap,
+      telegramServiceMap,
       userMessageId,
-      mapGetter(this.msgIdMap, userMessageId),
+      mapGetter(telegramServiceMap, userMessageId),
     );
     await this.deleteMessage(
       ctx,
-      this.msgIdMap,
+      telegramServiceMap,
       userStartMessageId,
-      mapGetter(this.msgIdMap, userStartMessageId),
+      mapGetter(telegramServiceMap, userStartMessageId),
     );
 
     return;
@@ -364,34 +362,34 @@ export class TelegramService extends Telegraf<Context> {
     const startOrderMessageId = `${Message.startOrderMessageId}${ctx.session.__scenes.state.userTelegramId}`;
     const userStartMessageId = `${Message.userStartMessageId}${ctx.session.__scenes.state.userTelegramId}`;
 
-    mapSetter(this.msgIdMap, userMessageId, ctx.message.message_id);
+    mapSetter(telegramServiceMap, userMessageId, ctx.message.message_id);
 
     await this.deleteMessage(
       ctx,
-      this.msgIdMap,
+      telegramServiceMap,
       startJoinMessageId,
-      mapGetter(this.msgIdMap, startJoinMessageId),
+      mapGetter(telegramServiceMap, startJoinMessageId),
     );
     await this.deleteMessage(
       ctx,
-      this.msgIdMap,
+      telegramServiceMap,
       startOrderMessageId,
-      mapGetter(this.msgIdMap, startOrderMessageId),
+      mapGetter(telegramServiceMap, startOrderMessageId),
     );
 
     await this.onStartJoinMarkup(ctx);
 
     await this.deleteMessage(
       ctx,
-      this.msgIdMap,
+      telegramServiceMap,
       userMessageId,
-      mapGetter(this.msgIdMap, userMessageId),
+      mapGetter(telegramServiceMap, userMessageId),
     );
     await this.deleteMessage(
       ctx,
-      this.msgIdMap,
+      telegramServiceMap,
       userStartMessageId,
-      mapGetter(this.msgIdMap, userStartMessageId),
+      mapGetter(telegramServiceMap, userStartMessageId),
     );
 
     return;
@@ -452,15 +450,15 @@ export class TelegramService extends Telegraf<Context> {
 
       await this.deleteMessage(
         ctx,
-        this.msgIdMap,
+        telegramServiceMap,
         startOrderMessageId,
-        mapGetter(this.msgIdMap, startOrderMessageId),
+        mapGetter(telegramServiceMap, startOrderMessageId),
       );
       await this.deleteMessage(
         ctx,
-        this.msgIdMap,
+        telegramServiceMap,
         startJoinMessageId,
-        mapGetter(this.msgIdMap, startJoinMessageId),
+        mapGetter(telegramServiceMap, startJoinMessageId),
       );
 
       return;
@@ -479,23 +477,23 @@ export class TelegramService extends Telegraf<Context> {
 
       deleteMessageDelayed(
         ctx,
-        this.msgIdMap,
+        telegramServiceMap,
         startOrderMessageId,
-        mapGetter(this.msgIdMap, startOrderMessageId),
+        mapGetter(telegramServiceMap, startOrderMessageId),
         1000,
       );
       deleteMessageDelayed(
         ctx,
-        this.msgIdMap,
+        telegramServiceMap,
         startJoinMessageId,
-        mapGetter(this.msgIdMap, startJoinMessageId),
+        mapGetter(telegramServiceMap, startJoinMessageId),
         1000,
       );
       deleteMessageDelayed(
         ctx,
-        this.msgIdMap,
+        telegramServiceMap,
         choosenWorkTypeMessageId,
-        mapGetter(this.msgIdMap, choosenWorkTypeMessageId),
+        mapGetter(telegramServiceMap, choosenWorkTypeMessageId),
         10000,
       );
 
@@ -516,15 +514,15 @@ export class TelegramService extends Telegraf<Context> {
 
       await this.deleteMessage(
         ctx,
-        this.msgIdMap,
+        telegramServiceMap,
         startOrderMessageId,
-        mapGetter(this.msgIdMap, startOrderMessageId),
+        mapGetter(telegramServiceMap, startOrderMessageId),
       );
       await this.deleteMessage(
         ctx,
-        this.msgIdMap,
+        telegramServiceMap,
         startJoinMessageId,
-        mapGetter(this.msgIdMap, startJoinMessageId),
+        mapGetter(telegramServiceMap, startJoinMessageId),
       );
 
       return;
@@ -541,15 +539,15 @@ export class TelegramService extends Telegraf<Context> {
 
     await this.deleteMessage(
       ctx,
-      this.msgIdMap,
+      telegramServiceMap,
       startOrderMessageId,
-      mapGetter(this.msgIdMap, startOrderMessageId),
+      mapGetter(telegramServiceMap, startOrderMessageId),
     );
     await this.deleteMessage(
       ctx,
-      this.msgIdMap,
+      telegramServiceMap,
       startJoinMessageId,
-      mapGetter(this.msgIdMap, startJoinMessageId),
+      mapGetter(telegramServiceMap, startJoinMessageId),
     );
 
     return;
@@ -574,17 +572,24 @@ export class TelegramService extends Telegraf<Context> {
 
     await this.deleteMessage(
       ctx,
-      this.msgIdMap,
+      telegramServiceMap,
       startOrderMessageId,
-      mapGetter(this.msgIdMap, startOrderMessageId),
+      mapGetter(telegramServiceMap, startOrderMessageId),
     );
     await this.deleteMessage(
       ctx,
-      this.msgIdMap,
+      telegramServiceMap,
       startJoinMessageId,
-      mapGetter(this.msgIdMap, startJoinMessageId),
+      mapGetter(telegramServiceMap, startJoinMessageId),
     );
 
     return;
+  }
+
+  async onModuleDestroy() {
+    saveMapData(
+      telegramServiceMap,
+      FileNameTelegramService.telegramServiceMapData,
+    );
   }
 }

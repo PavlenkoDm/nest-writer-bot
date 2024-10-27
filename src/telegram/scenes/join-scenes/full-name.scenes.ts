@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import {
   Action,
   Ctx,
@@ -11,8 +11,15 @@ import { Markup, Scenes } from 'telegraf';
 import { IJoinSceneState } from './join.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
 import { dangerRegexp } from '../helpers-scenes/regexps.helper';
-import { CommonJoinClass, Forbidden, JoinMsg } from './common-join.abstract';
+import {
+  CommonJoinClass,
+  FileNameJoinMap,
+  Forbidden,
+  JoinMsg,
+} from './common-join.abstract';
 import { StringLength } from '../common-enums.scenes/strlength.enum';
+import { saveMapData } from 'src/telegram/utils/map-file-saver-loader.utils';
+import { joinScenarioMap } from 'src/main';
 
 enum JoinFullNameMsg {
   fullNameStartMessageId = 'fullNameStartMessageId',
@@ -21,7 +28,7 @@ enum JoinFullNameMsg {
 
 @Injectable()
 @Scene('FULL_NAME_SCENE')
-export class FullNameScene extends CommonJoinClass {
+export class FullNameScene extends CommonJoinClass implements OnModuleDestroy {
   constructor() {
     super('FULL_NAME_SCENE');
   }
@@ -159,5 +166,9 @@ export class FullNameScene extends CommonJoinClass {
   async onSceneLeave(@Ctx() ctx: Scenes.SceneContext<IJoinSceneState>) {
     ctx.from.id;
     return;
+  }
+
+  onModuleDestroy() {
+    saveMapData(joinScenarioMap, FileNameJoinMap.joinMapData);
   }
 }

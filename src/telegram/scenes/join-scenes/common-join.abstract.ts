@@ -6,6 +6,7 @@ import {
   mapSetter,
   toDeleteMapKey,
 } from 'src/telegram/utils/map.utils';
+import { joinScenarioMap } from 'src/main';
 
 export enum Alert {
   notCorrect = 'Ви ввели некоректне значення!',
@@ -21,29 +22,28 @@ export enum JoinMsg {
   commandForbiddenMessageId = 'commandForbiddenMessageId',
 }
 
+export enum FileNameJoinMap {
+  joinMapData = 'JoinMapData',
+}
+
 export abstract class CommonJoinClass extends Scenes.BaseScene<
   Scenes.SceneContext<IJoinSceneState>
 > {
-  protected joinMsgIdMap: Map<string, number> = new Map<string, number>();
-
   protected setterForJoinMap(
     ctx: Scenes.SceneContext<IJoinSceneState>,
     msgIdVarName: string,
     msgIdForMapValue: number,
   ) {
     const messageIdMapKey = `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`;
-    return mapSetter(this.joinMsgIdMap, messageIdMapKey, msgIdForMapValue);
+    return mapSetter(joinScenarioMap, messageIdMapKey, msgIdForMapValue);
   }
   protected getterForOrderMap(
     ctx: Scenes.SceneContext<IJoinSceneState>,
     msgIdVarName: string,
   ) {
     const messageIdMapKey = `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`;
-    return mapGetter(this.joinMsgIdMap, messageIdMapKey);
+    return mapGetter(joinScenarioMap, messageIdMapKey);
   }
-
-  // protected alertMessageId: number;
-  // protected commandForbiddenMessageId: number;
 
   protected async onCreateAlertMessage(
     ctx: Scenes.SceneContext<IJoinSceneState>,
@@ -115,43 +115,24 @@ export abstract class CommonJoinClass extends Scenes.BaseScene<
     return false;
   }
 
-  // protected async deleteMessage(
-  //   ctx: Scenes.SceneContext<IJoinSceneState>,
-  //   messageId: number,
-  // ) {
-  //   try {
-  //     if (messageId) {
-  //       await ctx.deleteMessage(messageId);
-  //       messageId = 0;
-  //     }
-  //   } catch (error) {
-  //     if (error.response && error.response.error_code === 400) {
-  //       // console.log(`Message does not exist. Initiator: ${ctx.from.username}`);
-  //       return;
-  //     }
-  //     console.error('Error:', error);
-  //     return;
-  //   }
-  // }
-
   protected async deleteMessage(
     ctx: Scenes.SceneContext<IJoinSceneState>,
     msgIdVarName: string,
   ) {
     try {
       const msgIdMapValue = mapGetter(
-        this.joinMsgIdMap,
+        joinScenarioMap,
         `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`,
       );
       if (!!msgIdMapValue) {
         await ctx.deleteMessage(msgIdMapValue);
         toDeleteMapKey(
-          this.joinMsgIdMap,
+          joinScenarioMap,
           `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`,
         );
       } else {
         toDeleteMapKey(
-          this.joinMsgIdMap,
+          joinScenarioMap,
           `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`,
         );
         return;

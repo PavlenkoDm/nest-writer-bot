@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import {
   Action,
   Ctx,
@@ -10,8 +10,18 @@ import {
 import { Markup, Scenes } from 'telegraf';
 import { IOrderSceneState } from './order.config';
 import { Emoji } from 'src/telegram/emoji/emoji';
-import { CommonOrderClass, Forbidden, OrderMsg } from './common-order.abstract';
+import {
+  CommonOrderClass,
+  FileNameOrderMap,
+  Forbidden,
+  OrderMsg,
+} from './common-order.abstract';
 import { TypeOfWork } from '../common-enums.scenes/work-type.enum';
+import {
+  //mapInit,
+  saveMapData,
+} from 'src/telegram/utils/map-file-saver-loader.utils';
+import { orderScenarioMap } from 'src/main';
 
 enum OrderTypeMsg {
   typeStartMessageId = 'typeStartMessageId',
@@ -21,7 +31,7 @@ enum OrderTypeMsg {
 
 @Injectable()
 @Scene('TYPE_SCENE')
-export class TypeScene extends CommonOrderClass {
+export class TypeScene extends CommonOrderClass implements OnModuleDestroy {
   constructor() {
     super('TYPE_SCENE');
   }
@@ -280,5 +290,9 @@ export class TypeScene extends CommonOrderClass {
   @SceneLeave()
   onSceneLeave(@Ctx() ctx: Scenes.SceneContext<IOrderSceneState>) {
     ctx.from.id;
+  }
+
+  onModuleDestroy() {
+    saveMapData(orderScenarioMap, FileNameOrderMap.orderMapData);
   }
 }

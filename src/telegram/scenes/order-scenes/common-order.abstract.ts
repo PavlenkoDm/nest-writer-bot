@@ -6,6 +6,7 @@ import {
   mapSetter,
   toDeleteMapKey,
 } from 'src/telegram/utils/map.utils';
+import { orderScenarioMap } from 'src/main';
 
 export enum Alert {
   notCorrect = 'Ви ввели некоректне значення!',
@@ -23,25 +24,27 @@ export enum OrderMsg {
   userMessageId = 'userMessageId',
 }
 
+export enum FileNameOrderMap {
+  orderMapData = 'OrderMapData',
+}
+
 export abstract class CommonOrderClass extends Scenes.BaseScene<
   Scenes.SceneContext<IOrderSceneState>
 > {
-  protected orderMsgIdMap: Map<string, number> = new Map<string, number>();
-
   protected setterForOrderMap(
     ctx: Scenes.SceneContext<IOrderSceneState>,
     msgIdVarName: string,
     msgIdForMapValue: number,
   ) {
     const messageIdMapKey = `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`;
-    return mapSetter(this.orderMsgIdMap, messageIdMapKey, msgIdForMapValue);
+    return mapSetter(orderScenarioMap, messageIdMapKey, msgIdForMapValue); //CommonOrderClass.orderMsgIdMap
   }
   protected getterForOrderMap(
     ctx: Scenes.SceneContext<IOrderSceneState>,
     msgIdVarName: string,
   ) {
     const messageIdMapKey = `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`;
-    return mapGetter(this.orderMsgIdMap, messageIdMapKey);
+    return mapGetter(orderScenarioMap, messageIdMapKey); //CommonOrderClass.orderMsgIdMap
   }
 
   protected async onCreateAlertMessage(
@@ -120,18 +123,18 @@ export abstract class CommonOrderClass extends Scenes.BaseScene<
   ) {
     try {
       const msgIdMapValue = mapGetter(
-        this.orderMsgIdMap,
+        orderScenarioMap, // CommonOrderClass.orderMsgIdMap
         `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`,
       );
       if (!!msgIdMapValue) {
         await ctx.deleteMessage(msgIdMapValue);
         toDeleteMapKey(
-          this.orderMsgIdMap,
+          orderScenarioMap, // CommonOrderClass.orderMsgIdMap
           `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`,
         );
       } else {
         toDeleteMapKey(
-          this.orderMsgIdMap,
+          orderScenarioMap, // CommonOrderClass.orderMsgIdMap
           `${msgIdVarName}${ctx.session.__scenes.state.userTelegramId}`,
         );
         return;
@@ -155,19 +158,19 @@ export abstract class CommonOrderClass extends Scenes.BaseScene<
     return setTimeout(
       (async () => {
         const msgIdMapValue = mapGetter(
-          this.orderMsgIdMap,
+          orderScenarioMap, // CommonOrderClass.orderMsgIdMap
           `${msgIdVarName}${userTelegramId}`,
         );
         try {
           if (!!msgIdMapValue) {
             await ctx.deleteMessage(msgIdMapValue);
             toDeleteMapKey(
-              this.orderMsgIdMap,
+              orderScenarioMap, // CommonOrderClass.orderMsgIdMap
               `${msgIdVarName}${userTelegramId}`,
             );
           } else {
             toDeleteMapKey(
-              this.orderMsgIdMap,
+              orderScenarioMap, // CommonOrderClass.orderMsgIdMap
               `${msgIdVarName}${userTelegramId}`,
             );
             return;
