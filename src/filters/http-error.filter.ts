@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { rollbar } from 'src/main';
 
 @Catch(HttpException)
 export class HttpErrorFilter implements ExceptionFilter {
@@ -18,12 +19,14 @@ export class HttpErrorFilter implements ExceptionFilter {
     const status = exception.getStatus();
     const errorResponse = exception.getResponse();
 
-    // Logging
     this.logger.error(
       `HTTP Error: ${status}, Message: ${JSON.stringify(errorResponse)}`,
     );
 
-    // If 400, just keep working
+    if (exception instanceof Error) {
+      rollbar.error('HTTP Error:', exception);
+    }
+
     if (status === HttpStatus.BAD_REQUEST) {
       this.logger.warn('400 Bad Request error from Telegram, keep working...');
       return;

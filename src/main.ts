@@ -7,6 +7,14 @@ import {
 import { FileNameOrderMap } from './telegram/scenes/order-scenes/common-order.abstract';
 import { FileNameTelegramService } from './telegram/telegram.service';
 import { FileNameJoinMap } from './telegram/scenes/join-scenes/common-join.abstract';
+import * as Rollbar from 'rollbar';
+
+export const rollbar = new Rollbar({
+  accessToken: process.env.ROLLBAR_ACCESS_TOKEN,
+  captureUncaught: true,
+  captureUnhandledRejections: true,
+  // environment: process.env.NODE_ENV || 'development',
+});
 
 export let telegramServiceMap: Map<string, number>;
 export let orderScenarioMap: Map<string, number>;
@@ -15,6 +23,7 @@ export let joinScenarioMap: Map<string, number>;
 async function bootstrap() {
   process.on('uncaughtException', (error) => {
     console.error('Unhandled Error:', error);
+    rollbar.error('Unhandled Error:', error);
 
     saveMapData(
       telegramServiceMap,
@@ -23,11 +32,12 @@ async function bootstrap() {
     saveMapData(orderScenarioMap, FileNameOrderMap.orderMapData);
     saveMapData(joinScenarioMap, FileNameJoinMap.joinMapData);
 
-    process.exit(1);
+    setTimeout(() => process.exit(1), 500);
   });
 
   process.on('unhandledRejection', (reason) => {
     console.error('Unhandled Rejection:', reason);
+    rollbar.error('Unhandled Rejection sended to Rollbar');
 
     saveMapData(
       telegramServiceMap,
@@ -36,7 +46,7 @@ async function bootstrap() {
     saveMapData(orderScenarioMap, FileNameOrderMap.orderMapData);
     saveMapData(joinScenarioMap, FileNameJoinMap.joinMapData);
 
-    process.exit(1);
+    setTimeout(() => process.exit(1), 500);
   });
 
   const initializedTelegramServiceMap = mapInit(
@@ -58,28 +68,10 @@ async function bootstrap() {
     : new Map();
 
   const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT);
+  await app.listen(process.env.PORT, () => {
+    rollbar.log('Nest_writers_bot started!');
+    console.log(`Server starting... On port: ${process.env.PORT}`);
+  });
 }
 
 bootstrap();
-
-// import * as cluster from 'node:cluster';
-// //import { cpus } from 'os';
-
-// const customCluster = cluster as any;
-
-// if (customCluster.isPrimary) {
-//   //const numCPUs = cpus().length;
-//   console.log(`Master process is running. Forking ${3} workers...`);
-
-//   for (let i = 0; i < 3; i++) {
-//     customCluster.fork();
-//   }
-
-//   customCluster.on('exit', (worker: any) => {
-//     console.log(`Worker ${worker.process.pid} died. Restarting...`);
-//     customCluster.fork();
-//   });
-// } else {
-//   bootstrap(); // Каждый воркер запускает NestJS приложение
-// }

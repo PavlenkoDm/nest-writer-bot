@@ -1,4 +1,5 @@
 import { ExceptionFilter, Catch, Logger } from '@nestjs/common';
+import { rollbar } from 'src/main';
 
 @Catch()
 export class GlobalErrorFilter implements ExceptionFilter {
@@ -7,8 +8,9 @@ export class GlobalErrorFilter implements ExceptionFilter {
   catch(exception: unknown) {
     this.logger.error('GF Error:', exception);
 
-    if (exception instanceof Error && exception.message.includes('Critical')) {
-      this.logger.error('GF Critical Error, keep working...');
+    if (exception instanceof Error) {
+      this.logger.error('GF Critical Error, keep working...', exception);
+      rollbar.error('GF Critical Error, keep working...', exception);
 
       return;
     }
