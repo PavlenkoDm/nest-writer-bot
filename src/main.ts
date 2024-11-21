@@ -7,14 +7,14 @@ import {
 import { FileNameOrderMap } from './telegram/scenes/order-scenes/common-order.abstract';
 import { FileNameTelegramService } from './telegram/telegram.service';
 import { FileNameJoinMap } from './telegram/scenes/join-scenes/common-join.abstract';
-import * as Rollbar from 'rollbar';
+// import * as Rollbar from 'rollbar';
 
-export const rollbar = new Rollbar({
-  accessToken: process.env.ROLLBAR_ACCESS_TOKEN,
-  captureUncaught: true,
-  captureUnhandledRejections: true,
-  // environment: process.env.NODE_ENV || 'development',
-});
+// export const rollbar = new Rollbar({
+//   accessToken: process.env.ROLLBAR_ACCESS_TOKEN,
+//   captureUncaught: true,
+//   captureUnhandledRejections: true,
+//   // environment: process.env.NODE_ENV || 'development',
+// });
 
 export let telegramServiceMap: Map<string, number>;
 export let orderScenarioMap: Map<string, number>;
@@ -23,7 +23,7 @@ export let joinScenarioMap: Map<string, number>;
 async function bootstrap() {
   process.on('uncaughtException', (error) => {
     console.error('Unhandled Error:', error);
-    rollbar.error('Unhandled Error:', error);
+    // rollbar.error('Unhandled Error:', error);
 
     saveMapData(
       telegramServiceMap,
@@ -37,7 +37,7 @@ async function bootstrap() {
 
   process.on('unhandledRejection', (reason) => {
     console.error('Unhandled Rejection:', reason);
-    rollbar.error('Unhandled Rejection sended to Rollbar');
+    // rollbar.error('Unhandled Rejection sended to Rollbar');
 
     saveMapData(
       telegramServiceMap,
@@ -68,9 +68,16 @@ async function bootstrap() {
     : new Map();
 
   const app = await NestFactory.create(AppModule);
+
+  app.enableCors();
+  app.enableShutdownHooks();
+
   await app.listen(process.env.PORT, () => {
-    rollbar.log('Nest_writers_bot started!');
-    console.log(`Server starting... On port: ${process.env.PORT}`);
+    // rollbar.log('Nest_writers_bot started!');
+    console.log(
+      '\x1b[36m%s\x1b[0m',
+      `Server starting... On port: ${process.env.PORT}`,
+    );
   });
 }
 

@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Models
+model User{
+  id Int @default(autoincrement()) @id
+  username String
+  userTelegramId BigInt @unique
+  createdAt DateTime @default(now())
+  orders Order[] @relation("UserOrders") // связь с заказами
+}
+
+model Order{
+  id Int @default(autoincrement()) @id  
+  typeOfWork String @default("")
+  branch String @default("")
+  specialization String @default("")
+  theme String @default("")
+  uniqueness Int @default(0)
+  timeLimit String @default("")
+  linkToLoadFile String @default("")
+  comment String @default("")
+  privacyPolicy Boolean @default(true)
+  createdAt DateTime @default(now())
+  fromUserId Int // foreign key
+  fromUser User @relation("UserOrders", fields: [fromUserId], references: [id])
+}
+
+// phoneNumber DateTime @default(now())

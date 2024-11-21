@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import {
   Action,
   Ctx,
@@ -12,6 +12,8 @@ import { IOrderSceneState } from './order.config';
 import { ConfigService } from '@nestjs/config';
 import { Emoji } from 'src/telegram/emoji/emoji';
 import { CommonOrderClass, Forbidden, OrderMsg } from './common-order.abstract';
+import { DbClientUserService } from 'src/dbclient/dbclient.user.service';
+import { DbClientOrderService } from 'src/dbclient/dbclient.order.service';
 
 enum OrderFinalMsg {
   finalOrderStartMessageId = 'finalOrderStartMessageId',
@@ -22,17 +24,21 @@ enum OrderFinalMsg {
 export class FinalOrderScene extends CommonOrderClass {
   constructor(
     @Inject(ConfigService) private readonly configService: ConfigService,
+    private dbClientUserService: DbClientUserService,
+    private dbClientOrderService: DbClientOrderService,
   ) {
     super('FINAL_ORDER_SCENE');
     this.chatId = configService.get('ORDER_CHANNEL_ID');
   }
 
   private readonly chatId: number;
+  private linkToLoadFile: string;
 
   private async commonFinalOrderMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
   ) {
     let linkToFile: string;
+
     const {
       typeOfWork,
       discipline: { branch, specialization },
@@ -53,6 +59,10 @@ export class FinalOrderScene extends CommonOrderClass {
     const isLinkToFile = linkToFile ? linkToFile : 'відсутні';
     const isComment = comment ? comment : 'відсутній';
     const isSavedFile = linkToFile ? '[зберегти файл]' : 'відсутні';
+
+    if (isLinkToFile !== 'відсутні') {
+      this.linkToLoadFile = isLinkToFile;
+    }
 
     const commonFinalOrderMessage = `
       <b>${Emoji.pin} Тип роботи:</b>  <i>"${typeOfWork}"</i>\n\n
@@ -150,6 +160,50 @@ export class FinalOrderScene extends CommonOrderClass {
       telegramUserId,
       10000,
     );
+
+    try {
+      const createOrderDto = {
+        typeOfWork: ctx.session.__scenes.state.typeOfWork,
+        branch: ctx.session.__scenes.state.discipline.branch,
+        specialization: ctx.session.__scenes.state.discipline.specialization,
+        theme: ctx.session.__scenes.state.theme,
+        uniqueness: ctx.session.__scenes.state.uniqueness,
+        timeLimit: ctx.session.__scenes.state.timeLimit,
+        linkToLoadFile: this.linkToLoadFile,
+        comment: ctx.session.__scenes.state.comment,
+        privacyPolicy: ctx.session.__scenes.state.privacyPolicy,
+      };
+
+      const userInDataBase = await this.dbClientUserService.getUserByTelegramId(
+        ctx.from.id,
+      );
+
+      if (!userInDataBase) {
+        const newUser = await this.dbClientUserService.createUser({
+          username: ctx.from.username,
+          userTelegramId: ctx.from.id,
+        });
+
+        await this.dbClientOrderService.createOrder(newUser.id, {
+          ...createOrderDto,
+          fromUser: {
+            connect: { id: newUser.id },
+          },
+        });
+      } else {
+        await this.dbClientOrderService.createOrder(userInDataBase.id, {
+          ...createOrderDto,
+          fromUser: {
+            connect: { id: userInDataBase.id },
+          },
+        });
+      }
+    } catch (error) {
+      throw new HttpException(
+        'Database processing error: ' + error.message,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
 
     await ctx.scene.leave();
 

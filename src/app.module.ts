@@ -6,11 +6,13 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpErrorFilter } from './filters/http-error.filter';
 import { GlobalErrorFilter } from './filters/global-error.filter';
+import { DbClientModule } from './dbclient/dbclient.module';
 
 @Module({
   imports: [
     TelegramModule,
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+    DbClientModule,
   ],
   controllers: [AppController],
   providers: [

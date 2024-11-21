@@ -24,12 +24,18 @@ import { AddPhoneScene } from './scenes/join-scenes/add-phone.scenes';
 import { PersonalInfoScene } from './scenes/join-scenes/personal-info.scenes';
 import { FinalJoinScene } from './scenes/join-scenes/final-join.scenes';
 import { PrivacyPolicyScene } from './scenes/order-scenes/privacy-policy.scenes';
+import { DbClientOrderService } from 'src/dbclient/dbclient.order.service';
+import { DbClientUserService } from 'src/dbclient/dbclient.user.service';
 
 const localSession = new LocalSession({
   database: 'sessions.json',
 }).middleware();
 
-const telegrafModOptions = (config: ConfigService): TelegrafModuleOptions => {
+const telegrafModOptions = (
+  config: ConfigService,
+  dbClientUserService: DbClientUserService,
+  dbClientOrderService: DbClientOrderService,
+): TelegrafModuleOptions => {
   const stageOrder = new Scenes.Stage<Scenes.SceneContext>([
     new TypeScene(),
     new DisciplineScene(),
@@ -39,7 +45,7 @@ const telegrafModOptions = (config: ConfigService): TelegrafModuleOptions => {
     new FileLoadScene(),
     new CommentScene(),
     new PrivacyPolicyScene(config),
-    new FinalOrderScene(config),
+    new FinalOrderScene(config, dbClientUserService, dbClientOrderService),
   ]);
   const stageJoin = new Scenes.Stage<Scenes.SceneContext>([
     new FullNameScene(),
@@ -65,7 +71,11 @@ const telegrafModOptions = (config: ConfigService): TelegrafModuleOptions => {
 
 export const options = (): TelegrafModuleAsyncOptions => {
   return {
-    inject: [ConfigService],
-    useFactory: (config: ConfigService) => telegrafModOptions(config),
+    inject: [ConfigService, DbClientUserService, DbClientOrderService],
+    useFactory: (
+      config: ConfigService,
+      dbClientUserService: DbClientUserService,
+      dbClientOrderService: DbClientOrderService,
+    ) => telegrafModOptions(config, dbClientUserService, dbClientOrderService),
   };
 };
