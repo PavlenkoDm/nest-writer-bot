@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
-// import { rollbar } from 'src/main';
+import { rollbar } from 'src/main';
 
 @Catch(HttpException)
 export class HttpErrorFilter implements ExceptionFilter {
@@ -24,7 +24,7 @@ export class HttpErrorFilter implements ExceptionFilter {
     );
 
     if (exception instanceof Error) {
-      // rollbar.error('HTTP Error:', exception);
+      rollbar.error('HTTP Error:', exception);
     }
 
     if (status === HttpStatus.BAD_REQUEST) {
