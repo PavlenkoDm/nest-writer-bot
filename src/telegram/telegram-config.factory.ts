@@ -26,6 +26,7 @@ import { FinalJoinScene } from './scenes/join-scenes/final-join.scenes';
 import { PrivacyPolicyScene } from './scenes/order-scenes/privacy-policy.scenes';
 import { DbClientOrderService } from 'src/dbclient/dbclient.order.service';
 import { DbClientUserService } from 'src/dbclient/dbclient.user.service';
+import { S3StorageService } from 'src/s3-storage/s3-storage.service';
 
 const localSession = new LocalSession({
   database: 'sessions.json',
@@ -35,6 +36,7 @@ const telegrafModOptions = (
   config: ConfigService,
   dbClientUserService: DbClientUserService,
   dbClientOrderService: DbClientOrderService,
+  s3StorageService: S3StorageService,
 ): TelegrafModuleOptions => {
   const stageOrder = new Scenes.Stage<Scenes.SceneContext>([
     new TypeScene(),
@@ -45,7 +47,12 @@ const telegrafModOptions = (
     new FileLoadScene(),
     new CommentScene(),
     new PrivacyPolicyScene(config),
-    new FinalOrderScene(config, dbClientUserService, dbClientOrderService),
+    new FinalOrderScene(
+      config,
+      dbClientUserService,
+      dbClientOrderService,
+      s3StorageService,
+    ),
   ]);
   const stageJoin = new Scenes.Stage<Scenes.SceneContext>([
     new FullNameScene(),
@@ -71,11 +78,23 @@ const telegrafModOptions = (
 
 export const options = (): TelegrafModuleAsyncOptions => {
   return {
-    inject: [ConfigService, DbClientUserService, DbClientOrderService],
+    inject: [
+      ConfigService,
+      DbClientUserService,
+      DbClientOrderService,
+      S3StorageService,
+    ],
     useFactory: (
       config: ConfigService,
       dbClientUserService: DbClientUserService,
       dbClientOrderService: DbClientOrderService,
-    ) => telegrafModOptions(config, dbClientUserService, dbClientOrderService),
+      s3StorageService: S3StorageService,
+    ) =>
+      telegrafModOptions(
+        config,
+        dbClientUserService,
+        dbClientOrderService,
+        s3StorageService,
+      ),
   };
 };

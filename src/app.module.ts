@@ -7,12 +7,14 @@ import { APP_FILTER } from '@nestjs/core';
 import { HttpErrorFilter } from './filters/http-error.filter';
 import { GlobalErrorFilter } from './filters/global-error.filter';
 import { DbClientModule } from './dbclient/dbclient.module';
+import { S3StorageModule } from './s3-storage/s3-storage.module';
 
 @Module({
   imports: [
     TelegramModule,
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     DbClientModule,
+    S3StorageModule,
   ],
   controllers: [AppController],
   providers: [

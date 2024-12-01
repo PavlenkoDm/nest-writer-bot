@@ -25,6 +25,7 @@ model Order{
   uniqueness Int @default(0)
   timeLimit String @default("")
   linkToLoadFile String @default("")
+  s3BucketKey String @default("")
   comment String @default("")
   privacyPolicy Boolean @default(true)
   createdAt DateTime @default(now())

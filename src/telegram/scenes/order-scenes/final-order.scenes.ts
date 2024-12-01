@@ -14,6 +14,7 @@ import { Emoji } from 'src/telegram/emoji/emoji';
 import { CommonOrderClass, Forbidden, OrderMsg } from './common-order.abstract';
 import { DbClientUserService } from 'src/dbclient/dbclient.user.service';
 import { DbClientOrderService } from 'src/dbclient/dbclient.order.service';
+import { S3StorageService } from 'src/s3-storage/s3-storage.service';
 
 enum OrderFinalMsg {
   finalOrderStartMessageId = 'finalOrderStartMessageId',
@@ -26,13 +27,14 @@ export class FinalOrderScene extends CommonOrderClass {
     @Inject(ConfigService) private readonly configService: ConfigService,
     private dbClientUserService: DbClientUserService,
     private dbClientOrderService: DbClientOrderService,
+    private s3StorageService: S3StorageService,
   ) {
     super('FINAL_ORDER_SCENE');
     this.chatId = configService.get('ORDER_CHANNEL_ID');
   }
 
   private readonly chatId: number;
-  private linkToLoadFile: string;
+  private linkToLoadFile: string = '';
 
   private async commonFinalOrderMarkup(
     ctx: Scenes.SceneContext<IOrderSceneState>,
@@ -172,6 +174,7 @@ export class FinalOrderScene extends CommonOrderClass {
         linkToLoadFile: this.linkToLoadFile,
         comment: ctx.session.__scenes.state.comment,
         privacyPolicy: ctx.session.__scenes.state.privacyPolicy,
+        s3BucketKey: '',
       };
 
       const userInDataBase = await this.dbClientUserService.getUserByTelegramId(
@@ -183,6 +186,16 @@ export class FinalOrderScene extends CommonOrderClass {
           username: ctx.from.username,
           userTelegramId: ctx.from.id,
         });
+
+        if (!!this.linkToLoadFile) {
+          createOrderDto.s3BucketKey =
+            await this.s3StorageService.uploadFileFromTelegram(
+              this.configService.get('AWS_S3_BUCKET_NAME'),
+              this.linkToLoadFile,
+              ctx.from.username ? ctx.from.username : 'unknown',
+              ctx.from.id,
+            );
+        }
 
         await this.dbClientOrderService.createOrder(newUser.id, {
           ...createOrderDto,
