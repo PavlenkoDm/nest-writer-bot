@@ -24,7 +24,11 @@
 
 ## Description
 
-![Structure of the application](./docs/img/app-structure.jpeg)
+<p align="center">
+  <img src="./docs/img/app-structure.jpeg" alt="Structure of the application"/>
+  <br/>
+  <i>Structure Of The Application</i>
+</p>
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
