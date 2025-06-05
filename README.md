@@ -24,7 +24,7 @@
 
 ## Description
 
-![Structure of the application](./docs/images/structure.png)
+![Structure of the application](./docs/img/app-structure.jpeg)
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
